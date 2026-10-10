@@ -1,5 +1,5 @@
 vlm:
-  ollama_base_url: http://compute-0-3:11434
+  ollama_base_url: http://localhost:11434
   timeout: 60
 
 gpu:
