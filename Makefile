@@ -32,10 +32,10 @@ help:
 	@echo "  make mac-status         - Status mac services"
 	@echo "  make mac-clean          - Clean mac artifacts"
 	@echo ""
-	@echo "  make hpc                - Frontend on caliban, backend on compute-0-3 (A100)"
-	@echo "  make hpc-backend        - Backend only on compute-0-3"
+	@echo "  make hpc                - Frontend on login, backend via Slurm (cuda)"
+	@echo "  make hpc-backend        - Backend only via Slurm"
 	@echo "  make hpc-frontend       - Frontend only"
-	@echo "  make hpc-eval           - Run eval queue on compute-0-3 (HPC profile)"
+	@echo "  make hpc-eval           - Run eval queue (HPC profile, via backend API)"
 	@echo "  make hpc-stop           - Stop HPC backend + frontend"
 	@echo "  make hpc-status         - Status HPC services"
 	@echo "  make hpc-clean          - Clean HPC artifacts"
@@ -132,20 +132,21 @@ mac-clean:
 	rm -rf frontend/node_modules frontend/.svelte-kit
 
 hpc-backend:
-	BACKEND_HOST=compute-0-3 PROFILE=hpc bash scripts/start.sh backend
+	PROFILE=hpc bash scripts/start.sh backend
 
 hpc-frontend:
-	BACKEND_HOST=compute-0-3 PROFILE=hpc bash scripts/start.sh frontend
+	PROFILE=hpc bash scripts/start.sh frontend
 
 hpc:
-	BACKEND_HOST=compute-0-3 PROFILE=hpc bash scripts/start.sh
+	PROFILE=hpc bash scripts/start.sh
 
 hpc-eval:
-	BACKEND_HOST=compute-0-3 PROFILE=hpc bash scripts/eval.sh
+	PROFILE=hpc bash scripts/eval.sh
 
 hpc-stop:
 	pkill -f "uvicorn.*8000" 2>/dev/null || true
-	ssh compute-0-3 "pkill -f 'uvicorn.*8000' 2>/dev/null || true" 2>/dev/null || true
+	pkill -f "backend-wake-proxy" 2>/dev/null || true
+	@if [ -f $(HOME)/.cache/backend-slurm.jobid ]; then scancel $$(cat $(HOME)/.cache/backend-slurm.jobid) 2>/dev/null || true; rm -f $(HOME)/.cache/backend-slurm.jobid; echo "backend Slurm job cancelled"; fi
 	pkill -f "ssh.*-L 8000" 2>/dev/null || true
 	pkill -f "vite.*5173" 2>/dev/null || true
 	pkill -f "ngrok http" 2>/dev/null || true
@@ -153,7 +154,7 @@ hpc-stop:
 hpc-status:
 	@echo "== hpc status =="
 	@curl -s http://localhost:8000/api/health 2>&1 | grep -q '"status":"ok"' && echo "backend: UP (via tunnel)" || echo "backend: DOWN"
-	@ssh -o BatchMode=yes -o ConnectTimeout=3 compute-0-3 "curl -s http://localhost:11434/api/version 2>&1 | grep -q version && echo 'ollama@compute-0-3: UP' || echo 'ollama@compute-0-3: DOWN'" 2>/dev/null || echo "ollama@compute-0-3: UNREACHABLE"
+	@if [ -f $(HOME)/.cache/backend-slurm.jobid ]; then squeue -j $$(cat $(HOME)/.cache/backend-slurm.jobid) 2>&1 | head -5; else echo "backend job: none"; fi
 	@ss -tlnp 2>/dev/null | grep -q ":5173" && echo "frontend: UP (5173)" || echo "frontend: DOWN"
 	@curl -s http://127.0.0.1:4040/api/tunnels 2>/dev/null | grep -q public_url && echo "ngrok: UP" || echo "ngrok: DOWN"
 
