@@ -179,9 +179,9 @@ The full set is authored in the **Events (ISEQL)** configurator, stored in the
 ## Running (per-profile)
 
 All run targets are **profile-aware** and driven by a single `PROFILE` variable
-(`local`, `hpc`, `docker`, `mac`), which selects:
+(`local`, `hpc`, `hpc-slurm`, `docker`, `mac`), which selects:
 - the backend runner (local conda auto-detect + pipenv / remote GPU node / macOS brew + CPU pipenv),
-- an optional `config.<profile>.yml` overlay on top of the base `config.yml` (only `hpc` and `docker` override it),
+- an optional `config.<profile>.yml` overlay on top of the base `config.yml` (only `hpc`, `hpc-slurm` and `docker` override it),
 - the FFmpeg/`LD_LIBRARY_PATH` setup (auto-provisioned via conda, or brew on macOS).
 
 `make local` targets **Linux (including WSL2)**. It auto-detects an existing
@@ -192,7 +192,8 @@ It relies on `bash`, `make` and `conda`, so it does not run on native Windows.
 ```bash
 make local      # Linux/WSL2: auto-detect conda -> py310 + ffmpeg -> pipenv backend + frontend
 make mac        # macOS: brew ffmpeg + Pipfile.mac (CPU/MPS torch, no CUDA/bitsandbytes)
-make hpc        # HPC: backend on the GPU node, frontend on the login node
+make hpc        # HPC: backend on the GPU node via direct SSH, frontend on the login node
+make hpc-slurm  # HPC: backend via Slurm (cuda partition), frontend on the login node
 make docker     # docker compose (any host with Docker, incl. native Windows)
 ```
 
@@ -200,7 +201,8 @@ Windows without WSL: use `make docker` (see the Docker section) or run inside
 WSL2 with the `local` profile.
 
 Each profile exposes granular targets (e.g. `make hpc-backend`, `make hpc-frontend`,
-`make hpc-eval`, `make hpc-status`, `make hpc-stop`, `make hpc-clean`).
+`make hpc-eval`, `make hpc-status`, `make hpc-stop`, `make hpc-clean` - same
+`hpc-slurm-*` set exists for the Slurm path).
 
 ### macOS
 
@@ -217,13 +219,24 @@ use `quantization: none` (the CNN14/PANNs audio path works unchanged).
 ### HPC + ngrok (public access)
 
 On the HPC cluster, GPUs/Ollama live on the compute node while the login node
-runs the frontend. `make hpc` starts the backend on the GPU node (via SSH tunnel
-to `localhost:8000`) and the frontend on the login node (`:5173`). On first run it
-automatically bootstraps the env (conda `py310`, FFmpeg, pipenv venv).
+runs the frontend. Two interchangeable paths exist because the cluster admin is
+not consistent (Slurm partition vs. direct SSH availability changes):
+
+- `make hpc` - backend on the GPU node via **direct SSH** (`BACKEND_HOST`,
+  default `compute-0-3`) with an SSH tunnel to `localhost:8000`. Use this when
+  Slurm is broken/down. Override the node with `BACKEND_HOST=<node> make hpc`.
+- `make hpc-slurm` - backend via **Slurm** (`sbatch scripts/backend.slurm` on
+  the `cuda` partition, wake-proxy + idle-release + OOM regrow). Use this when
+  Slurm works.
+
+Both run the frontend on the login node (`:5173`). On first run they
+automatically bootstrap the env (conda `py310`, FFmpeg, pipenv venv).
 
 ```bash
 # 1) start the app (backend on GPU node, frontend on login node)
 make hpc
+# ... or, when Slurm works:
+make hpc-slurm
 
 # 2) open a public tunnel to the frontend (also proxies /api to the backend)
 ngrok http 5173
@@ -234,9 +247,10 @@ ngrok http 5173
 
 # 4) stop everything
 make hpc-stop
+make hpc-slurm-stop
 ```
 
-`make hpc-status` reports backend / frontend / Ollama / ngrok state.
+`make hpc-status` / `make hpc-slurm-status` report backend / frontend / Ollama / ngrok state.
 
 ### Docker
 
@@ -283,7 +297,8 @@ make frontend   # pnpm install
 make local      # Linux/WSL2: boots backend on :8000 and frontend on :5173
 ```
 
-Other profiles: `make mac` (macOS), `make hpc` (GPU cluster), `make docker`
+Other profiles: `make mac` (macOS), `make hpc` (GPU cluster, direct SSH),
+`make hpc-slurm` (GPU cluster, Slurm), `make docker`
 (Docker, also native Windows). See "Running (per-profile)" below.
 
 Then open <http://localhost:5173>, upload a video, and pick a **condition** (A / B / C).
@@ -297,7 +312,8 @@ Then open <http://localhost:5173>, upload a video, and pick a **condition** (A /
 | `make backend` / `make frontend`    | Install Python / JS deps                                          |
 | `make local`                        | Gen. machine: auto-detect conda -> py310+ffmpeg -> pipenv backend + frontend |
 | `make mac`                          | macOS: brew ffmpeg + Pipfile.mac (CPU/MPS torch) + frontend       |
-| `make hpc`                          | HPC: backend on GPU node + frontend on login node                 |
+| `make hpc`                          | HPC: backend on GPU node (direct SSH) + frontend on login node    |
+| `make hpc-slurm`                    | HPC: backend via Slurm (cuda) + frontend on login node            |
 | `make docker`                       | Build and run both services via `docker compose`                  |
 | `make <profile>-backend`            | Run only the backend for a profile                                |
 | `make <profile>-frontend`           | Run only the frontend for a profile                               |
@@ -308,8 +324,8 @@ Then open <http://localhost:5173>, upload a video, and pick a **condition** (A /
 | `make status` / `make stop`         | Status / stop all profiles                                        |
 | `make clean`                        | Clean all artifacts                                               |
 
-Profiles: `local`, `mac`, `hpc`, `docker`. `PROFILE` can also be set
-directly, e.g. `PROFILE=hpc bash scripts/start.sh backend`.
+Profiles: `local`, `mac`, `hpc`, `hpc-slurm`, `docker`. `PROFILE` can also be set
+directly, e.g. `PROFILE=hpc-slurm bash scripts/start.sh backend`.
 
 ---
 

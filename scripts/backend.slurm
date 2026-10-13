@@ -22,6 +22,6 @@ nvidia-smi || true
 export PATH="$ENV_DIR/bin:$PATH"
 export LD_LIBRARY_PATH="$ENV_DIR/lib:${LD_LIBRARY_PATH:-}"
 cd $ROOT
-export PROFILE=hpc
+export PROFILE=hpc-slurm
 export PYTHONPATH=src
 exec pipenv run uvicorn start_application:StartApplication --host 0.0.0.0 --port $PORT

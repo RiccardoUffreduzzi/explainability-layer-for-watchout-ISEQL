@@ -18,7 +18,7 @@
 #   MULTIMODAL_ONLY=1 only the 8 multimodal eval notebooks (SQL-only)
 #   (none)            full: audio + visual in parallel, then multimodal
 #
-# Example: MULTIMODAL_ONLY=1 PROFILE=hpc ./scripts/eval.sh  or  make hpc-eval
+# Example: MULTIMODAL_ONLY=1 PROFILE=hpc-slurm ./scripts/eval.sh  or  make hpc-slurm-eval
 #
 # Exit status: 0 = every notebook succeeded, 1 = at least one failed.
 #
@@ -29,7 +29,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # Strict: no silent fallback to a wrong profile/mode.
 PROFILE="${PROFILE:-}"
-VALID_PROFILES="local hpc docker mac"
+VALID_PROFILES="local hpc hpc-slurm docker mac"
 case " $VALID_PROFILES " in
   *" $PROFILE "*) ;;
   "") echo "ERROR: PROFILE not set (use one of: $VALID_PROFILES)" >&2; exit 2 ;;
@@ -39,7 +39,7 @@ esac
 NOTEBOOKS_DIR="$ROOT/experiments/notebooks"
 LOG="$NOTEBOOKS_DIR/progress.log"
 case "$PROFILE" in
-  hpc)
+  hpc|hpc-slurm)
     PY="pipenv"
     PY_ARGS="run python"
     KERNEL="python3"

@@ -10,7 +10,7 @@
   import { backendStatus, startBackendHealthCheck, stopBackendHealthCheck } from '$lib/backend-status.svelte';
   let { children } = $props();
 
-  const isHpc = env.PUBLIC_PROFILE === 'hpc';
+  const isHpc = env.PUBLIC_PROFILE === 'hpc' || env.PUBLIC_PROFILE === 'hpc-slurm';
 
   const SIZE = 40;
   const MARGIN = 12;

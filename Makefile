@@ -3,6 +3,7 @@
 	local local-backend local-frontend local-eval local-stop local-status local-clean \
 	mac mac-backend mac-frontend mac-eval mac-stop mac-status mac-clean \
 	hpc hpc-backend hpc-frontend hpc-eval hpc-stop hpc-status hpc-clean \
+	hpc-slurm hpc-slurm-backend hpc-slurm-frontend hpc-slurm-eval hpc-slurm-stop hpc-slurm-status hpc-slurm-clean \
 	docker docker-backend docker-frontend docker-eval docker-stop docker-status docker-clean clean stop status ngrok ngrok-stop ngrok-status
 
 help:
@@ -32,13 +33,21 @@ help:
 	@echo "  make mac-status         - Status mac services"
 	@echo "  make mac-clean          - Clean mac artifacts"
 	@echo ""
-	@echo "  make hpc                - Frontend on login, backend via Slurm (cuda)"
-	@echo "  make hpc-backend        - Backend only via Slurm"
+	@echo "  make hpc                - Frontend on login, backend on GPU node via direct SSH (BACKEND_HOST, default compute-0-3)"
+	@echo "  make hpc-backend        - Backend only via direct SSH"
 	@echo "  make hpc-frontend       - Frontend only"
 	@echo "  make hpc-eval           - Run eval queue (HPC profile, via backend API)"
 	@echo "  make hpc-stop           - Stop HPC backend + frontend"
 	@echo "  make hpc-status         - Status HPC services"
 	@echo "  make hpc-clean          - Clean HPC artifacts"
+	@echo ""
+	@echo "  make hpc-slurm          - Frontend on login, backend via Slurm (cuda)"
+	@echo "  make hpc-slurm-backend  - Backend only via Slurm"
+	@echo "  make hpc-slurm-frontend - Frontend only"
+	@echo "  make hpc-slurm-eval     - Run eval queue (HPC-Slurm profile, via backend API)"
+	@echo "  make hpc-slurm-stop     - Stop HPC-Slurm backend + frontend"
+	@echo "  make hpc-slurm-status   - Status HPC-Slurm services"
+	@echo "  make hpc-slurm-clean    - Clean HPC-Slurm artifacts"
 	@echo ""
 	@echo "  make docker             - Build and run both services via docker-compose"
 	@echo "  make docker-backend     - Run backend only via docker-compose"
@@ -132,33 +141,70 @@ mac-clean:
 	rm -rf frontend/node_modules frontend/.svelte-kit
 
 hpc-backend:
-	PROFILE=hpc bash scripts/start.sh backend
+	BACKEND_HOST=$${BACKEND_HOST:-compute-0-3} PROFILE=hpc bash scripts/start.sh backend
 
 hpc-frontend:
-	PROFILE=hpc bash scripts/start.sh frontend
+	BACKEND_HOST=$${BACKEND_HOST:-compute-0-3} PROFILE=hpc bash scripts/start.sh frontend
 
 hpc:
-	PROFILE=hpc bash scripts/start.sh
+	BACKEND_HOST=$${BACKEND_HOST:-compute-0-3} PROFILE=hpc bash scripts/start.sh
 
 hpc-eval:
-	PROFILE=hpc bash scripts/eval.sh
+	BACKEND_HOST=$${BACKEND_HOST:-compute-0-3} PROFILE=hpc bash scripts/eval.sh
 
 hpc-stop:
 	pkill -f "uvicorn.*8000" 2>/dev/null || true
-	pkill -f "backend-wake-proxy" 2>/dev/null || true
-	@if [ -f $(HOME)/.cache/backend-slurm.jobid ]; then scancel $$(cat $(HOME)/.cache/backend-slurm.jobid) 2>/dev/null || true; rm -f $(HOME)/.cache/backend-slurm.jobid; echo "backend Slurm job cancelled"; fi
+	ssh $${BACKEND_HOST:-compute-0-3} "pkill -f 'uvicorn.*8000' 2>/dev/null || true" 2>/dev/null || true
 	pkill -f "ssh.*-L 8000" 2>/dev/null || true
+	pkill -f "backend-wake-proxy" 2>/dev/null || true
+	@if [ -f $(HOME)/.cache/backend-supervise.pid ]; then kill $$(cat $(HOME)/.cache/backend-supervise.pid) 2>/dev/null || true; rm -f $(HOME)/.cache/backend-supervise.pid; fi
+	@if [ -f $(HOME)/.cache/backend-slurm.jobid ]; then scancel $$(cat $(HOME)/.cache/backend-slurm.jobid) 2>/dev/null || true; rm -f $(HOME)/.cache/backend-slurm.jobid; echo "backend Slurm job cancelled"; fi
+	rm -f $(HOME)/.cache/backend-wake.need
 	pkill -f "vite.*5173" 2>/dev/null || true
 	pkill -f "ngrok http" 2>/dev/null || true
 
 hpc-status:
 	@echo "== hpc status =="
 	@curl -s http://localhost:8000/api/health 2>&1 | grep -q '"status":"ok"' && echo "backend: UP (via tunnel)" || echo "backend: DOWN"
-	@if [ -f $(HOME)/.cache/backend-slurm.jobid ]; then squeue -j $$(cat $(HOME)/.cache/backend-slurm.jobid) 2>&1 | head -5; else echo "backend job: none"; fi
+	@ssh -o BatchMode=yes -o ConnectTimeout=3 $${BACKEND_HOST:-compute-0-3} "curl -s http://localhost:11434/api/version 2>&1 | grep -q version && echo 'ollama@$${BACKEND_HOST:-compute-0-3}: UP' || echo 'ollama@$${BACKEND_HOST:-compute-0-3}: DOWN'" 2>/dev/null || echo "ollama@$${BACKEND_HOST:-compute-0-3}: UNREACHABLE"
 	@ss -tlnp 2>/dev/null | grep -q ":5173" && echo "frontend: UP (5173)" || echo "frontend: DOWN"
 	@curl -s http://127.0.0.1:4040/api/tunnels 2>/dev/null | grep -q public_url && echo "ngrok: UP" || echo "ngrok: DOWN"
 
 hpc-clean:
+	rm -rf data/analysis.db data/analysis.db-shm data/analysis.db-wal
+	rm -rf frontend/node_modules frontend/.svelte-kit
+
+hpc-slurm-backend:
+	PROFILE=hpc-slurm bash scripts/start.sh backend
+
+hpc-slurm-frontend:
+	PROFILE=hpc-slurm bash scripts/start.sh frontend
+
+hpc-slurm:
+	PROFILE=hpc-slurm bash scripts/start.sh
+
+hpc-slurm-eval:
+	PROFILE=hpc-slurm bash scripts/eval.sh
+
+hpc-slurm-stop:
+	pkill -f "uvicorn.*8000" 2>/dev/null || true
+	ssh $${BACKEND_HOST:-compute-0-3} "pkill -f 'uvicorn.*8000' 2>/dev/null || true" 2>/dev/null || true
+	pkill -f "backend-wake-proxy" 2>/dev/null || true
+	@if [ -f $(HOME)/.cache/backend-supervise.pid ]; then kill $$(cat $(HOME)/.cache/backend-supervise.pid) 2>/dev/null || true; rm -f $(HOME)/.cache/backend-supervise.pid; fi
+	@if [ -f $(HOME)/.cache/backend-slurm.jobid ]; then scancel $$(cat $(HOME)/.cache/backend-slurm.jobid) 2>/dev/null || true; rm -f $(HOME)/.cache/backend-slurm.jobid; echo "backend Slurm job cancelled"; fi
+	rm -f $(HOME)/.cache/backend-wake.need
+	pkill -f "ssh.*-L 8000" 2>/dev/null || true
+	pkill -f "vite.*5173" 2>/dev/null || true
+	pkill -f "ngrok http" 2>/dev/null || true
+
+hpc-slurm-status:
+	@echo "== hpc-slurm status =="
+	@curl -s http://localhost:8000/api/health 2>&1 | grep -q '"status":"ok"' && echo "backend: UP (via tunnel)" || echo "backend: DOWN"
+	@if [ -f $(HOME)/.cache/backend-slurm.jobid ]; then squeue -j $$(cat $(HOME)/.cache/backend-slurm.jobid) 2>&1 | head -5; else echo "backend job: none"; fi
+	@ss -tlnp 2>/dev/null | grep -q ":5173" && echo "frontend: UP (5173)" || echo "frontend: DOWN"
+	@curl -s http://127.0.0.1:4040/api/tunnels 2>/dev/null | grep -q public_url && echo "ngrok: UP" || echo "ngrok: DOWN"
+
+hpc-slurm-clean:
 	rm -rf data/analysis.db data/analysis.db-shm data/analysis.db-wal
 	rm -rf frontend/node_modules frontend/.svelte-kit
 
@@ -203,11 +249,11 @@ ngrok-stop:
 ngrok-status:
 	@if [ -n "$(NGROK_URL)" ]; then echo "ngrok: $(NGROK_URL)"; else echo "ngrok: DOWN"; fi
 
-status: local-status hpc-status docker-status
+status: local-status hpc-status hpc-slurm-status docker-status
 	@echo "All status checked"
 
-stop: local-stop hpc-stop docker-stop ngrok-stop
+stop: local-stop hpc-stop hpc-slurm-stop docker-stop ngrok-stop
 	@echo "All stopped"
 
-clean: local-clean hpc-clean docker-clean
+clean: local-clean hpc-clean hpc-slurm-clean docker-clean
 	rm -rf frontend/node_modules frontend/.svelte-kit

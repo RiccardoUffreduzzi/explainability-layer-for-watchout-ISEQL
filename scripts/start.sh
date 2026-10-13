@@ -1,18 +1,19 @@
 #!/usr/bin/env bash
-# scripts/start.sh - unified runner (PROFILE=local|hpc|docker)
+# scripts/start.sh - unified runner (PROFILE=local|hpc|hpc-slurm|docker|mac)
 # local: auto-detects conda (anaconda3/miniconda3, or installs Miniconda3),
 #        ensures conda py310 + ffmpeg, runs backend via pipenv.
-# hpc:   backend on the GPU node (SSH tunnel), frontend on the login node.
-# Usage: make {local,hpc} or PROFILE=local bash scripts/start.sh backend
+# hpc:      backend on the GPU node via direct SSH (SSH tunnel), frontend on the login node.
+# hpc-slurm: backend via Slurm sbatch (cuda partition), frontend on the login node.
+# Usage: make {local,hpc,hpc-slurm} or PROFILE=local bash scripts/start.sh backend
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/.." && pwd)"
 
 PROFILE="${PROFILE:-}"
 case "$PROFILE" in
-  local|hpc|docker|mac) ;;
-  "") echo "ERROR: PROFILE not set (use local|hpc|docker|mac)" >&2; exit 2 ;;
-  *) echo "ERROR: invalid PROFILE='$PROFILE' (use local|hpc|docker|mac)" >&2; exit 2 ;;
+  local|hpc|hpc-slurm|docker|mac) ;;
+  "") echo "ERROR: PROFILE not set (use local|hpc|hpc-slurm|docker|mac)" >&2; exit 2 ;;
+  *) echo "ERROR: invalid PROFILE='$PROFILE' (use local|hpc|hpc-slurm|docker|mac)" >&2; exit 2 ;;
 esac
 
 MODE="${1:-all}"
@@ -23,6 +24,11 @@ esac
 
 BACKEND_JOBID_FILE="${BACKEND_JOBID_FILE:-$HOME/.cache/backend-slurm.jobid}"
 BACKEND_SLURM="${BACKEND_SLURM:-$HERE/backend.slurm}"
+
+# Direct-SSH target for PROFILE=hpc (flexible fallback when Slurm is broken).
+# Defaults to compute-0-3 so `make hpc` works with zero config; override with
+# BACKEND_HOST=<node> for other GPU nodes.
+REMOTE_GPU="${BACKEND_HOST:-compute-0-3}"
 
 # ---- conda bootstrap -------------------------------------------------------
 CONDA_BASE=""
@@ -111,6 +117,7 @@ slice_up() {
 # is up -- else it flags demand and holds/503s while the job wakes.
 UPSTREAM_PORT=8001
 NEED_FILE="$HOME/.cache/backend-wake.need"
+SUPERVISE_PID_FILE="$HOME/.cache/backend-supervise.pid"
 PROXY_MARK="backend-wake-proxy"
 PROXY_LOG="$HOME/.cache/backend-proxy.log"
 # Seconds a first connection waits for the GPU job before getting 503+Retry.
@@ -138,8 +145,6 @@ proxy_up() {
 import socket, threading, sys, os, time
 LPORT, UPORT, NEED = int(sys.argv[1]), int(sys.argv[2]), sys.argv[3]
 HOLD = int(os.environ.get("WAKE_HOLD_SECS", "180"))
-lock = threading.Lock()
-waking = False
 def upstream_ok():
     try:
         s = socket.create_connection(("127.0.0.1", UPORT), timeout=3)
@@ -148,18 +153,30 @@ def upstream_ok():
     except OSError:
         return False
 def handle(c):
-    global waking
     try:
         if not upstream_ok():
-            with lock:
-                if not waking:
-                    waking = True
-                    open(NEED, "a").close()
-            t0 = time.time()
-            while time.time() - t0 < HOLD:
-                if upstream_ok():
-                    break
-                time.sleep(2)
+            # Level-triggered demand: touch on EVERY connection while down,
+            # so a wake-up can never be lost no matter who consumed the flag.
+            # (Health polls count as demand too -- an open frontend means a user.)
+            open(NEED, "a").close()
+            try:
+                c.settimeout(3)
+                head = c.recv(4096, socket.MSG_PEEK)
+            except OSError:
+                head = b""
+            finally:
+                try:
+                    c.settimeout(None)
+                except OSError:
+                    pass
+            # Real API calls hold for the wake; health polls fail fast so
+            # waiting UIs keep polling instead of hanging.
+            if b"/api/health" not in head:
+                t0 = time.time()
+                while time.time() - t0 < HOLD:
+                    if upstream_ok():
+                        break
+                    time.sleep(2)
             if not upstream_ok():
                 try:
                     c.sendall(b"HTTP/1.1 503 Service Unavailable\r\nRetry-After: 30\r\nContent-Length: 20\r\nConnection: close\r\n\r\nwaking gpu job...\n")
@@ -170,8 +187,6 @@ def handle(c):
                 except OSError:
                     pass
                 return
-            with lock:
-                waking = False
         u = socket.create_connection(("127.0.0.1", UPORT), timeout=10)
         def fwd(a, b):
             try:
@@ -213,6 +228,30 @@ proxy_down() {
   pkill -f "$PROXY_MARK" 2>/dev/null || true
   rm -f "$HOME/.cache/backend-proxy.pid"
 }
+# Mutual idempotency: `hpc` and `hpc-slurm` share local :8000 (and possibly the
+# same GPU node remote :8000), so starting one must stop the other's backend
+# side first. Frontend (:5173) is shared and left alone.
+stop_slurm_side() {
+  echo ">> [backend] stopping any hpc-slurm side (proxy/job/tunnel)..."
+  if [ -f "$SUPERVISE_PID_FILE" ]; then
+    _spid=$(cat "$SUPERVISE_PID_FILE" 2>/dev/null || true)
+    if [ -n "$_spid" ] && [ "$_spid" != "$$" ]; then kill "$_spid" 2>/dev/null || true; fi
+    rm -f "$SUPERVISE_PID_FILE"
+  fi
+  proxy_down 2>/dev/null || true
+  pkill -f "ssh.*-L $UPSTREAM_PORT:localhost:8000" 2>/dev/null || true
+  local _jid
+  _jid=$(hpc_job_id || true)
+  if [ -n "$_jid" ]; then scancel "$_jid" 2>/dev/null || true; rm -f "$BACKEND_JOBID_FILE"; echo ">> [backend] Slurm job $_jid cancelled"; fi
+  rm -f "$NEED_FILE"
+}
+stop_ssh_side() {
+  echo ">> [backend] stopping any hpc (direct-SSH) side (tunnel/remote uvicorn)..."
+  pkill -f "ssh.*-L 8000:localhost:8000" 2>/dev/null || true
+  ssh -o BatchMode=yes -o ConnectTimeout=5 "$REMOTE_GPU" "pkill -f 'uvicorn.*8000' 2>/dev/null || true" 2>/dev/null || true
+  pkill -f "uvicorn.*8000" 2>/dev/null || true
+  sleep 1
+}
 # Non-health API hits in a uvicorn stdout log (health probes excluded so the
 # watch itself never counts as activity).
 backend_traffic() {
@@ -226,7 +265,7 @@ backend_traffic() {
 # (any live user re-creates NEED via the :8000 proxy); live-but-idle job is
 # released after IDLE_STOP_MINS. Runs forever until killed by the trap.
 backend_supervise() {
-  local interval=60 idle_secs idle_since now cur last log jid st
+  local interval=15 idle_secs idle_since now cur last log jid st
   idle_secs=$(( ${IDLE_STOP_MINS:-30} * 60 ))
   idle_since=$(date +%s)
   jid=$(hpc_job_id || true)
@@ -234,9 +273,12 @@ backend_supervise() {
   while true; do
     sleep "$interval"
     if [ -f "$NEED_FILE" ]; then
-      rm -f "$NEED_FILE"
       echo ">> [backend] wake requested -- ensuring job..."
-      backend_ensure || true
+      if backend_ensure; then
+        rm -f "$NEED_FILE"
+      else
+        echo ">> [backend] ensure failed -- keeping demand, retry in 60s..."
+      fi
       jid=$(hpc_job_id || true)
       idle_since=$(date +%s)
       last=$(backend_traffic "$ROOT/backend/backend-$jid.out")
@@ -246,6 +288,17 @@ backend_supervise() {
     if [ -z "$jid" ]; then idle_since=$(date +%s); continue; fi
     st=$(squeue -j "$jid" -h -o "%T" 2>/dev/null | head -n 1 || true)
     if [ -z "$st" ]; then idle_since=$(date +%s); continue; fi
+    if [ "$st" = "RUNNING" ]; then
+      if ! pgrep -f "ssh.*-L $UPSTREAM_PORT:localhost:8000" >/dev/null 2>&1 \
+        || ! curl -s --max-time 5 http://127.0.0.1:$UPSTREAM_PORT/api/health 2>/dev/null | grep -q '"status":"ok"'; then
+        _node=$(hpc_job_node || true)
+        if [ -n "$_node" ]; then
+          echo ">> [backend] tunnel down, re-dialing $_node..."
+          pkill -f "ssh.*-L $UPSTREAM_PORT:localhost:8000" 2>/dev/null || true
+          ssh -o BatchMode=yes -f -N -L $UPSTREAM_PORT:localhost:8000 "$_node" 2>/dev/null || true
+        fi
+      fi
+    fi
     if [ "$idle_secs" -le 0 ]; then continue; fi
     log="$ROOT/backend/backend-$jid.out"
     cur=$(backend_traffic "$log")
@@ -263,13 +316,17 @@ backend_supervise() {
 
 cleanup() {
   trap - INT TERM EXIT
-  if [[ "$PROFILE" == "hpc" ]]; then
+  if [[ "$PROFILE" == "hpc-slurm" ]]; then
     [[ -n "${TUNNEL_PID:-}" ]] && kill -0 "$TUNNEL_PID" 2>/dev/null && kill "$TUNNEL_PID" 2>/dev/null || true
     [[ -n "${SUPERVISE_PID:-}" ]] && kill -0 "$SUPERVISE_PID" 2>/dev/null && kill "$SUPERVISE_PID" 2>/dev/null || true
+    rm -f "$SUPERVISE_PID_FILE"
     proxy_down 2>/dev/null || true
     local _jid
     _jid=$(hpc_job_id || true)
     if [ -n "$_jid" ]; then scancel "$_jid" 2>/dev/null || true; rm -f "$BACKEND_JOBID_FILE"; fi
+  elif [[ "$PROFILE" == "hpc" ]]; then
+    [[ -n "${TUNNEL_PID:-}" ]] && kill -0 "$TUNNEL_PID" 2>/dev/null && kill "$TUNNEL_PID" 2>/dev/null || true
+    ssh -o BatchMode=yes "$REMOTE_GPU" "pkill -f 'uvicorn.*8000' 2>/dev/null || true" 2>/dev/null || true
   else
     [[ -n "${BACK_PID:-}" ]] && kill -0 "$BACK_PID" 2>/dev/null && kill "$BACK_PID" 2>/dev/null || true
   fi
@@ -304,6 +361,10 @@ backend_ensure() {
       _jid=$(sbatch --parsable --gres="$E_GRES" --mem="$E_MEM" --export=ALL,OLLAMA_BASE_URL="$_ollama_url" "$BACKEND_SLURM" 2>&1 | tail -n 1)
     else
       _jid=$(sbatch --parsable --gres="$E_GRES" --mem="$E_MEM" "$BACKEND_SLURM" 2>&1 | tail -n 1)
+    fi
+    if ! [[ "$_jid" =~ ^[0-9]+$ ]]; then
+      echo ">> [backend] sbatch failed: $_jid" >&2
+      return 1
     fi
     echo "$_jid" > "$BACKEND_JOBID_FILE"
     echo ">> [backend] job $_jid submitted"
@@ -373,6 +434,27 @@ backend_ensure() {
 run_backend() {
   case "$PROFILE" in
     hpc)
+      stop_slurm_side
+      ensure_ffmpeg
+      cd "$ROOT/backend"
+      echo ">> [backend] installing deps if needed..."
+      pipenv sync --dev --quiet 2>/dev/null || true
+      echo ">> [backend] starting on $REMOTE_GPU..."
+      # clear any stale tunnel + remote backend left by a previous run (ssh -f
+      # double-forks and can survive Ctrl-C), otherwise :8000 is held or points
+      # at a dead backend -> ECONNRESET from the vite proxy.
+      pkill -f "ssh.*-L 8000:localhost:8000" 2>/dev/null || true
+      ssh -o BatchMode=yes "$REMOTE_GPU" "pkill -f 'uvicorn.*8000' 2>/dev/null; sleep 1" 2>/dev/null || true
+      sleep 1
+      ssh -o BatchMode=yes -f -N -L 8000:localhost:8000 "$REMOTE_GPU" 2>/dev/null || true
+      TUNNEL_PID=$(pgrep -f "ssh.*-L 8000:localhost:8000.*$REMOTE_GPU" | tail -1 || true)
+      REMOTE_ENV="$CONDA_BASE/envs/py310"
+      ssh -o BatchMode=yes "$REMOTE_GPU" "cd $ROOT/backend && PATH=$REMOTE_ENV/bin:\$PATH LD_LIBRARY_PATH=$REMOTE_ENV/lib:\${LD_LIBRARY_PATH:-} PROFILE=hpc PYTHONPATH=src pipenv run uvicorn start_application:StartApplication --host 0.0.0.0 --port 8000 --reload" &
+      sleep 3
+      curl -s --max-time 5 http://127.0.0.1:8000/api/health >/dev/null 2>&1 && echo ">> [backend] remote ready" || echo ">> [backend] remote starting..."
+      ;;
+    hpc-slurm)
+      stop_ssh_side
       ensure_ffmpeg
       cd "$ROOT/backend"
       echo ">> [backend] installing deps if needed..."
@@ -389,6 +471,7 @@ run_backend() {
       if [ "${IDLE_STOP_MINS:-30}" != "0" ]; then
         backend_supervise &
         SUPERVISE_PID=$!
+        echo "$SUPERVISE_PID" > "$SUPERVISE_PID_FILE"
         echo ">> [backend] supervise armed (wake-on-demand + ${IDLE_STOP_MINS:-30}m idle-release, pid $SUPERVISE_PID; 0 disables)"
       fi
       ;;
@@ -445,7 +528,9 @@ case "$MODE" in
     ;;
   *)
     if [[ "$PROFILE" == "hpc" ]]; then
-      echo ">> Starting WATCHOUT ISEQL (hpc)"; echo "   Backend  -> http://localhost:8000 (via Slurm job $(hpc_job_id || echo pending))"; echo "   Frontend -> http://localhost:5173"
+      echo ">> Starting WATCHOUT ISEQL (hpc)"; echo "   Backend  -> http://localhost:8000 (via $REMOTE_GPU:8000)"; echo "   Frontend -> http://localhost:5173"
+    elif [[ "$PROFILE" == "hpc-slurm" ]]; then
+      echo ">> Starting WATCHOUT ISEQL (hpc-slurm)"; echo "   Backend  -> http://localhost:8000 (via Slurm job $(hpc_job_id || echo pending))"; echo "   Frontend -> http://localhost:5173"
     else
       echo ">> Starting WATCHOUT ISEQL (local)"; echo "   Backend  -> http://localhost:8000 (conda py310 + pipenv)"; echo "   Frontend -> http://localhost:5173"
     fi
