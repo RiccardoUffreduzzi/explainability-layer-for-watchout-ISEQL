@@ -369,7 +369,13 @@
           busy = false;
           appendLog('failed', `SSE error: ${err.message}`);
           refreshAnalysisList();
-        }
+        },
+        {
+          getStatus: () => api.get<AnalysisStatusResponse>(`/api/analysis/${analysisId}/status`),
+          onReconnect: (attempt) => {
+            appendLog('info', `>>> Stream disconnected, reconnecting... (attempt ${attempt})`);
+          },
+        },
       );
     } catch (e) {
       busy = false;
