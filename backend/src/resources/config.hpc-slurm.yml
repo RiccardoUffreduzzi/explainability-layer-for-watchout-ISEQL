@@ -1,0 +1,8 @@
+vlm:
+  ollama_base_url: http://localhost:11434
+  timeout: 60
+
+gpu:
+  devices: auto
+  max_memory_fraction: 0.9
+  vram_safety_factor: 1.3
