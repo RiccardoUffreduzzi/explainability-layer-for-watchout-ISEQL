@@ -13,7 +13,8 @@ XAI_DIR = Path(__file__).resolve().parents[1]
 BACKEND_DIR = XAI_DIR.parent
 WATCHOUT_SRC_DIR = BACKEND_DIR / "src"
 EXAMPLES_DIR = XAI_DIR / "tests" / "data"
-EXAMPLE_PATHS = sorted(EXAMPLES_DIR.glob("*.bozza.json"))
+# By name: Windows paths sort case-insensitively, POSIX ones do not.
+EXAMPLE_PATHS = sorted(EXAMPLES_DIR.glob("*.bozza.json"), key=lambda p: p.name)
 
 
 def load_example(path: Path) -> dict[str, Any]:

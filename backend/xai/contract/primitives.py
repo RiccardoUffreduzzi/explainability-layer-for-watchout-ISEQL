@@ -243,4 +243,3 @@ class Anchor(ContractModel):
         if None in read:
             raise ValueError(f"read_as={self.read_as!r} but that pair is not complete")
         return self
-    
