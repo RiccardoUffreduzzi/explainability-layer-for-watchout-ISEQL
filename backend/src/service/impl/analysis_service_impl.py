@@ -14,6 +14,7 @@ from fastapi import HTTPException
 
 from models.analysis import AnalysisStage, RunState
 from service.analysis_service import AnalysisService
+from service.post_analysis_hook import notify_analysis_done
 from utils.api_logger import get_logger
 from utils.config import Config
 from utils.database import setup_database, setup_scratch_database, commit_with_retry
@@ -831,6 +832,8 @@ class AnalysisServiceImpl(AnalysisService):
                     self._get_gpu_allocator(cfg).release(lease_token)
                 except Exception:
                     pass
+            if run.stage == AnalysisStage.DONE:
+                notify_analysis_done(run.id, cfg)
             sentinel = SENTINEL_RUN_FAILED if run.stage == AnalysisStage.FAILED else SENTINEL_RUN_DONE
             loop.run_until_complete(run.log_queue.put(make_log_entry(run.stage.value, sentinel)))
             loop.close()

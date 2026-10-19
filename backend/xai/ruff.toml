@@ -1,0 +1,17 @@
+target-version = "py310"
+line-length = 110
+
+[lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF", "N"]
+# Exception names without the "Error" suffix (HarvestFailure) are deliberate.
+ignore = ["N818"]
+# Greek letters (δ ε ζ η ρ σ π), Λ and set symbols are part of the ISEQL+ notation.
+allowed-confusables = ["ε", "ζ", "η", "ρ", "σ", "Λ", "∪", "∩", "−"]
+
+[lint.per-file-ignores]
+# pydantic needs typing.Union where a union contains Literal types or forward references.
+"contract/model.py" = ["UP007"]
+"contract/primitives.py" = ["UP007"]
+
+[lint.isort]
+known-first-party = ["xai"]

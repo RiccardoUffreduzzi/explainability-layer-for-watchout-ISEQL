@@ -1,0 +1,710 @@
+{
+  "$comment": "Caso golden, prodotto da K1 sul database di test (tests/support.py, build_fixture_db) come lo produce il batch di fine analisi: parametri di default della regola. Intervalli, partecipanti e riga sono reali (DB di ablation, scena 21); la regola è quella del seed. Il DB di ablation non ha la riga Analyses: SamplingRate=24, AudioWindow/AudioHop e provider sono ipotizzati. In produzione, senza la riga Analyses, K1 si ferma con ANALYSIS_NOT_FOUND. I testi della bozza sono in inglese.",
+  "contract_meta": {
+    "contract_version": "0.1.0-k1",
+    "analysis_id": "gemini_3_6_flash_qwen2_audio_s21",
+    "source_snapshot": {
+      "backend_version": "WATCHOUT ISEQL 0.1.0",
+      "extracted_at": "2026-10-06T20:00:00Z",
+      "sources": {
+        "backend_version": {
+          "stage": "code",
+          "store": "backend/src/__init__.py",
+          "record_id": "__app_name__, __version__",
+          "mode": "read"
+        }
+      }
+    },
+    "pipeline_config": {
+      "vlm_backend": "gemini / gemini-3.6-flash",
+      "audio_backend": "huggingface / qwen2_audio",
+      "sampling": {
+        "source_fps": 24,
+        "sample_every_n": 24,
+        "effective_hz": 1.0
+      },
+      "audio_window": {
+        "window_s": 5.0,
+        "hop_s": 2.5
+      },
+      "merge_tolerance_s": 2.0,
+      "determinism": {
+        "temperature": 0.0,
+        "seed": 42
+      },
+      "detection_mode": "visual",
+      "sources": {
+        "vlm_backend": {
+          "stage": "config",
+          "store": "Analyses:gemini_3_6_flash_qwen2_audio_s21",
+          "record_id": "VLMProvider,Model",
+          "mode": "read"
+        },
+        "audio_backend": {
+          "stage": "config",
+          "store": "Analyses:gemini_3_6_flash_qwen2_audio_s21",
+          "record_id": "AudioProvider,AudioModel",
+          "mode": "read"
+        },
+        "sampling.source_fps": {
+          "stage": "config",
+          "store": "Analyses:gemini_3_6_flash_qwen2_audio_s21",
+          "record_id": "SamplingRate",
+          "mode": "read"
+        },
+        "sampling.sample_every_n": {
+          "stage": "code",
+          "store": "backend/src/service/impl/visual_service_impl.py",
+          "record_id": "frame_count % sampling_rate",
+          "mode": "read"
+        },
+        "sampling.effective_hz": {
+          "derived_from": [
+            "sampling.source_fps",
+            "sampling.sample_every_n"
+          ]
+        },
+        "audio_window": {
+          "stage": "config",
+          "store": "Analyses:gemini_3_6_flash_qwen2_audio_s21",
+          "record_id": "AudioWindow,AudioHop",
+          "mode": "read"
+        },
+        "merge_tolerance_s": {
+          "stage": "code",
+          "store": "backend/xai/resources/pipeline_constants.yaml",
+          "record_id": "merge_tolerance",
+          "mode": "read"
+        },
+        "determinism": {
+          "stage": "code",
+          "store": "backend/src/utils/vlm_client.py",
+          "record_id": "VLMClient.__init__: temperature and seed defaults",
+          "mode": "read"
+        },
+        "detection_mode": {
+          "from_request": "condition",
+          "value": "A"
+        }
+      }
+    },
+    "glossary_version": "glossary.yaml@0.1.0#73fdaf8c187c+relation_vocab@2026-08-30 16:51:22",
+    "params_origin": "rule_defaults",
+    "sources": {
+      "glossary_version": {
+        "stage": "config",
+        "store": "AppConfig",
+        "record_id": "relation_vocab.updated_at",
+        "mode": "read"
+      },
+      "params_origin": {
+        "stage": "iseql",
+        "store": "EventSpec",
+        "record_id": "handoff/A#/iseql_text",
+        "mode": "read"
+      }
+    }
+  },
+  "event": {
+    "event_id": "ev_beffcb6f2a6e",
+    "model_id": "handoff/A",
+    "label": "handoff",
+    "modality_origin": "visual",
+    "interval": {
+      "start_frame": 24,
+      "end_frame": 192,
+      "start_s": 1.0,
+      "end_s": 8.0,
+      "read_as": "seconds"
+    },
+    "arguments": [
+      {
+        "role": "M1.arg1",
+        "class": "person",
+        "entity_id": "ent_3",
+        "column": "M1_person"
+      },
+      {
+        "role": "M2.arg1",
+        "class": "person",
+        "entity_id": "ent_5",
+        "column": "M2_person"
+      },
+      {
+        "role": "M1.arg2",
+        "class": "object",
+        "entity_id": "ent_4",
+        "column": "M1_object"
+      }
+    ],
+    "modality_rules": {
+      "visual": {
+        "rule_ref": "handoff/A"
+      },
+      "audio": null
+    },
+    "modality_detections": [
+      {
+        "modality": "visual",
+        "interval": {
+          "start_frame": 24,
+          "end_frame": 192,
+          "start_s": 1.0,
+          "end_s": 8.0,
+          "read_as": "seconds"
+        },
+        "source_ref": {
+          "stage": "iseql",
+          "store": "detection:handoff/A@gemini_3_6_flash_qwen2_audio_s21",
+          "record_id": "{\"M1.st\":1.0,\"M1_object\":4,\"M1_person\":3,\"M2.et\":8.0,\"M2_person\":5}",
+          "mode": "read"
+        }
+      }
+    ],
+    "source_ref": {
+      "stage": "iseql",
+      "store": "detection:handoff/A@gemini_3_6_flash_qwen2_audio_s21",
+      "record_id": "{\"M1.st\":1.0,\"M1_object\":4,\"M1_person\":3,\"M2.et\":8.0,\"M2_person\":5}",
+      "mode": "read"
+    },
+    "unavailable": {
+      "modality_rules.audio": {
+        "reason": "modality_rule_absent",
+        "detail": "EventSpec has no handoff/B"
+      }
+    }
+  },
+  "rule": {
+    "expression": "π_{M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et} (\n  σ_{M1.arg1≠M2.arg1 ∧ M1.arg2=M2.arg2} (\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M1)\n    Bef(δ:∞; ζ:<=, ρ:0)\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M2)\n  ))",
+    "expression_saved": "π_{M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et} (\n  σ_{M1.arg1≠M2.arg1 ∧ M1.arg2=M2.arg2} (\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M1)\n    Bef(δ:∞; ζ:<=, ρ:0)\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M2)\n  ))",
+    "structure_ref": {
+      "stage": "iseql",
+      "store": "EventSpec",
+      "record_id": "handoff/A",
+      "mode": "read"
+    },
+    "model_form": "F2",
+    "projection": [
+      "M1.arg1",
+      "M2.arg1",
+      "M1.arg2",
+      "M1.st",
+      "M2.et"
+    ],
+    "bindings": null,
+    "constraints": [
+      {
+        "constraint_id": "c_s1_proj",
+        "branch": "s1",
+        "modality": "visual",
+        "variables": [
+          "M1",
+          "M2"
+        ],
+        "parent": null,
+        "text": "π_{M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et}",
+        "source_ref": {
+          "stage": "iseql",
+          "store": "EventSpec",
+          "record_id": "handoff/A#/set_expression/projection",
+          "mode": "read"
+        },
+        "kind": "projection",
+        "payload": {
+          "fields": [
+            "M1.arg1",
+            "M2.arg1",
+            "M1.arg2",
+            "M1.st",
+            "M2.et"
+          ]
+        }
+      },
+      {
+        "constraint_id": "c_s1_cc1",
+        "branch": "s1",
+        "modality": "visual",
+        "variables": [
+          "M1",
+          "M2"
+        ],
+        "parent": "c_s1_proj",
+        "text": "M1.arg1≠M2.arg1",
+        "source_ref": {
+          "stage": "iseql",
+          "store": "EventSpec",
+          "record_id": "handoff/A#/cross_conditions/0",
+          "mode": "read"
+        },
+        "kind": "identity",
+        "payload": {
+          "left": "M1.arg1",
+          "op": "≠",
+          "right": "M2.arg1"
+        }
+      },
+      {
+        "constraint_id": "c_s1_cc2",
+        "branch": "s1",
+        "modality": "visual",
+        "variables": [
+          "M1",
+          "M2"
+        ],
+        "parent": "c_s1_proj",
+        "text": "M1.arg2=M2.arg2",
+        "source_ref": {
+          "stage": "iseql",
+          "store": "EventSpec",
+          "record_id": "handoff/A#/cross_conditions/1",
+          "mode": "read"
+        },
+        "kind": "identity",
+        "payload": {
+          "left": "M1.arg2",
+          "op": "=",
+          "right": "M2.arg2"
+        }
+      },
+      {
+        "constraint_id": "c_s1_op1",
+        "branch": "s1",
+        "modality": "visual",
+        "variables": [
+          "M1",
+          "M2"
+        ],
+        "parent": "c_s1_proj",
+        "text": "Bef(δ:∞; ζ:<=, ρ:0)",
+        "source_ref": {
+          "stage": "iseql",
+          "store": "EventSpec",
+          "record_id": "handoff/A#/delta_map/s1.0",
+          "mode": "read"
+        },
+        "kind": "temporal_operator",
+        "payload": {
+          "name": "Bef",
+          "resolution": "geometry",
+          "resolution_detail": "detect_operator on template ts/te [0,100] and [100,200]",
+          "params": [
+            {
+              "name": "δ",
+              "raw": "delta_visual_handoff",
+              "value": "inf",
+              "unit": "seconds",
+              "engine_value": "inf",
+              "compare_domain": "seconds",
+              "origin": "named_key",
+              "source_ref": {
+                "stage": "iseql",
+                "store": "EventSpec",
+                "record_id": "handoff/A#/iseql_text",
+                "mode": "read"
+              }
+            },
+            {
+              "name": "ζ",
+              "raw": "zeta_visual_handoff",
+              "value": "<=",
+              "engine_value": "<=",
+              "compare_domain": "seconds",
+              "origin": "named_key",
+              "source_ref": {
+                "stage": "iseql",
+                "store": "EventSpec",
+                "record_id": "handoff/A#/iseql_text",
+                "mode": "read"
+              }
+            },
+            {
+              "name": "ρ",
+              "raw": "rho_visual_handoff",
+              "value": 0,
+              "unit": "seconds",
+              "engine_value": 0,
+              "compare_domain": "seconds",
+              "origin": "named_key",
+              "source_ref": {
+                "stage": "iseql",
+                "store": "EventSpec",
+                "record_id": "handoff/A#/iseql_text",
+                "mode": "read"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "constraint_id": "c_s1_sel1",
+        "branch": "s1",
+        "modality": "visual",
+        "variables": [
+          "M1"
+        ],
+        "parent": "c_s1_proj",
+        "text": "σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M1)",
+        "source_ref": {
+          "stage": "iseql",
+          "store": "EventSpec",
+          "record_id": "handoff/A#/intervals/0",
+          "mode": "read"
+        },
+        "kind": "selection",
+        "payload": {
+          "branches": [
+            {
+              "predicates": [
+                "carrying"
+              ],
+              "arg_classes": {
+                "1": [
+                  "person"
+                ],
+                "2": [
+                  "object"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "constraint_id": "c_s1_sel2",
+        "branch": "s1",
+        "modality": "visual",
+        "variables": [
+          "M2"
+        ],
+        "parent": "c_s1_proj",
+        "text": "σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M2)",
+        "source_ref": {
+          "stage": "iseql",
+          "store": "EventSpec",
+          "record_id": "handoff/A#/intervals/1",
+          "mode": "read"
+        },
+        "kind": "selection",
+        "payload": {
+          "branches": [
+            {
+              "predicates": [
+                "carrying"
+              ],
+              "arg_classes": {
+                "1": [
+                  "person"
+                ],
+                "2": [
+                  "object"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "unavailable": {
+      "bindings": {
+        "reason": "lineage_not_persisted",
+        "detail": "WatchOut's SQL projects ClassID and times, not RelationID (iseql/compiler.py)"
+      }
+    }
+  },
+  "entities": [
+    {
+      "entity_id": "ent_3",
+      "class": "person",
+      "reid_evidence": {
+        "status": "not_available",
+        "gallery_match_id": null,
+        "similarity": null
+      },
+      "source_ref": {
+        "stage": "reid",
+        "store": "VisualParticipant",
+        "record_id": "59:3",
+        "mode": "read"
+      },
+      "unavailable": {
+        "reid_evidence": {
+          "reason": "reid_similarity_not_persisted",
+          "detail": "Chroma stores the embeddings, not the match similarity"
+        }
+      }
+    },
+    {
+      "entity_id": "ent_4",
+      "class": "object",
+      "reid_evidence": {
+        "status": "not_available",
+        "gallery_match_id": null,
+        "similarity": null
+      },
+      "source_ref": {
+        "stage": "reid",
+        "store": "VisualParticipant",
+        "record_id": "59:4",
+        "mode": "read"
+      },
+      "unavailable": {
+        "reid_evidence": {
+          "reason": "reid_similarity_not_persisted",
+          "detail": "Chroma stores the embeddings, not the match similarity"
+        }
+      }
+    },
+    {
+      "entity_id": "ent_5",
+      "class": "person",
+      "reid_evidence": {
+        "status": "not_available",
+        "gallery_match_id": null,
+        "similarity": null
+      },
+      "source_ref": {
+        "stage": "reid",
+        "store": "VisualParticipant",
+        "record_id": "60:5",
+        "mode": "read"
+      },
+      "unavailable": {
+        "reid_evidence": {
+          "reason": "reid_similarity_not_persisted",
+          "detail": "Chroma stores the embeddings, not the match similarity"
+        }
+      }
+    }
+  ],
+  "intervals": [
+    {
+      "interval_id": "iv_v59",
+      "source": "VisualPerInterval",
+      "predicate": "carrying",
+      "args": [
+        "ent_3",
+        "ent_4"
+      ],
+      "args_ordered": true,
+      "anchor": {
+        "start_frame": 24,
+        "end_frame": 96,
+        "start_s": 1.0,
+        "end_s": 4.0,
+        "read_as": "frames"
+      },
+      "used_by_rule": null,
+      "confidence": null,
+      "source_ref": {
+        "stage": "iad",
+        "store": "VisualPerInterval",
+        "record_id": "59",
+        "mode": "read"
+      },
+      "sources": {
+        "args": {
+          "stage": "reid",
+          "store": "VisualParticipant",
+          "record_id": "59:3,59:4",
+          "mode": "read"
+        },
+        "args_order": {
+          "stage": "config",
+          "store": "AppConfig",
+          "record_id": "relation_vocab.relation_classids[carrying] = (PersonID, ObjectID)",
+          "mode": "read"
+        }
+      },
+      "unavailable": {
+        "used_by_rule": {
+          "reason": "lineage_not_persisted",
+          "detail": "WatchOut's SQL projects ClassID and times, not RelationID (iseql/compiler.py)"
+        },
+        "confidence": {
+          "reason": "visual_confidence_not_recorded",
+          "detail": "VisualPerInterval has no confidence column"
+        }
+      }
+    },
+    {
+      "interval_id": "iv_v60",
+      "source": "VisualPerInterval",
+      "predicate": "carrying",
+      "args": [
+        "ent_5",
+        "ent_4"
+      ],
+      "args_ordered": true,
+      "anchor": {
+        "start_frame": 120,
+        "end_frame": 192,
+        "start_s": 5.0,
+        "end_s": 8.0,
+        "read_as": "frames"
+      },
+      "used_by_rule": null,
+      "confidence": null,
+      "source_ref": {
+        "stage": "iad",
+        "store": "VisualPerInterval",
+        "record_id": "60",
+        "mode": "read"
+      },
+      "sources": {
+        "args": {
+          "stage": "reid",
+          "store": "VisualParticipant",
+          "record_id": "60:4,60:5",
+          "mode": "read"
+        },
+        "args_order": {
+          "stage": "config",
+          "store": "AppConfig",
+          "record_id": "relation_vocab.relation_classids[carrying] = (PersonID, ObjectID)",
+          "mode": "read"
+        }
+      },
+      "unavailable": {
+        "used_by_rule": {
+          "reason": "lineage_not_persisted",
+          "detail": "WatchOut's SQL projects ClassID and times, not RelationID (iseql/compiler.py)"
+        },
+        "confidence": {
+          "reason": "visual_confidence_not_recorded",
+          "detail": "VisualPerInterval has no confidence column"
+        }
+      }
+    }
+  ],
+  "actions": null,
+  "glossary": [
+    {
+      "term_id": "g_event_model_handoff",
+      "kind": "event_model",
+      "term": "handoff",
+      "definition": "One person carrying an object, then another person carrying the same object.",
+      "plain_template": "an object passes from one person to another",
+      "source": "event_author",
+      "source_detail": "backend/xai/resources/glossary.yaml events.handoff, from docs/iseql_event_queries.md"
+    },
+    {
+      "term_id": "g_operator_Bef",
+      "kind": "operator",
+      "term": "Bef",
+      "definition": "r.Te ζ s.Ts, s.Ts − r.Te ≤ δ",
+      "plain_template": "{r} ends before {s} starts",
+      "parameter_readings": [
+        {
+          "condition": "δ = ∞",
+          "phrase": "at any time after"
+        },
+        {
+          "condition": "δ = d",
+          "phrase": "within d seconds"
+        }
+      ],
+      "source": {
+        "stage": "code",
+        "store": "backend/xai/resources/glossary.yaml",
+        "record_id": "operators.Bef",
+        "mode": "read"
+      },
+      "source_detail": "iseql/helpers.py iseql_before, with ρ = 0"
+    },
+    {
+      "term_id": "g_predicate_carrying",
+      "kind": "predicate",
+      "term": "carrying",
+      "definition": "The person is holding, carrying, or transporting any object of class 'object' (package, suitcase, bag, backpack). Report for ANY person touching or holding a transportable item, even briefly.",
+      "plain_template": "{arg1} carries {arg2}",
+      "source": {
+        "stage": "config",
+        "store": "AppConfig",
+        "record_id": "relation_vocab.relation_descriptions.carrying",
+        "mode": "read"
+      },
+      "sources": {
+        "plain_template": {
+          "stage": "code",
+          "store": "backend/xai/resources/glossary.yaml",
+          "record_id": "predicates.carrying",
+          "mode": "read"
+        }
+      }
+    }
+  ],
+  "unavailable": {
+    "actions": {
+      "reason": "keyframes_not_persisted",
+      "detail": "this WatchOut version does not store key frames"
+    }
+  },
+  "harvest_report": {
+    "request": {
+      "analysis_id": "gemini_3_6_flash_qwen2_audio_s21",
+      "event_type": "handoff",
+      "condition": "A",
+      "params": "defaults",
+      "row": {
+        "M1_person": 3,
+        "M2_person": 5,
+        "M1_object": 4,
+        "M1.st": 1.0,
+        "M2.et": 8.0
+      }
+    },
+    "row_match": {
+      "rows_returned": 1,
+      "matches": 1,
+      "matched_index": 0
+    },
+    "checks": [
+      {
+        "name": "completeness",
+        "passed": true,
+        "violations": []
+      },
+      {
+        "name": "referential_closure",
+        "passed": true,
+        "violations": []
+      }
+    ],
+    "missing_fields": [
+      {
+        "path": "event.modality_rules.audio",
+        "reason": "modality_rule_absent"
+      },
+      {
+        "path": "rule.bindings",
+        "reason": "lineage_not_persisted"
+      },
+      {
+        "path": "entities[*].reid_evidence",
+        "reason": "reid_similarity_not_persisted"
+      },
+      {
+        "path": "intervals[*].used_by_rule",
+        "reason": "lineage_not_persisted"
+      },
+      {
+        "path": "intervals[*].confidence",
+        "reason": "visual_confidence_not_recorded"
+      },
+      {
+        "path": "actions",
+        "reason": "keyframes_not_persisted"
+      }
+    ],
+    "notes": [
+      {
+        "code": "selection_basis",
+        "detail": "pertinence_filter: predicates of branch s1 {carrying} and intervals with at least one entity of the row {3, 4, 5}"
+      },
+      {
+        "code": "params_unit",
+        "detail": "every operator parameter is passed to the SQL with the value written in the rule"
+      }
+    ]
+  }
+}

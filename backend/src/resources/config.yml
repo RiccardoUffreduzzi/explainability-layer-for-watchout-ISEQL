@@ -26,3 +26,8 @@ gpu:
 
 log:
   path: tmp/log
+
+post_analysis:
+  # Started when an analysis reaches 'done'
+  # {python} is the backend's interpreter, {analysis_id} the analysis. Empty list = disabled.
+  command: ["{python}", "-m", "xai.cli.pipeline", "run", "--analysis", "{analysis_id}"]

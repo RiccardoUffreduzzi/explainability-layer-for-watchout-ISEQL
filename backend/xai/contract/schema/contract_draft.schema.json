@@ -1,0 +1,2230 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:watchout-xai:contract-draft:0.1.0-k1",
+  "$defs": {
+    "Anchor": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "read_as": {
+                "const": "frames"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "start_frame": {
+                "type": "integer"
+              },
+              "end_frame": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "read_as": {
+                "const": "seconds"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "start_s": {
+                "type": "number"
+              },
+              "end_s": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      ],
+      "description": "A time span in frames and in seconds.\n\n``read_as`` says which pair was read from WatchOut; the other pair is converted\nwith the declared fps. When the fps is missing the converted pair is null\nand the containing record says why in its ``unavailable`` map.",
+      "properties": {
+        "start_frame": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "end_frame": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "start_s": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "end_s": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "read_as": {
+          "enum": [
+            "frames",
+            "seconds"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "start_frame",
+        "end_frame",
+        "start_s",
+        "end_s",
+        "read_as"
+      ],
+      "title": "Anchor",
+      "type": "object"
+    },
+    "Argument": {
+      "additionalProperties": false,
+      "properties": {
+        "role": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "class": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "entity_id": {
+          "$ref": "#/$defs/EntityId"
+        },
+        "column": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "class",
+        "entity_id",
+        "column"
+      ],
+      "title": "Argument",
+      "type": "object"
+    },
+    "AttributeComparisonNode": {
+      "additionalProperties": false,
+      "properties": {
+        "constraint_id": {
+          "$ref": "#/$defs/ConstraintId"
+        },
+        "branch": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "modality": {
+          "enum": [
+            "visual",
+            "audio",
+            "mixed"
+          ],
+          "type": "string"
+        },
+        "variables": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConstraintId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "text": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "source_ref": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "unavailable": {
+          "$ref": "#/$defs/UnavailableMap"
+        },
+        "kind": {
+          "const": "attribute_comparison",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/ComparisonPayload"
+        }
+      },
+      "required": [
+        "constraint_id",
+        "branch",
+        "modality",
+        "variables",
+        "parent",
+        "text",
+        "source_ref",
+        "kind",
+        "payload"
+      ],
+      "title": "AttributeComparisonNode",
+      "type": "object"
+    },
+    "AudioWindow": {
+      "additionalProperties": false,
+      "properties": {
+        "window_s": {
+          "type": "number"
+        },
+        "hop_s": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "window_s",
+        "hop_s"
+      ],
+      "title": "AudioWindow",
+      "type": "object"
+    },
+    "Binding": {
+      "additionalProperties": false,
+      "properties": {
+        "variable": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "interval_id": {
+          "$ref": "#/$defs/IntervalId"
+        }
+      },
+      "required": [
+        "variable",
+        "interval_id"
+      ],
+      "title": "Binding",
+      "type": "object"
+    },
+    "CheckName": {
+      "description": "The two closing checks of K1.",
+      "enum": [
+        "completeness",
+        "referential_closure"
+      ],
+      "title": "CheckName",
+      "type": "string"
+    },
+    "CheckResult": {
+      "additionalProperties": false,
+      "else": {
+        "properties": {
+          "violations": {
+            "minItems": 1
+          }
+        }
+      },
+      "if": {
+        "properties": {
+          "passed": {
+            "const": true
+          }
+        }
+      },
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/CheckName"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "violations": {
+          "items": {
+            "$ref": "#/$defs/Violation"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "passed",
+        "violations"
+      ],
+      "then": {
+        "properties": {
+          "violations": {
+            "maxItems": 0
+          }
+        }
+      },
+      "title": "CheckResult",
+      "type": "object"
+    },
+    "ComparisonPayload": {
+      "additionalProperties": false,
+      "description": "``left op right`` between attributes of two variables, e.g. ``M1.arg1 ≠ M2.arg1``.",
+      "properties": {
+        "left": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "op": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "right": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "left",
+        "op",
+        "right"
+      ],
+      "title": "ComparisonPayload",
+      "type": "object"
+    },
+    "ConstraintId": {
+      "description": "ID of a rule node: c_<branch>_proj|sel<n>|op<n>|cc<n>, or c_set<n>.",
+      "pattern": "^c_[A-Za-z0-9_]+$",
+      "type": "string"
+    },
+    "ContractMeta": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "0.1.0-k1",
+          "type": "string"
+        },
+        "analysis_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "source_snapshot": {
+          "$ref": "#/$defs/SourceSnapshot"
+        },
+        "pipeline_config": {
+          "$ref": "#/$defs/PipelineConfig"
+        },
+        "glossary_version": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "params_origin": {
+          "enum": [
+            "rule_defaults",
+            "saved_by_gui"
+          ],
+          "type": "string"
+        },
+        "sources": {
+          "$ref": "#/$defs/SourceMap"
+        },
+        "unavailable": {
+          "$ref": "#/$defs/UnavailableMap"
+        }
+      },
+      "required": [
+        "contract_version",
+        "analysis_id",
+        "source_snapshot",
+        "pipeline_config",
+        "glossary_version",
+        "params_origin"
+      ],
+      "title": "ContractMeta",
+      "type": "object"
+    },
+    "DerivedSource": {
+      "additionalProperties": false,
+      "description": "A value computed from other fields of the same record (e.g. ``effective_hz``).",
+      "properties": {
+        "derived_from": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "derived_from"
+      ],
+      "title": "DerivedSource",
+      "type": "object"
+    },
+    "Determinism": {
+      "additionalProperties": false,
+      "properties": {
+        "temperature": {
+          "type": "number"
+        },
+        "seed": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "temperature",
+        "seed"
+      ],
+      "title": "Determinism",
+      "type": "object"
+    },
+    "DurationNode": {
+      "additionalProperties": false,
+      "properties": {
+        "constraint_id": {
+          "$ref": "#/$defs/ConstraintId"
+        },
+        "branch": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "modality": {
+          "enum": [
+            "visual",
+            "audio",
+            "mixed"
+          ],
+          "type": "string"
+        },
+        "variables": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConstraintId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "text": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "source_ref": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "unavailable": {
+          "$ref": "#/$defs/UnavailableMap"
+        },
+        "kind": {
+          "const": "duration",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/DurationPayload"
+        }
+      },
+      "required": [
+        "constraint_id",
+        "branch",
+        "modality",
+        "variables",
+        "parent",
+        "text",
+        "source_ref",
+        "kind",
+        "payload"
+      ],
+      "title": "DurationNode",
+      "type": "object"
+    },
+    "DurationPayload": {
+      "additionalProperties": false,
+      "description": "``(end − start) op value``.",
+      "properties": {
+        "end": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "start": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "op": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "value": {
+          "type": "number"
+        },
+        "unit": {
+          "enum": [
+            "seconds",
+            "frames"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "end",
+        "start",
+        "op",
+        "value",
+        "unit"
+      ],
+      "title": "DurationPayload",
+      "type": "object"
+    },
+    "Entity": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "$ref": "#/$defs/EntityId"
+        },
+        "class": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "reid_evidence": {
+          "$ref": "#/$defs/ReidEvidence"
+        },
+        "source_ref": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "unavailable": {
+          "$ref": "#/$defs/UnavailableMap"
+        }
+      },
+      "required": [
+        "entity_id",
+        "class",
+        "reid_evidence",
+        "source_ref"
+      ],
+      "title": "Entity",
+      "type": "object"
+    },
+    "EntityId": {
+      "description": "ID of an entity: ent_ + the ClassID of VisualParticipant.",
+      "pattern": "^ent_[0-9]+$",
+      "type": "string"
+    },
+    "EventId": {
+      "description": "ID of the detection: ev_ + 12 hex digits of the request and the row.",
+      "pattern": "^ev_[0-9a-f]{12}$",
+      "type": "string"
+    },
+    "EventRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "event_id": {
+          "$ref": "#/$defs/EventId"
+        },
+        "model_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "modality_origin": {
+          "anyOf": [
+            {
+              "enum": [
+                "visual",
+                "audio",
+                "both"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "origin_basis": {
+          "$ref": "#/$defs/OriginBasis"
+        },
+        "interval": {
+          "$ref": "#/$defs/Anchor"
+        },
+        "arguments": {
+          "items": {
+            "$ref": "#/$defs/Argument"
+          },
+          "type": "array"
+        },
+        "modality_rules": {
+          "$ref": "#/$defs/ModalityRules"
+        },
+        "modality_detections": {
+          "items": {
+            "$ref": "#/$defs/ModalityDetection"
+          },
+          "type": "array"
+        },
+        "source_ref": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "unavailable": {
+          "$ref": "#/$defs/UnavailableMap"
+        }
+      },
+      "required": [
+        "event_id",
+        "model_id",
+        "label",
+        "modality_origin",
+        "interval",
+        "arguments",
+        "modality_rules",
+        "modality_detections",
+        "source_ref"
+      ],
+      "title": "EventRecord",
+      "type": "object"
+    },
+    "GlossaryEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "term_id": {
+          "$ref": "#/$defs/TermId"
+        },
+        "kind": {
+          "enum": [
+            "predicate",
+            "audio_class",
+            "operator",
+            "event_model"
+          ],
+          "type": "string"
+        },
+        "term": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "definition": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "plain_template": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "parameter_readings": {
+          "items": {
+            "$ref": "#/$defs/ParameterReading"
+          },
+          "type": "array"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceRef"
+            },
+            {
+              "const": "event_author",
+              "type": "string"
+            }
+          ]
+        },
+        "source_detail": {
+          "type": "string"
+        },
+        "sources": {
+          "$ref": "#/$defs/SourceMap"
+        },
+        "unavailable": {
+          "$ref": "#/$defs/UnavailableMap"
+        }
+      },
+      "required": [
+        "term_id",
+        "kind",
+        "term",
+        "definition",
+        "plain_template",
+        "source"
+      ],
+      "title": "GlossaryEntry",
+      "type": "object"
+    },
+    "HarvestReport": {
+      "additionalProperties": false,
+      "properties": {
+        "request": {
+          "$ref": "#/$defs/RequestEcho"
+        },
+        "row_match": {
+          "$ref": "#/$defs/RowMatch"
+        },
+        "checks": {
+          "items": {
+            "$ref": "#/$defs/CheckResult"
+          },
+          "type": "array"
+        },
+        "missing_fields": {
+          "items": {
+            "$ref": "#/$defs/MissingField"
+          },
+          "type": "array"
+        },
+        "notes": {
+          "items": {
+            "$ref": "#/$defs/Note"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "request",
+        "row_match",
+        "checks",
+        "missing_fields",
+        "notes"
+      ],
+      "title": "HarvestReport",
+      "type": "object"
+    },
+    "IdentityNode": {
+      "additionalProperties": false,
+      "properties": {
+        "constraint_id": {
+          "$ref": "#/$defs/ConstraintId"
+        },
+        "branch": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "modality": {
+          "enum": [
+            "visual",
+            "audio",
+            "mixed"
+          ],
+          "type": "string"
+        },
+        "variables": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConstraintId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "text": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "source_ref": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "unavailable": {
+          "$ref": "#/$defs/UnavailableMap"
+        },
+        "kind": {
+          "const": "identity",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/ComparisonPayload"
+        }
+      },
+      "required": [
+        "constraint_id",
+        "branch",
+        "modality",
+        "variables",
+        "parent",
+        "text",
+        "source_ref",
+        "kind",
+        "payload"
+      ],
+      "title": "IdentityNode",
+      "type": "object"
+    },
+    "IntervalId": {
+      "description": "ID of an interval: iv_v<VisualPerInterval id> or iv_a<AudioPerInterval id>.",
+      "pattern": "^iv_[va][0-9]+$",
+      "type": "string"
+    },
+    "IntervalRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "interval_id": {
+          "$ref": "#/$defs/IntervalId"
+        },
+        "source": {
+          "enum": [
+            "VisualPerInterval",
+            "AudioPerInterval"
+          ],
+          "type": "string"
+        },
+        "predicate": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "args": {
+          "items": {
+            "$ref": "#/$defs/EntityId"
+          },
+          "type": "array"
+        },
+        "args_ordered": {
+          "type": "boolean"
+        },
+        "anchor": {
+          "$ref": "#/$defs/Anchor"
+        },
+        "used_by_rule": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_ref": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "sources": {
+          "$ref": "#/$defs/SourceMap"
+        },
+        "unavailable": {
+          "$ref": "#/$defs/UnavailableMap"
+        }
+      },
+      "required": [
+        "interval_id",
+        "source",
+        "predicate",
+        "args",
+        "args_ordered",
+        "anchor",
+        "used_by_rule",
+        "confidence",
+        "source_ref"
+      ],
+      "title": "IntervalRecord",
+      "type": "object"
+    },
+    "MissingField": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "reason": {
+          "$ref": "#/$defs/Reason"
+        }
+      },
+      "required": [
+        "path",
+        "reason"
+      ],
+      "title": "MissingField",
+      "type": "object"
+    },
+    "ModalityDetection": {
+      "additionalProperties": false,
+      "description": "A row of Evento_A or Evento_B of the same event type in the same analysis.",
+      "properties": {
+        "modality": {
+          "enum": [
+            "visual",
+            "audio"
+          ],
+          "type": "string"
+        },
+        "interval": {
+          "$ref": "#/$defs/Anchor"
+        },
+        "source_ref": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "unavailable": {
+          "$ref": "#/$defs/UnavailableMap"
+        }
+      },
+      "required": [
+        "modality",
+        "interval",
+        "source_ref"
+      ],
+      "title": "ModalityDetection",
+      "type": "object"
+    },
+    "ModalityRules": {
+      "additionalProperties": false,
+      "description": "The rules of the same event in each modality.",
+      "properties": {
+        "visual": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RuleRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "audio": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RuleRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "visual",
+        "audio"
+      ],
+      "title": "ModalityRules",
+      "type": "object"
+    },
+    "Note": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/NoteCode"
+        },
+        "detail": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "detail"
+      ],
+      "title": "Note",
+      "type": "object"
+    },
+    "NoteCode": {
+      "description": "Facts about how K1 read the data, reported in ``harvest_report.notes``.\n\nK2 may turn a note into a knowledge limit, so the set is closed like the reasons.",
+      "enum": [
+        "selection_basis",
+        "params_unit",
+        "saved_text_diverges_from_structure",
+        "c_labels_by_kind"
+      ],
+      "title": "NoteCode",
+      "type": "string"
+    },
+    "OperatorParam": {
+      "additionalProperties": false,
+      "description": "One parameter of a temporal operator, as written and as used by the engine.",
+      "if": {
+        "properties": {
+          "name": {
+            "enum": [
+              "ζ",
+              "η"
+            ]
+          }
+        }
+      },
+      "properties": {
+        "name": {
+          "enum": [
+            "δ",
+            "ε",
+            "ζ",
+            "η",
+            "ρ"
+          ],
+          "type": "string"
+        },
+        "raw": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "enum": [
+                "inf",
+                "<=",
+                "<",
+                ">=",
+                ">"
+              ],
+              "type": "string"
+            }
+          ]
+        },
+        "unit": {
+          "enum": [
+            "seconds",
+            "frames"
+          ],
+          "type": "string"
+        },
+        "engine_value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "enum": [
+                "inf",
+                "<=",
+                "<",
+                ">=",
+                ">"
+              ],
+              "type": "string"
+            }
+          ]
+        },
+        "compare_domain": {
+          "enum": [
+            "seconds",
+            "frames"
+          ],
+          "type": "string"
+        },
+        "origin": {
+          "enum": [
+            "literal",
+            "named_key",
+            "template_geometry",
+            "engine_default"
+          ],
+          "type": "string"
+        },
+        "source_ref": {
+          "$ref": "#/$defs/SourceRef"
+        }
+      },
+      "required": [
+        "name",
+        "raw",
+        "value",
+        "engine_value",
+        "compare_domain",
+        "origin",
+        "source_ref"
+      ],
+      "then": {
+        "not": {
+          "required": [
+            "unit"
+          ]
+        }
+      },
+      "title": "OperatorParam",
+      "type": "object"
+    },
+    "OriginBasis": {
+      "additionalProperties": false,
+      "description": "Which branch and which modality rows decided ``modality_origin`` of a C row.",
+      "properties": {
+        "branch": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "matched": {
+          "items": {
+            "$ref": "#/$defs/OriginMatch"
+          },
+          "type": "array"
+        },
+        "method": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "branch",
+        "matched",
+        "method"
+      ],
+      "title": "OriginBasis",
+      "type": "object"
+    },
+    "OriginMatch": {
+      "additionalProperties": false,
+      "properties": {
+        "modality": {
+          "enum": [
+            "visual",
+            "audio"
+          ],
+          "type": "string"
+        },
+        "source_ref": {
+          "$ref": "#/$defs/SourceRef"
+        }
+      },
+      "required": [
+        "modality",
+        "source_ref"
+      ],
+      "title": "OriginMatch",
+      "type": "object"
+    },
+    "ParameterReading": {
+      "additionalProperties": false,
+      "properties": {
+        "condition": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "phrase": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "condition",
+        "phrase"
+      ],
+      "title": "ParameterReading",
+      "type": "object"
+    },
+    "PipelineConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "vlm_backend": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "audio_backend": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sampling": {
+          "$ref": "#/$defs/Sampling"
+        },
+        "audio_window": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AudioWindow"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "merge_tolerance_s": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "determinism": {
+          "$ref": "#/$defs/Determinism"
+        },
+        "detection_mode": {
+          "enum": [
+            "visual",
+            "audio",
+            "multimodal"
+          ],
+          "type": "string"
+        },
+        "sources": {
+          "$ref": "#/$defs/SourceMap"
+        },
+        "unavailable": {
+          "$ref": "#/$defs/UnavailableMap"
+        }
+      },
+      "required": [
+        "vlm_backend",
+        "audio_backend",
+        "sampling",
+        "audio_window",
+        "merge_tolerance_s",
+        "determinism",
+        "detection_mode"
+      ],
+      "title": "PipelineConfig",
+      "type": "object"
+    },
+    "ProjectionNode": {
+      "additionalProperties": false,
+      "properties": {
+        "constraint_id": {
+          "$ref": "#/$defs/ConstraintId"
+        },
+        "branch": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "modality": {
+          "enum": [
+            "visual",
+            "audio",
+            "mixed"
+          ],
+          "type": "string"
+        },
+        "variables": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConstraintId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "text": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "source_ref": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "unavailable": {
+          "$ref": "#/$defs/UnavailableMap"
+        },
+        "kind": {
+          "const": "projection",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/ProjectionPayload"
+        }
+      },
+      "required": [
+        "constraint_id",
+        "branch",
+        "modality",
+        "variables",
+        "parent",
+        "text",
+        "source_ref",
+        "kind",
+        "payload"
+      ],
+      "title": "ProjectionNode",
+      "type": "object"
+    },
+    "ProjectionPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "fields": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "fields"
+      ],
+      "title": "ProjectionPayload",
+      "type": "object"
+    },
+    "Reason": {
+      "description": "Why a field of the draft is null (``Unavailable.reason``).",
+      "enum": [
+        "lineage_not_persisted",
+        "keyframes_not_persisted",
+        "vlm_output_not_persisted",
+        "reid_similarity_not_persisted",
+        "visual_confidence_not_recorded",
+        "fps_not_recorded",
+        "analysis_record_missing",
+        "backend_version_not_recorded",
+        "origin_not_identifiable",
+        "modality_rule_absent",
+        "glossary_definition_not_in_system",
+        "conflicting_records"
+      ],
+      "title": "Reason",
+      "type": "string"
+    },
+    "ReidEvidence": {
+      "additionalProperties": false,
+      "description": "Re-ID evidence of an entity.\n\n``status`` says whether WatchOut has the evidence at all; when it is\n``not_available`` both values are null and the entity's ``unavailable`` map\nsays why under ``reid_evidence``.",
+      "properties": {
+        "status": {
+          "enum": [
+            "read",
+            "not_available"
+          ],
+          "type": "string"
+        },
+        "gallery_match_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "similarity": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "status",
+        "gallery_match_id",
+        "similarity"
+      ],
+      "title": "ReidEvidence",
+      "type": "object"
+    },
+    "RequestEcho": {
+      "additionalProperties": false,
+      "description": "The request the draft answers.",
+      "properties": {
+        "analysis_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "event_type": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "condition": {
+          "enum": [
+            "A",
+            "B",
+            "C"
+          ],
+          "type": "string"
+        },
+        "params": {
+          "enum": [
+            "auto",
+            "saved",
+            "defaults"
+          ],
+          "type": "string"
+        },
+        "row": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "propertyNames": {
+            "minLength": 1
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "analysis_id",
+        "event_type",
+        "condition",
+        "params",
+        "row"
+      ],
+      "title": "RequestEcho",
+      "type": "object"
+    },
+    "RequestSource": {
+      "additionalProperties": false,
+      "description": "A value taken from the harvest request (e.g. ``detection_mode`` from ``condition``).",
+      "properties": {
+        "from_request": {
+          "enum": [
+            "analysis_id",
+            "event_type",
+            "condition",
+            "params"
+          ],
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "from_request",
+        "value"
+      ],
+      "title": "RequestSource",
+      "type": "object"
+    },
+    "RowMatch": {
+      "additionalProperties": false,
+      "description": "How the request's row was found among the rows of the detection.\n\n``matches <= rows_returned`` and ``matched_index < rows_returned`` compare two\nfields, which JSON Schema cannot express: only the model checks them.",
+      "properties": {
+        "rows_returned": {
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        "matches": {
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        "matched_index": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "rows_returned",
+        "matches",
+        "matched_index"
+      ],
+      "title": "RowMatch",
+      "type": "object"
+    },
+    "RuleRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "expression": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "expression_saved": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "structure_ref": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "model_form": {
+          "enum": [
+            "F1",
+            "F2",
+            "F3"
+          ],
+          "type": "string"
+        },
+        "projection": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "bindings": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Binding"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "constraints": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "attribute_comparison": "#/$defs/AttributeComparisonNode",
+                "duration": "#/$defs/DurationNode",
+                "identity": "#/$defs/IdentityNode",
+                "projection": "#/$defs/ProjectionNode",
+                "selection": "#/$defs/SelectionNode",
+                "set_operation": "#/$defs/SetOperationNode",
+                "temporal_operator": "#/$defs/TemporalOperatorNode"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/SelectionNode"
+              },
+              {
+                "$ref": "#/$defs/TemporalOperatorNode"
+              },
+              {
+                "$ref": "#/$defs/IdentityNode"
+              },
+              {
+                "$ref": "#/$defs/AttributeComparisonNode"
+              },
+              {
+                "$ref": "#/$defs/DurationNode"
+              },
+              {
+                "$ref": "#/$defs/ProjectionNode"
+              },
+              {
+                "$ref": "#/$defs/SetOperationNode"
+              }
+            ]
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "unavailable": {
+          "$ref": "#/$defs/UnavailableMap"
+        }
+      },
+      "required": [
+        "expression",
+        "expression_saved",
+        "structure_ref",
+        "model_form",
+        "projection",
+        "bindings",
+        "constraints"
+      ],
+      "title": "RuleRecord",
+      "type": "object"
+    },
+    "RuleRef": {
+      "additionalProperties": false,
+      "properties": {
+        "rule_ref": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "rule_ref"
+      ],
+      "title": "RuleRef",
+      "type": "object"
+    },
+    "Sampling": {
+      "additionalProperties": false,
+      "description": "``SamplingRate`` is both the declared fps and the sampling stride.",
+      "properties": {
+        "source_fps": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sample_every_n": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "effective_hz": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "source_fps",
+        "sample_every_n",
+        "effective_hz"
+      ],
+      "title": "Sampling",
+      "type": "object"
+    },
+    "SelectionBranch": {
+      "additionalProperties": false,
+      "properties": {
+        "predicates": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "arg_classes": {
+          "additionalProperties": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "propertyNames": {
+            "minLength": 1
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "predicates",
+        "arg_classes"
+      ],
+      "title": "SelectionBranch",
+      "type": "object"
+    },
+    "SelectionNode": {
+      "additionalProperties": false,
+      "properties": {
+        "constraint_id": {
+          "$ref": "#/$defs/ConstraintId"
+        },
+        "branch": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "modality": {
+          "enum": [
+            "visual",
+            "audio",
+            "mixed"
+          ],
+          "type": "string"
+        },
+        "variables": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConstraintId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "text": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "source_ref": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "unavailable": {
+          "$ref": "#/$defs/UnavailableMap"
+        },
+        "kind": {
+          "const": "selection",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/SelectionPayload"
+        }
+      },
+      "required": [
+        "constraint_id",
+        "branch",
+        "modality",
+        "variables",
+        "parent",
+        "text",
+        "source_ref",
+        "kind",
+        "payload"
+      ],
+      "title": "SelectionNode",
+      "type": "object"
+    },
+    "SelectionPayload": {
+      "additionalProperties": false,
+      "description": "A selection; several branches are a disjunction.",
+      "properties": {
+        "branches": {
+          "items": {
+            "$ref": "#/$defs/SelectionBranch"
+          },
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "branches"
+      ],
+      "title": "SelectionPayload",
+      "type": "object"
+    },
+    "SetOperationNode": {
+      "additionalProperties": false,
+      "properties": {
+        "constraint_id": {
+          "$ref": "#/$defs/ConstraintId"
+        },
+        "branch": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "modality": {
+          "enum": [
+            "visual",
+            "audio",
+            "mixed"
+          ],
+          "type": "string"
+        },
+        "variables": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConstraintId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "text": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "source_ref": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "unavailable": {
+          "$ref": "#/$defs/UnavailableMap"
+        },
+        "kind": {
+          "const": "set_operation",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/SetOperationPayload"
+        }
+      },
+      "required": [
+        "constraint_id",
+        "branch",
+        "modality",
+        "variables",
+        "parent",
+        "text",
+        "source_ref",
+        "kind",
+        "payload"
+      ],
+      "title": "SetOperationNode",
+      "type": "object"
+    },
+    "SetOperationPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "op": {
+          "enum": [
+            "∪",
+            "∩",
+            "\\"
+          ],
+          "type": "string"
+        },
+        "children": {
+          "items": {
+            "$ref": "#/$defs/ConstraintId"
+          },
+          "minItems": 2,
+          "type": "array"
+        }
+      },
+      "required": [
+        "op",
+        "children"
+      ],
+      "title": "SetOperationPayload",
+      "type": "object"
+    },
+    "Source": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SourceRef"
+        },
+        {
+          "$ref": "#/$defs/DerivedSource"
+        },
+        {
+          "$ref": "#/$defs/RequestSource"
+        }
+      ],
+      "description": "Where a field of a record comes from: a WatchOut record, other fields, the request."
+    },
+    "SourceMap": {
+      "additionalProperties": {
+        "$ref": "#/$defs/Source"
+      },
+      "description": "Field -> Source, when the fields of a record come from different records. Fields of nested objects use a dotted path, e.g. sampling.source_fps.",
+      "propertyNames": {
+        "minLength": 1
+      },
+      "type": "object"
+    },
+    "SourceRef": {
+      "additionalProperties": false,
+      "description": "The WatchOut record a fact was read from. Never contains line numbers.",
+      "properties": {
+        "stage": {
+          "$ref": "#/$defs/Stage"
+        },
+        "store": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "record_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "read",
+            "not_available"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "stage",
+        "store",
+        "record_id",
+        "mode"
+      ],
+      "title": "SourceRef",
+      "type": "object"
+    },
+    "SourceSnapshot": {
+      "additionalProperties": false,
+      "description": "Which state of WatchOut was read, and when.",
+      "properties": {
+        "backend_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "extracted_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "sources": {
+          "$ref": "#/$defs/SourceMap"
+        },
+        "unavailable": {
+          "$ref": "#/$defs/UnavailableMap"
+        }
+      },
+      "required": [
+        "backend_version",
+        "extracted_at"
+      ],
+      "title": "SourceSnapshot",
+      "type": "object"
+    },
+    "Stage": {
+      "description": "WatchOut stage a ``SourceRef`` points to.\n\n``config`` is ``Analyses`` or ``AppConfig``; ``code`` is a value of WatchOut's code\nor of ``pipeline_constants.yaml``.",
+      "enum": [
+        "sampling",
+        "vlm",
+        "reid",
+        "Λ",
+        "iad",
+        "audio",
+        "iseql",
+        "keyframes",
+        "config",
+        "code"
+      ],
+      "title": "Stage",
+      "type": "string"
+    },
+    "TemporalOperatorNode": {
+      "additionalProperties": false,
+      "properties": {
+        "constraint_id": {
+          "$ref": "#/$defs/ConstraintId"
+        },
+        "branch": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "modality": {
+          "enum": [
+            "visual",
+            "audio",
+            "mixed"
+          ],
+          "type": "string"
+        },
+        "variables": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConstraintId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "text": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "source_ref": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "unavailable": {
+          "$ref": "#/$defs/UnavailableMap"
+        },
+        "kind": {
+          "const": "temporal_operator",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/TemporalOperatorPayload"
+        }
+      },
+      "required": [
+        "constraint_id",
+        "branch",
+        "modality",
+        "variables",
+        "parent",
+        "text",
+        "source_ref",
+        "kind",
+        "payload"
+      ],
+      "title": "TemporalOperatorNode",
+      "type": "object"
+    },
+    "TemporalOperatorPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "enum": [
+            "Bef",
+            "Aft",
+            "SP",
+            "EF",
+            "DJ",
+            "RDJ",
+            "LOJ",
+            "ROJ"
+          ],
+          "type": "string"
+        },
+        "resolution": {
+          "enum": [
+            "override",
+            "geometry"
+          ],
+          "type": "string"
+        },
+        "resolution_detail": {
+          "type": "string"
+        },
+        "params": {
+          "items": {
+            "$ref": "#/$defs/OperatorParam"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "resolution",
+        "params"
+      ],
+      "title": "TemporalOperatorPayload",
+      "type": "object"
+    },
+    "TermId": {
+      "description": "ID of a glossary entry: g_<kind>_<term>.",
+      "pattern": "^g_[A-Za-z0-9_]+$",
+      "type": "string"
+    },
+    "Timestamp": {
+      "description": "Date and time with an offset (RFC 3339), e.g. 2026-10-06T20:00:00Z.",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+      "type": "string"
+    },
+    "Unavailable": {
+      "additionalProperties": false,
+      "description": "Why a field is null. ``reason`` comes from the closed catalog.",
+      "properties": {
+        "reason": {
+          "$ref": "#/$defs/Reason"
+        },
+        "detail": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "reason",
+        "detail"
+      ],
+      "title": "Unavailable",
+      "type": "object"
+    },
+    "UnavailableMap": {
+      "additionalProperties": {
+        "$ref": "#/$defs/Unavailable"
+      },
+      "description": "Field -> Unavailable, for every required field of the record that is null because WatchOut cannot provide it. Dotted paths allowed.",
+      "propertyNames": {
+        "minLength": 1
+      },
+      "type": "object"
+    },
+    "Violation": {
+      "additionalProperties": false,
+      "properties": {
+        "check": {
+          "$ref": "#/$defs/CheckName"
+        },
+        "element_path": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "detail": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "check",
+        "element_path",
+        "detail"
+      ],
+      "title": "Violation",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "The draft of the Neuro-Symbolic Contract for one detection.",
+  "properties": {
+    "contract_meta": {
+      "$ref": "#/$defs/ContractMeta"
+    },
+    "event": {
+      "$ref": "#/$defs/EventRecord"
+    },
+    "rule": {
+      "$ref": "#/$defs/RuleRecord"
+    },
+    "entities": {
+      "items": {
+        "$ref": "#/$defs/Entity"
+      },
+      "type": "array"
+    },
+    "intervals": {
+      "items": {
+        "$ref": "#/$defs/IntervalRecord"
+      },
+      "type": "array"
+    },
+    "actions": {
+      "type": "null"
+    },
+    "glossary": {
+      "items": {
+        "$ref": "#/$defs/GlossaryEntry"
+      },
+      "type": "array"
+    },
+    "unavailable": {
+      "$ref": "#/$defs/UnavailableMap"
+    },
+    "harvest_report": {
+      "$ref": "#/$defs/HarvestReport"
+    }
+  },
+  "required": [
+    "contract_meta",
+    "event",
+    "rule",
+    "entities",
+    "intervals",
+    "actions",
+    "glossary",
+    "harvest_report"
+  ],
+  "title": "ContractDraft",
+  "type": "object"
+}

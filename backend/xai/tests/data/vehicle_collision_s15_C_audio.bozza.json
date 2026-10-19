@@ -1,0 +1,793 @@
+{
+  "$comment": "Caso golden, prodotto da K1 sul database di test (tests/support.py, build_fixture_db) come lo produce il batch di fine analisi: parametri di default della regola. Intervalli audio e righe delle detection sono reali (DB di ablation, scena 15, regole del seed); SamplingRate=24, AudioWindow 5.0 s / AudioHop 2.5 s e provider sono ipotizzati perché il DB di ablation non ha la riga Analyses. I testi della bozza sono in inglese.",
+  "contract_meta": {
+    "contract_version": "0.1.0-k1",
+    "analysis_id": "gemini_3_6_flash_qwen2_audio_s15",
+    "source_snapshot": {
+      "backend_version": "WATCHOUT ISEQL 0.1.0",
+      "extracted_at": "2026-10-06T20:00:00Z",
+      "sources": {
+        "backend_version": {
+          "stage": "code",
+          "store": "backend/src/__init__.py",
+          "record_id": "__app_name__, __version__",
+          "mode": "read"
+        }
+      }
+    },
+    "pipeline_config": {
+      "vlm_backend": "gemini / gemini-3.6-flash",
+      "audio_backend": "huggingface / qwen2_audio",
+      "sampling": {
+        "source_fps": 24,
+        "sample_every_n": 24,
+        "effective_hz": 1.0
+      },
+      "audio_window": {
+        "window_s": 5.0,
+        "hop_s": 2.5
+      },
+      "merge_tolerance_s": 2.0,
+      "determinism": {
+        "temperature": 0.0,
+        "seed": 42
+      },
+      "detection_mode": "multimodal",
+      "sources": {
+        "vlm_backend": {
+          "stage": "config",
+          "store": "Analyses:gemini_3_6_flash_qwen2_audio_s15",
+          "record_id": "VLMProvider,Model",
+          "mode": "read"
+        },
+        "audio_backend": {
+          "stage": "config",
+          "store": "Analyses:gemini_3_6_flash_qwen2_audio_s15",
+          "record_id": "AudioProvider,AudioModel",
+          "mode": "read"
+        },
+        "sampling.source_fps": {
+          "stage": "config",
+          "store": "Analyses:gemini_3_6_flash_qwen2_audio_s15",
+          "record_id": "SamplingRate",
+          "mode": "read"
+        },
+        "sampling.sample_every_n": {
+          "stage": "code",
+          "store": "backend/src/service/impl/visual_service_impl.py",
+          "record_id": "frame_count % sampling_rate",
+          "mode": "read"
+        },
+        "sampling.effective_hz": {
+          "derived_from": [
+            "sampling.source_fps",
+            "sampling.sample_every_n"
+          ]
+        },
+        "audio_window": {
+          "stage": "config",
+          "store": "Analyses:gemini_3_6_flash_qwen2_audio_s15",
+          "record_id": "AudioWindow,AudioHop",
+          "mode": "read"
+        },
+        "merge_tolerance_s": {
+          "stage": "code",
+          "store": "backend/xai/resources/pipeline_constants.yaml",
+          "record_id": "merge_tolerance",
+          "mode": "read"
+        },
+        "determinism": {
+          "stage": "code",
+          "store": "backend/src/utils/vlm_client.py",
+          "record_id": "VLMClient.__init__: temperature and seed defaults",
+          "mode": "read"
+        },
+        "detection_mode": {
+          "from_request": "condition",
+          "value": "C"
+        }
+      }
+    },
+    "glossary_version": "glossary.yaml@0.1.0#73fdaf8c187c+relation_vocab@2026-08-30 16:51:22",
+    "params_origin": "rule_defaults",
+    "sources": {
+      "glossary_version": {
+        "stage": "config",
+        "store": "AppConfig",
+        "record_id": "relation_vocab.updated_at",
+        "mode": "read"
+      },
+      "params_origin": {
+        "stage": "iseql",
+        "store": "EventSpec",
+        "record_id": "vehicle_collision/C#/iseql_text",
+        "mode": "read"
+      }
+    }
+  },
+  "event": {
+    "event_id": "ev_cb96ebb2235a",
+    "model_id": "vehicle_collision/C",
+    "label": "vehicle_collision",
+    "modality_origin": "audio",
+    "origin_basis": {
+      "branch": "s1",
+      "matched": [
+        {
+          "modality": "audio",
+          "source_ref": {
+            "stage": "iseql",
+            "store": "detection:vehicle_collision/B@gemini_3_6_flash_qwen2_audio_s15",
+            "record_id": "{\"M1.st\":0.0,\"M2.et\":7.5}",
+            "mode": "read"
+          }
+        }
+      ],
+      "method": "result columns mapped to their kind (M1_vehicle → arg1, M1.st → st, M2.et → et) as WatchOut aligns them (_canonical_schema, _multimodal_labels); match with the rows of Evento_A and Evento_B on the kinds they project, the other kinds null"
+    },
+    "interval": {
+      "start_frame": 0,
+      "end_frame": 180,
+      "start_s": 0.0,
+      "end_s": 7.5,
+      "read_as": "seconds"
+    },
+    "arguments": [],
+    "modality_rules": {
+      "visual": {
+        "rule_ref": "vehicle_collision/A"
+      },
+      "audio": {
+        "rule_ref": "vehicle_collision/B"
+      }
+    },
+    "modality_detections": [
+      {
+        "modality": "visual",
+        "interval": {
+          "start_frame": 120,
+          "end_frame": 120,
+          "start_s": 5.0,
+          "end_s": 5.0,
+          "read_as": "seconds"
+        },
+        "source_ref": {
+          "stage": "iseql",
+          "store": "detection:vehicle_collision/A@gemini_3_6_flash_qwen2_audio_s15",
+          "record_id": "{\"M1.et\":5.0,\"M1.st\":5.0,\"M1_vehicle\":1}",
+          "mode": "read"
+        }
+      },
+      {
+        "modality": "visual",
+        "interval": {
+          "start_frame": 120,
+          "end_frame": 120,
+          "start_s": 5.0,
+          "end_s": 5.0,
+          "read_as": "seconds"
+        },
+        "source_ref": {
+          "stage": "iseql",
+          "store": "detection:vehicle_collision/A@gemini_3_6_flash_qwen2_audio_s15",
+          "record_id": "{\"M1.et\":5.0,\"M1.st\":5.0,\"M1_vehicle\":2}",
+          "mode": "read"
+        }
+      },
+      {
+        "modality": "visual",
+        "interval": {
+          "start_frame": 144,
+          "end_frame": 240,
+          "start_s": 6.0,
+          "end_s": 10.0,
+          "read_as": "seconds"
+        },
+        "source_ref": {
+          "stage": "iseql",
+          "store": "detection:vehicle_collision/A@gemini_3_6_flash_qwen2_audio_s15",
+          "record_id": "{\"M1.et\":10.0,\"M1.st\":6.0,\"M1_vehicle\":12}",
+          "mode": "read"
+        }
+      },
+      {
+        "modality": "audio",
+        "interval": {
+          "start_frame": 0,
+          "end_frame": 180,
+          "start_s": 0.0,
+          "end_s": 7.5,
+          "read_as": "seconds"
+        },
+        "source_ref": {
+          "stage": "iseql",
+          "store": "detection:vehicle_collision/B@gemini_3_6_flash_qwen2_audio_s15",
+          "record_id": "{\"M1.st\":0.0,\"M2.et\":7.5}",
+          "mode": "read"
+        }
+      }
+    ],
+    "source_ref": {
+      "stage": "iseql",
+      "store": "detection:vehicle_collision/C@gemini_3_6_flash_qwen2_audio_s15",
+      "record_id": "{\"M1.st\":0.0,\"M1_vehicle\":null,\"M2.et\":7.5}",
+      "mode": "read"
+    }
+  },
+  "rule": {
+    "expression": "π_{M1.st, M2.et} (\n  σ_{(pred=\"horn\") ∨ (pred=\"skidding\")}(M1)\n  SP(δ:∞; ζ:<=, ρ:0)\n  σ_{(pred=\"impact\") ∨ (pred=\"glass_breaking\")}(M2)\n)\n∪\nπ_{M1.arg1, M1.st, M1.et} (\n  σ_{pred=\"vehicle_collision\" ∧ arg1=\"vehicle\"}(M1)\n)",
+    "expression_saved": "π_{M1.st, M1.et, M2.st, M2.et} (\n  σ_{(pred=\"horn\") ∨ (pred=\"skidding\")}(M1)\n  SP(δ:∞; ζ:<=, ρ:0)\n  σ_{(pred=\"impact\") ∨ (pred=\"glass_breaking\")}(M2)\n)\n∪\nπ_{M1.arg1, M1.st, M1.et} (\n  σ_{pred=\"vehicle_collision\" ∧ arg1=\"vehicle\"}(M1)\n)",
+    "structure_ref": {
+      "stage": "iseql",
+      "store": "EventSpec",
+      "record_id": "vehicle_collision/C",
+      "mode": "read"
+    },
+    "model_form": "F2",
+    "projection": [
+      "M1.st",
+      "M2.et"
+    ],
+    "bindings": null,
+    "constraints": [
+      {
+        "constraint_id": "c_set1",
+        "branch": null,
+        "modality": "mixed",
+        "variables": [],
+        "parent": null,
+        "text": "∪",
+        "source_ref": {
+          "stage": "iseql",
+          "store": "EventSpec",
+          "record_id": "vehicle_collision/C#/set_expression",
+          "mode": "read"
+        },
+        "kind": "set_operation",
+        "payload": {
+          "op": "∪",
+          "children": [
+            "c_s1_proj",
+            "c_s2_proj"
+          ]
+        }
+      },
+      {
+        "constraint_id": "c_s1_proj",
+        "branch": "s1",
+        "modality": "audio",
+        "variables": [
+          "M1",
+          "M2"
+        ],
+        "parent": "c_set1",
+        "text": "π_{M1.st, M2.et}",
+        "source_ref": {
+          "stage": "iseql",
+          "store": "EventSpec",
+          "record_id": "vehicle_collision/C#/set_expression/children/0/projection",
+          "mode": "read"
+        },
+        "kind": "projection",
+        "payload": {
+          "fields": [
+            "M1.st",
+            "M2.et"
+          ]
+        }
+      },
+      {
+        "constraint_id": "c_s1_op1",
+        "branch": "s1",
+        "modality": "audio",
+        "variables": [
+          "M1",
+          "M2"
+        ],
+        "parent": "c_s1_proj",
+        "text": "SP(δ:∞; ζ:<=, ρ:0)",
+        "source_ref": {
+          "stage": "iseql",
+          "store": "EventSpec",
+          "record_id": "vehicle_collision/C#/operator_overrides/0",
+          "mode": "read"
+        },
+        "kind": "temporal_operator",
+        "payload": {
+          "name": "SP",
+          "resolution": "override",
+          "resolution_detail": "operator_overrides[0]: side s1, pair_idx 1, operator SP",
+          "params": [
+            {
+              "name": "δ",
+              "raw": null,
+              "value": "inf",
+              "unit": "seconds",
+              "engine_value": "inf",
+              "compare_domain": "seconds",
+              "origin": "literal",
+              "source_ref": {
+                "stage": "iseql",
+                "store": "EventSpec",
+                "record_id": "vehicle_collision/C#/delta_map/s1.0/delta",
+                "mode": "read"
+              }
+            },
+            {
+              "name": "ζ",
+              "raw": "zeta_audio_vehicle_collision",
+              "value": "<=",
+              "engine_value": "<=",
+              "compare_domain": "seconds",
+              "origin": "named_key",
+              "source_ref": {
+                "stage": "iseql",
+                "store": "EventSpec",
+                "record_id": "vehicle_collision/C#/iseql_text",
+                "mode": "read"
+              }
+            },
+            {
+              "name": "ρ",
+              "raw": "rho_audio_vehicle_collision",
+              "value": 0,
+              "unit": "seconds",
+              "engine_value": 0,
+              "compare_domain": "seconds",
+              "origin": "named_key",
+              "source_ref": {
+                "stage": "iseql",
+                "store": "EventSpec",
+                "record_id": "vehicle_collision/C#/iseql_text",
+                "mode": "read"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "constraint_id": "c_s1_sel1",
+        "branch": "s1",
+        "modality": "audio",
+        "variables": [
+          "M1"
+        ],
+        "parent": "c_s1_proj",
+        "text": "σ_{(pred=\"horn\") ∨ (pred=\"skidding\")}(M1)",
+        "source_ref": {
+          "stage": "iseql",
+          "store": "EventSpec",
+          "record_id": "vehicle_collision/C#/intervals/0",
+          "mode": "read"
+        },
+        "kind": "selection",
+        "payload": {
+          "branches": [
+            {
+              "predicates": [
+                "horn"
+              ],
+              "arg_classes": {}
+            },
+            {
+              "predicates": [
+                "skidding"
+              ],
+              "arg_classes": {}
+            }
+          ]
+        }
+      },
+      {
+        "constraint_id": "c_s1_sel2",
+        "branch": "s1",
+        "modality": "audio",
+        "variables": [
+          "M2"
+        ],
+        "parent": "c_s1_proj",
+        "text": "σ_{(pred=\"impact\") ∨ (pred=\"glass_breaking\")}(M2)",
+        "source_ref": {
+          "stage": "iseql",
+          "store": "EventSpec",
+          "record_id": "vehicle_collision/C#/intervals/1",
+          "mode": "read"
+        },
+        "kind": "selection",
+        "payload": {
+          "branches": [
+            {
+              "predicates": [
+                "impact"
+              ],
+              "arg_classes": {}
+            },
+            {
+              "predicates": [
+                "glass_breaking"
+              ],
+              "arg_classes": {}
+            }
+          ]
+        }
+      },
+      {
+        "constraint_id": "c_s2_proj",
+        "branch": "s2",
+        "modality": "visual",
+        "variables": [
+          "M1"
+        ],
+        "parent": "c_set1",
+        "text": "π_{M1.arg1, M1.st, M1.et}",
+        "source_ref": {
+          "stage": "iseql",
+          "store": "EventSpec",
+          "record_id": "vehicle_collision/C#/set_expression/children/1/projection",
+          "mode": "read"
+        },
+        "kind": "projection",
+        "payload": {
+          "fields": [
+            "M1.arg1",
+            "M1.st",
+            "M1.et"
+          ]
+        }
+      },
+      {
+        "constraint_id": "c_s2_sel1",
+        "branch": "s2",
+        "modality": "visual",
+        "variables": [
+          "M1"
+        ],
+        "parent": "c_s2_proj",
+        "text": "σ_{pred=\"vehicle_collision\" ∧ arg1=\"vehicle\"}(M1)",
+        "source_ref": {
+          "stage": "iseql",
+          "store": "EventSpec",
+          "record_id": "vehicle_collision/C#/intervals/2",
+          "mode": "read"
+        },
+        "kind": "selection",
+        "payload": {
+          "branches": [
+            {
+              "predicates": [
+                "vehicle_collision"
+              ],
+              "arg_classes": {
+                "1": [
+                  "vehicle"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "unavailable": {
+      "bindings": {
+        "reason": "lineage_not_persisted",
+        "detail": "WatchOut's SQL projects ClassID and times, not RelationID (iseql/compiler.py)"
+      }
+    }
+  },
+  "entities": [],
+  "intervals": [
+    {
+      "interval_id": "iv_a21",
+      "source": "AudioPerInterval",
+      "predicate": "horn",
+      "args": [],
+      "args_ordered": true,
+      "anchor": {
+        "start_frame": 0,
+        "end_frame": 120,
+        "start_s": 0.0,
+        "end_s": 5.0,
+        "read_as": "frames"
+      },
+      "used_by_rule": null,
+      "confidence": 1.0,
+      "source_ref": {
+        "stage": "audio",
+        "store": "AudioPerInterval",
+        "record_id": "21",
+        "mode": "read"
+      },
+      "sources": {
+        "confidence": {
+          "stage": "code",
+          "store": "backend/xai/resources/pipeline_constants.yaml",
+          "record_id": "constant_audio_confidence",
+          "mode": "read"
+        }
+      },
+      "unavailable": {
+        "used_by_rule": {
+          "reason": "lineage_not_persisted",
+          "detail": "WatchOut's SQL projects ClassID and times, not RelationID (iseql/compiler.py)"
+        }
+      }
+    },
+    {
+      "interval_id": "iv_a22",
+      "source": "AudioPerInterval",
+      "predicate": "glass_breaking",
+      "args": [],
+      "args_ordered": true,
+      "anchor": {
+        "start_frame": 60,
+        "end_frame": 180,
+        "start_s": 2.5,
+        "end_s": 7.5,
+        "read_as": "frames"
+      },
+      "used_by_rule": null,
+      "confidence": 1.0,
+      "source_ref": {
+        "stage": "audio",
+        "store": "AudioPerInterval",
+        "record_id": "22",
+        "mode": "read"
+      },
+      "sources": {
+        "confidence": {
+          "stage": "code",
+          "store": "backend/xai/resources/pipeline_constants.yaml",
+          "record_id": "constant_audio_confidence",
+          "mode": "read"
+        }
+      },
+      "unavailable": {
+        "used_by_rule": {
+          "reason": "lineage_not_persisted",
+          "detail": "WatchOut's SQL projects ClassID and times, not RelationID (iseql/compiler.py)"
+        }
+      }
+    },
+    {
+      "interval_id": "iv_a23",
+      "source": "AudioPerInterval",
+      "predicate": "impact",
+      "args": [],
+      "args_ordered": true,
+      "anchor": {
+        "start_frame": 120,
+        "end_frame": 240,
+        "start_s": 5.0,
+        "end_s": 10.0,
+        "read_as": "frames"
+      },
+      "used_by_rule": null,
+      "confidence": 1.0,
+      "source_ref": {
+        "stage": "audio",
+        "store": "AudioPerInterval",
+        "record_id": "23",
+        "mode": "read"
+      },
+      "sources": {
+        "confidence": {
+          "stage": "code",
+          "store": "backend/xai/resources/pipeline_constants.yaml",
+          "record_id": "constant_audio_confidence",
+          "mode": "read"
+        }
+      },
+      "unavailable": {
+        "used_by_rule": {
+          "reason": "lineage_not_persisted",
+          "detail": "WatchOut's SQL projects ClassID and times, not RelationID (iseql/compiler.py)"
+        }
+      }
+    }
+  ],
+  "actions": null,
+  "glossary": [
+    {
+      "term_id": "g_audio_class_glass_breaking",
+      "kind": "audio_class",
+      "term": "glass_breaking",
+      "definition": null,
+      "plain_template": "glass breaking is heard",
+      "source": {
+        "stage": "code",
+        "store": "backend/xai/resources/glossary.yaml",
+        "record_id": "audio_classes.glass_breaking",
+        "mode": "read"
+      },
+      "unavailable": {
+        "definition": {
+          "reason": "glossary_definition_not_in_system",
+          "detail": "AppConfig.audio_taxonomy only has keywords and glossary.yaml has no definition yet (to copy from WACV Table 3)"
+        }
+      }
+    },
+    {
+      "term_id": "g_audio_class_horn",
+      "kind": "audio_class",
+      "term": "horn",
+      "definition": null,
+      "plain_template": "a horn is heard",
+      "source": {
+        "stage": "code",
+        "store": "backend/xai/resources/glossary.yaml",
+        "record_id": "audio_classes.horn",
+        "mode": "read"
+      },
+      "unavailable": {
+        "definition": {
+          "reason": "glossary_definition_not_in_system",
+          "detail": "AppConfig.audio_taxonomy only has keywords and glossary.yaml has no definition yet (to copy from WACV Table 3)"
+        }
+      }
+    },
+    {
+      "term_id": "g_audio_class_impact",
+      "kind": "audio_class",
+      "term": "impact",
+      "definition": null,
+      "plain_template": "an impact is heard",
+      "source": {
+        "stage": "code",
+        "store": "backend/xai/resources/glossary.yaml",
+        "record_id": "audio_classes.impact",
+        "mode": "read"
+      },
+      "unavailable": {
+        "definition": {
+          "reason": "glossary_definition_not_in_system",
+          "detail": "AppConfig.audio_taxonomy only has keywords and glossary.yaml has no definition yet (to copy from WACV Table 3)"
+        }
+      }
+    },
+    {
+      "term_id": "g_audio_class_skidding",
+      "kind": "audio_class",
+      "term": "skidding",
+      "definition": null,
+      "plain_template": "tyres skidding are heard",
+      "source": {
+        "stage": "code",
+        "store": "backend/xai/resources/glossary.yaml",
+        "record_id": "audio_classes.skidding",
+        "mode": "read"
+      },
+      "unavailable": {
+        "definition": {
+          "reason": "glossary_definition_not_in_system",
+          "detail": "AppConfig.audio_taxonomy only has keywords and glossary.yaml has no definition yet (to copy from WACV Table 3)"
+        }
+      }
+    },
+    {
+      "term_id": "g_event_model_vehicle_collision",
+      "kind": "event_model",
+      "term": "vehicle_collision",
+      "definition": "A vehicle with visible collision damage, or the sound of a collision.",
+      "plain_template": "a vehicle collision",
+      "source": "event_author",
+      "source_detail": "backend/xai/resources/glossary.yaml events.vehicle_collision, from docs/iseql_event_queries.md"
+    },
+    {
+      "term_id": "g_operator_SP",
+      "kind": "operator",
+      "term": "SP",
+      "definition": "r.Ts ζ s.Ts < r.Te, s.Ts − r.Ts ≤ δ",
+      "plain_template": "{s} starts while {r} is ongoing",
+      "parameter_readings": [
+        {
+          "condition": "δ = ∞",
+          "phrase": "at any time while {r} is ongoing"
+        },
+        {
+          "condition": "δ = d",
+          "phrase": "within d seconds of the start of {r}"
+        }
+      ],
+      "source": {
+        "stage": "code",
+        "store": "backend/xai/resources/glossary.yaml",
+        "record_id": "operators.SP",
+        "mode": "read"
+      },
+      "source_detail": "iseql/helpers.py iseql_sp, with ρ = 0"
+    },
+    {
+      "term_id": "g_predicate_vehicle_collision",
+      "kind": "predicate",
+      "term": "vehicle_collision",
+      "definition": "A vehicle has visible collision damage: broken windshield, dented hood or doors, deployed airbags, smoke from the hood, or another object embedded in the vehicle.",
+      "plain_template": "{arg1} shows collision damage",
+      "source": {
+        "stage": "config",
+        "store": "AppConfig",
+        "record_id": "relation_vocab.relation_descriptions.vehicle_collision",
+        "mode": "read"
+      },
+      "sources": {
+        "plain_template": {
+          "stage": "code",
+          "store": "backend/xai/resources/glossary.yaml",
+          "record_id": "predicates.vehicle_collision",
+          "mode": "read"
+        }
+      }
+    }
+  ],
+  "unavailable": {
+    "actions": {
+      "reason": "keyframes_not_persisted",
+      "detail": "this WatchOut version does not store key frames"
+    }
+  },
+  "harvest_report": {
+    "request": {
+      "analysis_id": "gemini_3_6_flash_qwen2_audio_s15",
+      "event_type": "vehicle_collision",
+      "condition": "C",
+      "params": "defaults",
+      "row": {
+        "M1_vehicle": null,
+        "M1.st": 0.0,
+        "M2.et": 7.5
+      }
+    },
+    "row_match": {
+      "rows_returned": 4,
+      "matches": 1,
+      "matched_index": 0
+    },
+    "checks": [
+      {
+        "name": "completeness",
+        "passed": true,
+        "violations": []
+      },
+      {
+        "name": "referential_closure",
+        "passed": true,
+        "violations": []
+      }
+    ],
+    "missing_fields": [
+      {
+        "path": "rule.bindings",
+        "reason": "lineage_not_persisted"
+      },
+      {
+        "path": "intervals[*].used_by_rule",
+        "reason": "lineage_not_persisted"
+      },
+      {
+        "path": "glossary[kind=audio_class].definition",
+        "reason": "glossary_definition_not_in_system"
+      },
+      {
+        "path": "actions",
+        "reason": "keyframes_not_persisted"
+      }
+    ],
+    "notes": [
+      {
+        "code": "selection_basis",
+        "detail": "pertinence_filter: audio classes of branch s1 {horn, skidding, impact, glass_breaking}"
+      },
+      {
+        "code": "params_unit",
+        "detail": "every operator parameter is passed to the SQL with the value written in the rule"
+      },
+      {
+        "code": "saved_text_diverges_from_structure",
+        "detail": "the saved iseql_text has π_{M1.st, M1.et, M2.st, M2.et} where the executed structure renders π_{M1.st, M2.et}"
+      },
+      {
+        "code": "c_labels_by_kind",
+        "detail": "C columns mapped to their kind, labels from the first branch: M1_vehicle → arg1 (s2: M1.arg1); M1.st → st (s1: M1.st, s2: M1.st); M2.et → et (s1: M2.et, s2: M1.et)"
+      }
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+# WatchOut pipeline constants that K1 cannot read from WatchOut's code.
+# If WatchOut changes one of these values, update this file too:
+# tests/conformance/test_code_facts.py fails and names the entry to update.
+version: 1
+constants:
+  merge_tolerance:
+    value: 2
+    unit: samples          # merge_threshold = 2 * sampling_rate (frames)
+    origin:
+      file: backend/src/service/impl/interval_service_impl.py
+      symbol: IntervalServiceImpl.build_visual_and_save, merge_threshold
+  constant_audio_confidence:
+    value: 1.0             # written for every interval instead of a model score
+    providers: [huggingface]   # AudioProvider values; huggingface = Qwen2-Audio
+    origin:
+      file: backend/src/service/impl/audio_service_impl.py
+      symbol: AudioServiceImpl._analyze_huggingface, confidence

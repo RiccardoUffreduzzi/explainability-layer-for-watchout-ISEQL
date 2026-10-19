@@ -1,0 +1,141 @@
+# Glossary of the terms
+#
+# - predicates: only the report phrase; the definition is read from
+#   AppConfig.relation_vocab.relation_descriptions (the text given to the VLM).
+# - audio_classes: report phrase; AppConfig.audio_taxonomy only has keywords and the
+#   definitions (WACV Table 3) are not available yet, so K1 writes them as unavailable.
+# - operators: definition of WatchOut's SQL (iseql/helpers.py) with rho = 0,
+#   report phrase and readings of the parameters. {r} and {s} are the two operands,
+#   {unit} is the parameter's compare_domain.
+# - events: description of the event's author (docs/iseql_event_queries.md).
+#
+# Placeholders {arg1}, {arg2} are the arguments of a predicate in signature order.
+version: 0.1.0
+
+predicates:
+  running:
+    plain_template: "{arg1} runs"
+  enter_or_exit_vehicle:
+    plain_template: "{arg1} gets into or out of the driver's seat of {arg2}"
+  carrying:
+    plain_template: "{arg1} carries {arg2}"
+  physical_altercation:
+    plain_template: "{arg1} and {arg2} fight"
+  vehicle_collision:
+    plain_template: "{arg1} shows collision damage"
+  gunshot_visible:
+    plain_template: "{arg1} holds or fires a gun"
+  explosion_visible:
+    plain_template: "an explosion is visible at {arg1}"
+  suspicious_near_vehicle:
+    plain_template: "{arg1} lingers suspiciously around {arg2}"
+
+audio_classes:
+  shout:
+    plain_template: a shout is heard
+  impact:
+    plain_template: an impact is heard
+  gunshot_or_explosion:
+    plain_template: a gunshot or an explosion is heard
+  engine:
+    plain_template: an engine is heard
+  tire_squeal:
+    plain_template: tyres squealing are heard
+  glass_breaking:
+    plain_template: glass breaking is heard
+  horn:
+    plain_template: a horn is heard
+  skidding:
+    plain_template: tyres skidding are heard
+
+operators:
+  Bef:
+    definition: "r.Te ζ s.Ts, s.Ts − r.Te ≤ δ"
+    plain_template: "{r} ends before {s} starts"
+    parameter_readings:
+      - {condition: "δ = ∞", phrase: "at any time after"}
+      - {condition: "δ = d", phrase: "within d {unit}"}
+    citation: iseql/helpers.py iseql_before, with ρ = 0
+  Aft:
+    definition: "s.Te ζ r.Ts, r.Ts − s.Te ≤ δ"
+    plain_template: "{r} starts after {s} ends"
+    parameter_readings:
+      - {condition: "δ = ∞", phrase: "at any time after"}
+      - {condition: "δ = d", phrase: "within d {unit}"}
+    citation: iseql/helpers.py iseql_after, with ρ = 0
+  SP:
+    definition: "r.Ts ζ s.Ts < r.Te, s.Ts − r.Ts ≤ δ"
+    plain_template: "{s} starts while {r} is ongoing"
+    parameter_readings:
+      - {condition: "δ = ∞", phrase: "at any time while {r} is ongoing"}
+      - {condition: "δ = d", phrase: "within d {unit} of the start of {r}"}
+    citation: iseql/helpers.py iseql_sp, with ρ = 0
+  EF:
+    definition: "r.Ts < s.Te η r.Te, r.Te − s.Te ≤ ε"
+    plain_template: "{s} ends while {r} is ongoing"
+    parameter_readings:
+      - {condition: "ε = ∞", phrase: "at any time before {r} ends"}
+      - {condition: "ε = d", phrase: "within d {unit} before {r} ends"}
+    citation: iseql/helpers.py iseql_ef, with ρ = 0
+  DJ:
+    definition: "s.Ts ζ r.Ts ≤ s.Te, s.Ts ≤ r.Te η s.Te, r.Ts − s.Ts ≤ δ, s.Te − r.Te ≤ ε"
+    plain_template: "{r} happens during {s}"
+    parameter_readings:
+      - {condition: "δ = ∞", phrase: "starting at any time after {s} starts"}
+      - {condition: "δ = d", phrase: "starting within d {unit} of the start of {s}"}
+      - {condition: "ε = ∞", phrase: "ending at any time before {s} ends"}
+      - {condition: "ε = d", phrase: "ending within d {unit} of the end of {s}"}
+    citation: iseql/helpers.py iseql_dj, with ρ = 0
+  RDJ:
+    definition: "r.Ts ζ s.Ts ≤ r.Te, r.Ts ≤ s.Te η r.Te, s.Ts − r.Ts ≤ δ, r.Te − s.Te ≤ ε"
+    plain_template: "{s} happens during {r}"
+    parameter_readings:
+      - {condition: "δ = ∞", phrase: "starting at any time after {r} starts"}
+      - {condition: "δ = d", phrase: "starting within d {unit} of the start of {r}"}
+      - {condition: "ε = ∞", phrase: "ending at any time before {r} ends"}
+      - {condition: "ε = d", phrase: "ending within d {unit} of the end of {r}"}
+    citation: iseql/helpers.py iseql_rdj, with ρ = 0
+  LOJ:
+    definition: "r.Ts ζ s.Ts < r.Te η s.Te, s.Ts − r.Ts ≤ δ, s.Te − r.Te ≤ ε"
+    plain_template: "{r} starts first and {s} starts before {r} ends"
+    parameter_readings:
+      - {condition: "δ = ∞", phrase: "{s} starting at any time after {r} starts"}
+      - {condition: "δ = d", phrase: "{s} starting within d {unit} of the start of {r}"}
+      - {condition: "ε = ∞", phrase: "{s} ending at any time after {r} ends"}
+      - {condition: "ε = d", phrase: "{s} ending within d {unit} of the end of {r}"}
+    citation: iseql/helpers.py iseql_loj, with ρ = 0
+  ROJ:
+    definition: "s.Ts ζ r.Ts < s.Te η r.Te, r.Ts − s.Ts ≤ δ, r.Te − s.Te ≤ ε"
+    plain_template: "{s} starts first and {r} starts before {s} ends"
+    parameter_readings:
+      - {condition: "δ = ∞", phrase: "{r} starting at any time after {s} starts"}
+      - {condition: "δ = d", phrase: "{r} starting within d {unit} of the start of {s}"}
+      - {condition: "ε = ∞", phrase: "{r} ending at any time after {s} ends"}
+      - {condition: "ε = d", phrase: "{r} ending within d {unit} of the end of {s}"}
+    citation: iseql/helpers.py iseql_roj, with ρ = 0
+
+events:
+  fight:
+    definition: Two or more people physically altercating.
+    plain_template: a fight
+    citation: docs/iseql_event_queries.md
+  gunshot_or_explosion:
+    definition: A gunshot or explosion.
+    plain_template: a gunshot or an explosion
+    citation: docs/iseql_event_queries.md
+  handoff:
+    definition: One person carrying an object, then another person carrying the same object.
+    plain_template: an object passes from one person to another
+    citation: docs/iseql_event_queries.md
+  suspicious_near_vehicle:
+    definition: A person remains suspiciously close to or inspecting a parked vehicle for at least 3 seconds.
+    plain_template: a person lingering suspiciously near a vehicle
+    citation: docs/iseql_event_queries.md
+  vehicle_collision:
+    definition: A vehicle with visible collision damage, or the sound of a collision.
+    plain_template: a vehicle collision
+    citation: docs/iseql_event_queries.md
+  vehicle_escape:
+    definition: A person runs and then enters/exits a vehicle (visual), or engine sounds followed by tire squeal (audio).
+    plain_template: a vehicle escape
+    citation: docs/iseql_event_queries.md

@@ -1,0 +1,159 @@
+{
+  "$comment": "Test data for the ablation databases (tests/support.py build_ablation_db). Schema and EventSpec rows are copied from data/ablation_gemini_3_6_flash_vlm_rag_reid_qwen2_audio/gemini_3_6_flash_vlm_rag_reid_qwen2_audio_w5_0s_h2_5s.db: an Analyses table without the columns added later (AudioWindow, AudioHop, DeltasJson), no rows in Analyses or AppConfig, and rules in an older form (the C rules of fight, gunshot_or_explosion, vehicle_collision and vehicle_escape use set_side, F3). The intervals are those of watchout_fixture.json, copied from the same database. saved_params are the defaults of the A and B rules (default_deltas_for) without those of the C rules, which give 'inf' to every key of their legacy delta_map.",
+  "schema": [
+    "CREATE TABLE Analyses ( ID TEXT PRIMARY KEY, VideoPath TEXT NOT NULL, VideoFilename TEXT NOT NULL, Condition TEXT NOT NULL, VLMProvider TEXT, Model TEXT, GridRows INTEGER, GridCols INTEGER, SamplingRate INTEGER, VLMDelay REAL DEFAULT 0.0, VLMQuantization TEXT DEFAULT 'none', MaxRetries INTEGER DEFAULT 3, EmbedProvider TEXT DEFAULT 'huggingface', EmbedModel TEXT DEFAULT 'google/siglip-base-patch16-224', MemoryN INTEGER DEFAULT 3, MemoryTopK INTEGER DEFAULT 5, AudioProvider TEXT DEFAULT 'panns', AudioModel TEXT, AudioQuantization TEXT DEFAULT 'none', Stage TEXT NOT NULL DEFAULT 'queued', CreatedAt TEXT NOT NULL, CompletedAt TEXT )",
+    "CREATE TABLE VisualPerFrame ( AnalysisID TEXT NOT NULL, Frame INTEGER NOT NULL, ClassID INTEGER NOT NULL, Class TEXT NOT NULL, Block INTEGER NOT NULL, Description TEXT NOT NULL, PRIMARY KEY (AnalysisID, Frame, ClassID, Block) )",
+    "CREATE INDEX idx_VisualPerFrame_aid ON VisualPerFrame (AnalysisID)",
+    "CREATE INDEX idx_VisualPerFrame_frame ON VisualPerFrame (Frame)",
+    "CREATE TABLE VisualRelation ( AnalysisID TEXT NOT NULL, Frame INTEGER NOT NULL, RelationID INTEGER NOT NULL, RelationType TEXT NOT NULL, ClassID INTEGER NOT NULL, PRIMARY KEY (AnalysisID, Frame, RelationID, ClassID) )",
+    "CREATE INDEX idx_VisualRelation_aid ON VisualRelation (AnalysisID)",
+    "CREATE INDEX idx_VisualRelation_frame ON VisualRelation (Frame)",
+    "CREATE TABLE VisualPerInterval ( RelationID INTEGER PRIMARY KEY AUTOINCREMENT, AnalysisID TEXT NOT NULL, StartFrame INTEGER NOT NULL, EndFrame INTEGER NOT NULL, RelationType TEXT NOT NULL )",
+    "CREATE INDEX idx_VisualPerInterval_aid ON VisualPerInterval (AnalysisID)",
+    "CREATE INDEX idx_VisualPerInterval_start ON VisualPerInterval (StartFrame)",
+    "CREATE INDEX idx_VisualPerInterval_type ON VisualPerInterval (RelationType)",
+    "CREATE TABLE VisualParticipant ( RelationID INTEGER NOT NULL REFERENCES VisualPerInterval(RelationID), ClassID INTEGER NOT NULL, Class TEXT NOT NULL, PRIMARY KEY (RelationID, ClassID) )",
+    "CREATE TABLE AudioPerInterval ( AudioIntervalID INTEGER PRIMARY KEY AUTOINCREMENT, AnalysisID TEXT NOT NULL, StartFrame INTEGER NOT NULL, EndFrame INTEGER NOT NULL, AudioClass TEXT NOT NULL, Confidence REAL DEFAULT 1.0 )",
+    "CREATE INDEX idx_AudioPerInterval_aid ON AudioPerInterval (AnalysisID)",
+    "CREATE INDEX idx_AudioPerInterval_start ON AudioPerInterval (StartFrame)",
+    "CREATE INDEX idx_AudioPerInterval_end ON AudioPerInterval (EndFrame)",
+    "CREATE INDEX idx_AudioPerInterval_class ON AudioPerInterval (AudioClass)",
+    "CREATE TABLE AppConfig ( key TEXT PRIMARY KEY, value_json TEXT NOT NULL, updated_at TEXT NOT NULL DEFAULT (datetime('now')) )",
+    "CREATE TABLE \"EventSpec\" ( id TEXT NOT NULL, condition TEXT NOT NULL, model_json TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT NOT NULL DEFAULT (datetime('now')), PRIMARY KEY (id, condition))",
+    "CREATE INDEX idx_EventSpec_condition ON EventSpec (condition)"
+  ],
+  "event_specs": [
+    [
+      "fight",
+      "A",
+      "{\"event_name\": \"fight\", \"intervals\": [{\"pred\": {\"name\": \"physical_altercation\", \"arguments\": [\"person\", \"person\"]}, \"selection\": {\"preds\": [\"physical_altercation\"], \"args\": {\"1\": [\"person\"], \"2\": [\"person\"]}}, \"ts\": 1000, \"te\": 1010}], \"cross_conditions\": [{\"left_alias\": \"M1\", \"left_attr\": \"arg1\", \"op\": \"≠\", \"right_alias\": \"M1\", \"right_attr\": \"arg2\"}], \"operator_overrides\": [], \"custom_projection\": [\"M1.arg1\", \"M1.arg2\", \"M1.st\", \"M1.et\"], \"delta_unit\": \"seconds\", \"iseql_text\": \"π_{M1.arg1, M1.arg2, M1.st, M1.et} (\\n  σ_{M1.arg1≠M1.arg2} (\\n    σ_{pred=\\\"physical_altercation\\\" ∧ arg1=\\\"person\\\" ∧ arg2=\\\"person\\\"}(M1)\\n  ))\"}",
+      "2026-08-15 20:45:26",
+      "2026-08-19 09:23:33"
+    ],
+    [
+      "gunshot_or_explosion",
+      "A",
+      "{\"event_name\": \"gunshot_or_explosion\", \"intervals\": [{\"pred\": {\"name\": \"gunshot_visible\", \"arguments\": [\"person\"]}, \"selection\": {\"branches\": [{\"preds\": [\"gunshot_visible\"], \"args\": {\"1\": [\"person\"]}}, {\"preds\": [\"explosion_visible\"], \"args\": {\"1\": [\"vehicle\", \"object\"]}}]}, \"ts\": 1000, \"te\": 1010}], \"cross_conditions\": [], \"operator_overrides\": [], \"custom_projection\": [\"M1.arg1\", \"M1.st\", \"M1.et\"], \"delta_unit\": \"seconds\", \"iseql_text\": \"π_{M1.arg1, M1.st, M1.et} (\\n  σ_{(pred=\\\"gunshot_visible\\\" ∧ arg1=\\\"person\\\") ∨ (pred=\\\"explosion_visible\\\" ∧ arg1=\\\"vehicle\\\" ∨ arg1=\\\"object\\\")}(M1)\\n)\"}",
+      "2026-08-15 20:45:26",
+      "2026-08-19 09:23:33"
+    ],
+    [
+      "handoff",
+      "A",
+      "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"carrying\", \"arguments\": [\"person\", \"object\"]}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group_id\": null}, {\"pred\": {\"name\": \"carrying\", \"arguments\": [\"person\", \"object\"]}, \"ts\": 100, \"te\": 200, \"set_side\": null, \"group_id\": null}], \"cross_conditions\": [{\"left_alias\": \"M1\", \"left_attr\": \"arg1\", \"op\": \"≠\", \"right_alias\": \"M2\", \"right_attr\": \"arg1\"}, {\"left_alias\": \"M1\", \"left_attr\": \"arg2\", \"op\": \"=\", \"right_alias\": \"M2\", \"right_attr\": \"arg2\"}], \"delta_map\": {\"0\": {\"delta\": \"delta_visual_handoff\", \"zeta\": \"zeta_visual_handoff\", \"rho\": \"rho_visual_handoff\"}}, \"custom_projection\": [\"M1.arg1\", \"M2.arg1\", \"M1.arg2\", \"M1.st\", \"M2.et\"], \"iseql_text\": \"π_{M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et} (\\n  σ_{M1.arg1≠M2.arg1 ∧ M1.arg2=M2.arg2} (\\n    σ_{pred=\\\"carrying\\\" ∧ arg1=\\\"person\\\" ∧ arg2=\\\"object\\\"}(M1)\\n    Bef(δ:∞; ζ:<=, ρ:0)\\n    σ_{pred=\\\"carrying\\\" ∧ arg1=\\\"person\\\" ∧ arg2=\\\"object\\\"}(M2)\\n  ))\"}",
+      "2026-08-15 20:45:26",
+      "2026-08-19 09:23:33"
+    ],
+    [
+      "suspicious_near_vehicle",
+      "A",
+      "{\"event_name\": \"suspicious_near_vehicle\", \"intervals\": [{\"pred\": {\"name\": \"suspicious_near_vehicle\", \"arguments\": [\"person\", \"vehicle\"]}, \"selection\": {\"preds\": [\"suspicious_near_vehicle\"], \"args\": {\"1\": [\"person\"], \"2\": [\"vehicle\"]}}, \"ts\": 1000, \"te\": 1010}], \"cross_conditions\": [{\"type\": \"duration\", \"left_alias\": \"M1\", \"left_attr\": \"et\", \"right_alias\": \"M1\", \"right_attr\": \"st\", \"op\": \">=\", \"value\": 3}], \"operator_overrides\": [], \"custom_projection\": [\"M1.arg1\", \"M1.arg2\", \"M1.st\", \"M1.et\"], \"delta_unit\": \"seconds\", \"iseql_text\": \"π_{M1.arg1, M1.arg2, M1.st, M1.et} (\\n  σ_{(M1.et − M1.st) ≥ 3} (\\n    σ_{pred=\\\"suspicious_near_vehicle\\\" ∧ arg1=\\\"person\\\" ∧ arg2=\\\"vehicle\\\"}(M1)\\n  ))\"}",
+      "2026-08-15 20:45:26",
+      "2026-08-20 07:04:43"
+    ],
+    [
+      "vehicle_collision",
+      "A",
+      "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"vehicle_collision\", \"arguments\": [\"vehicle\"]}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group_id\": null}], \"custom_projection\": [\"M1.arg1\", \"M1.st\", \"M1.et\"], \"iseql_text\": \"π_{M1.arg1, M1.st, M1.et} (\\n  σ_{pred=\\\"vehicle_collision\\\" ∧ arg1=\\\"vehicle\\\"}(M1)\\n)\"}",
+      "2026-08-15 20:45:26",
+      "2026-08-19 09:23:33"
+    ],
+    [
+      "vehicle_escape",
+      "A",
+      "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"running\", \"arguments\": [\"person\"]}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group_id\": null}, {\"pred\": {\"name\": \"enter_or_exit_vehicle\", \"arguments\": [\"person\", \"vehicle\"]}, \"ts\": 50, \"te\": 150, \"set_side\": null, \"group_id\": null}], \"cross_conditions\": [{\"left_alias\": \"M1\", \"left_attr\": \"arg1\", \"op\": \"=\", \"right_alias\": \"M2\", \"right_attr\": \"arg1\"}], \"operator_overrides\": [{\"side\": \"none\", \"pair_idx\": 1, \"operator\": \"Bef\"}], \"delta_map\": {\"0\": {\"delta\": \"delta_visual_vehicle_escape\", \"zeta\": \"zeta_visual_vehicle_escape\", \"rho\": \"rho_visual_vehicle_escape\"}}, \"custom_projection\": [\"M1.arg1\", \"M2.arg2\", \"M1.st\", \"M2.et\"], \"iseql_text\": \"π_{M1.arg1, M2.arg2, M1.st, M2.et} (\\n  σ_{M1.arg1=M2.arg1} (\\n    σ_{pred=\\\"running\\\" ∧ arg1=\\\"person\\\"}(M1)\\n    Bef(δ:2; ζ:<=, ρ:0)\\n    σ_{pred=\\\"enter_or_exit_vehicle\\\" ∧ arg1=\\\"person\\\" ∧ arg2=\\\"vehicle\\\"}(M2)\\n  ))\"}",
+      "2026-08-15 20:45:26",
+      "2026-08-19 09:23:33"
+    ],
+    [
+      "fight",
+      "B",
+      "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"shout\", \"arguments\": []}, \"ts\": 0, \"te\": 50, \"set_side\": null, \"group_id\": null}, {\"pred\": {\"name\": \"impact\", \"arguments\": []}, \"ts\": 50, \"te\": 100, \"set_side\": null, \"group_id\": null}], \"delta_map\": {\"0\": {\"delta\": 5, \"zeta\": \"zeta_audio_fight\", \"rho\": \"rho_audio_fight\"}}, \"custom_projection\": [\"M1.st\", \"M2.et\"], \"iseql_text\": \"π_{M1.st, M2.et} (\\n  σ_{pred=\\\"shout\\\"}(M1)\\n  Bef(δ:5; ζ:<=, ρ:0)\\n  σ_{pred=\\\"impact\\\"}(M2)\\n)\"}",
+      "2026-08-15 20:45:26",
+      "2026-08-19 09:23:33"
+    ],
+    [
+      "gunshot_or_explosion",
+      "B",
+      "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"gunshot_or_explosion\", \"arguments\": []}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group_id\": null}], \"custom_projection\": [\"M1.st\", \"M1.et\"], \"iseql_text\": \"π_{M1.st, M1.et} (\\n  σ_{pred=\\\"gunshot_or_explosion\\\"}(M1)\\n)\"}",
+      "2026-08-15 20:45:26",
+      "2026-08-19 09:23:33"
+    ],
+    [
+      "vehicle_collision",
+      "B",
+      "{\"event_name\": \"vehicle_collision\", \"intervals\": [{\"pred\": {\"name\": \"horn\", \"arguments\": []}, \"selection\": {\"branches\": [{\"preds\": [\"horn\"], \"args\": {}}, {\"preds\": [\"skidding\"], \"args\": {}}]}, \"ts\": 1000, \"te\": 1010}, {\"pred\": {\"name\": \"impact\", \"arguments\": []}, \"selection\": {\"branches\": [{\"preds\": [\"impact\"], \"args\": {}}, {\"preds\": [\"glass_breaking\"], \"args\": {}}]}, \"ts\": 1002, \"te\": 1008}], \"cross_conditions\": [], \"operator_overrides\": [{\"side\": \"none\", \"pair_idx\": 1, \"operator\": \"SP\"}], \"delta_map\": {\"0\": {\"delta\": null, \"zeta\": \"zeta_audio_vehicle_collision\", \"rho\": \"rho_audio_vehicle_collision\"}}, \"custom_projection\": [\"M1.st\", \"M2.et\"], \"delta_unit\": \"seconds\", \"iseql_text\": \"π_{M1.st, M2.et} (\\n  σ_{(pred=\\\"horn\\\") ∨ (pred=\\\"skidding\\\")}(M1)\\n  SP(δ:∞; ζ:<=, ρ:0)\\n  σ_{(pred=\\\"impact\\\") ∨ (pred=\\\"glass_breaking\\\")}(M2)\\n)\"}",
+      "2026-08-15 20:45:26",
+      "2026-08-19 09:23:33"
+    ],
+    [
+      "vehicle_escape",
+      "B",
+      "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"engine\", \"arguments\": []}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group_id\": null}, {\"pred\": {\"name\": \"tire_squeal\", \"arguments\": []}, \"ts\": 50, \"te\": 150, \"set_side\": null, \"group_id\": null}], \"operator_overrides\": [{\"side\": \"none\", \"pair_idx\": 1, \"operator\": \"SP\"}], \"delta_map\": {\"0\": {\"delta\": null, \"zeta\": \"zeta_audio_vehicle_escape\", \"rho\": \"rho_audio_vehicle_escape\"}}, \"custom_projection\": [\"M1.st\", \"M2.et\"], \"iseql_text\": \"π_{M1.st, M2.et} (\\n  σ_{pred=\\\"engine\\\"}(M1)\\n  SP(δ:∞; ζ:<=, ρ:0)\\n  σ_{pred=\\\"tire_squeal\\\"}(M2)\\n)\"}",
+      "2026-08-15 20:45:26",
+      "2026-08-19 09:23:33"
+    ],
+    [
+      "fight",
+      "C",
+      "{\"event_name\": \"fight\", \"set_operator\": \"∪\", \"intervals\": [{\"pred\": {\"name\": \"shout\", \"arguments\": []}, \"selection\": {\"preds\": [\"shout\"], \"args\": {}}, \"ts\": 1000, \"te\": 1010, \"set_side\": \"left\"}, {\"pred\": {\"name\": \"impact\", \"arguments\": []}, \"selection\": {\"preds\": [\"impact\"], \"args\": {}}, \"ts\": 1015, \"te\": 1025, \"set_side\": \"left\"}, {\"pred\": {\"name\": \"physical_altercation\", \"arguments\": [\"person\", \"person\"]}, \"selection\": {\"preds\": [\"physical_altercation\"], \"args\": {\"1\": [\"person\"], \"2\": [\"person\"]}}, \"ts\": 1000, \"te\": 1010, \"set_side\": \"right\"}], \"cross_conditions\": [{\"left_alias\": \"M3\", \"left_attr\": \"arg1\", \"op\": \"≠\", \"right_alias\": \"M3\", \"right_attr\": \"arg2\"}], \"operator_overrides\": [{\"side\": \"left\", \"pair_idx\": 1, \"operator\": \"Bef\"}], \"delta_map\": {\"left.0\": {\"delta\": 5, \"zeta\": \"zeta_audio_fight\", \"rho\": \"rho_audio_fight\"}}, \"delta_unit\": \"seconds\", \"iseql_text\": \"π_{M1.st, M1.et, M2.st, M2.et} (\\n  σ_{pred=\\\"shout\\\"}(M1)\\n  Bef(δ:5; ζ:<=, ρ:0)\\n  σ_{pred=\\\"impact\\\"}(M2)\\n)\\n∪\\nπ_{M1.arg1, M1.arg2, M1.st, M1.et} (\\n  σ_{M1.arg1≠M1.arg2} (\\n    σ_{pred=\\\"physical_altercation\\\" ∧ arg1=\\\"person\\\" ∧ arg2=\\\"person\\\"}(M1)\\n  ))\", \"left_projection\": [\"M1.st\", \"M2.et\"], \"right_projection\": [\"M1.arg1\", \"M1.arg2\", \"M1.st\", \"M1.et\"]}",
+      "2026-08-16 12:08:51",
+      "2026-08-19 09:23:33"
+    ],
+    [
+      "gunshot_or_explosion",
+      "C",
+      "{\"event_name\": \"gunshot_or_explosion\", \"set_operator\": \"∪\", \"intervals\": [{\"pred\": {\"name\": \"gunshot_or_explosion\", \"arguments\": []}, \"selection\": {\"preds\": [\"gunshot_or_explosion\"], \"args\": {}}, \"ts\": 1000, \"te\": 1010, \"set_side\": \"left\"}, {\"pred\": {\"name\": \"gunshot_visible\", \"arguments\": [\"person\"]}, \"selection\": {\"branches\": [{\"preds\": [\"gunshot_visible\"], \"args\": {\"1\": [\"person\"]}}, {\"preds\": [\"explosion_visible\"], \"args\": {\"1\": [\"vehicle\", \"object\"]}}]}, \"ts\": 1000, \"te\": 1010, \"set_side\": \"right\"}], \"cross_conditions\": [], \"operator_overrides\": [], \"delta_unit\": \"seconds\", \"iseql_text\": \"π_{M1.st, M1.et} (\\n  σ_{pred=\\\"gunshot_or_explosion\\\"}(M1)\\n)\\n∪\\nπ_{M1.arg1, M1.st, M1.et} (\\n  σ_{(pred=\\\"gunshot_visible\\\" ∧ arg1=\\\"person\\\") ∨ (pred=\\\"explosion_visible\\\" ∧ arg1=\\\"vehicle\\\" ∨ arg1=\\\"object\\\")}(M1)\\n)\", \"left_projection\": [\"M1.st\", \"M1.et\"], \"right_projection\": [\"M1.arg1\", \"M1.st\", \"M1.et\"]}",
+      "2026-08-16 12:08:51",
+      "2026-08-19 09:23:33"
+    ],
+    [
+      "handoff",
+      "C",
+      "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"carrying\", \"arguments\": [\"person\", \"object\"]}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group_id\": null}, {\"pred\": {\"name\": \"carrying\", \"arguments\": [\"person\", \"object\"]}, \"ts\": 100, \"te\": 200, \"set_side\": null, \"group_id\": null}], \"cross_conditions\": [{\"left_alias\": \"M1\", \"left_attr\": \"arg1\", \"op\": \"≠\", \"right_alias\": \"M2\", \"right_attr\": \"arg1\"}, {\"left_alias\": \"M1\", \"left_attr\": \"arg2\", \"op\": \"=\", \"right_alias\": \"M2\", \"right_attr\": \"arg2\"}], \"delta_map\": {\"0\": {\"delta\": \"delta_visual_handoff\", \"zeta\": \"zeta_visual_handoff\", \"rho\": \"rho_visual_handoff\"}}, \"custom_projection\": [\"M1.arg1\", \"M2.arg1\", \"M1.arg2\", \"M1.st\", \"M2.et\"], \"iseql_text\": \"π_{M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et} (\\n  σ_{M1.arg1≠M2.arg1 ∧ M1.arg2=M2.arg2} (\\n    σ_{pred=\\\"carrying\\\" ∧ arg1=\\\"person\\\" ∧ arg2=\\\"object\\\"}(M1)\\n    Bef(δ:∞; ζ:<=, ρ:0)\\n    σ_{pred=\\\"carrying\\\" ∧ arg1=\\\"person\\\" ∧ arg2=\\\"object\\\"}(M2)\\n  ))\"}",
+      "2026-08-16 12:08:51",
+      "2026-08-19 09:23:33"
+    ],
+    [
+      "suspicious_near_vehicle",
+      "C",
+      "{\"event_name\": \"suspicious_near_vehicle\", \"intervals\": [{\"pred\": {\"name\": \"suspicious_near_vehicle\", \"arguments\": [\"person\", \"vehicle\"]}, \"selection\": {\"preds\": [\"suspicious_near_vehicle\"], \"args\": {\"1\": [\"person\"], \"2\": [\"vehicle\"]}}, \"ts\": 1000, \"te\": 1010}], \"cross_conditions\": [{\"type\": \"duration\", \"left_alias\": \"M1\", \"left_attr\": \"et\", \"right_alias\": \"M1\", \"right_attr\": \"st\", \"op\": \">=\", \"value\": 3}], \"operator_overrides\": [], \"custom_projection\": [\"M1.arg1\", \"M1.arg2\", \"M1.st\", \"M1.et\"], \"delta_unit\": \"seconds\", \"iseql_text\": \"π_{M1.arg1, M1.arg2, M1.st, M1.et} (\\n  σ_{(M1.et − M1.st) ≥ 3} (\\n    σ_{pred=\\\"suspicious_near_vehicle\\\" ∧ arg1=\\\"person\\\" ∧ arg2=\\\"vehicle\\\"}(M1)\\n  ))\"}",
+      "2026-08-16 12:08:51",
+      "2026-08-20 07:04:43"
+    ],
+    [
+      "vehicle_collision",
+      "C",
+      "{\"event_name\": \"vehicle_collision\", \"set_operator\": \"∪\", \"intervals\": [{\"pred\": {\"name\": \"horn\", \"arguments\": []}, \"selection\": {\"branches\": [{\"preds\": [\"horn\"], \"args\": {}}, {\"preds\": [\"skidding\"], \"args\": {}}]}, \"ts\": 1000, \"te\": 1010, \"set_side\": \"left\"}, {\"pred\": {\"name\": \"impact\", \"arguments\": []}, \"selection\": {\"branches\": [{\"preds\": [\"impact\"], \"args\": {}}, {\"preds\": [\"glass_breaking\"], \"args\": {}}]}, \"ts\": 1002, \"te\": 1008, \"set_side\": \"left\"}, {\"pred\": {\"name\": \"vehicle_collision\", \"arguments\": [\"vehicle\"]}, \"selection\": {\"preds\": [\"vehicle_collision\"], \"args\": {\"1\": [\"vehicle\"]}}, \"ts\": 1000, \"te\": 1010, \"set_side\": \"right\"}], \"cross_conditions\": [], \"operator_overrides\": [{\"side\": \"left\", \"pair_idx\": 1, \"operator\": \"SP\"}], \"delta_map\": {\"left.0\": {\"delta\": null, \"zeta\": \"zeta_audio_vehicle_collision\", \"rho\": \"rho_audio_vehicle_collision\"}}, \"delta_unit\": \"seconds\", \"iseql_text\": \"π_{M1.st, M1.et, M2.st, M2.et} (\\n  σ_{(pred=\\\"horn\\\") ∨ (pred=\\\"skidding\\\")}(M1)\\n  SP(δ:∞; ζ:<=, ρ:0)\\n  σ_{(pred=\\\"impact\\\") ∨ (pred=\\\"glass_breaking\\\")}(M2)\\n)\\n∪\\nπ_{M1.arg1, M1.st, M1.et} (\\n  σ_{pred=\\\"vehicle_collision\\\" ∧ arg1=\\\"vehicle\\\"}(M1)\\n)\", \"left_projection\": [\"M1.st\", \"M2.et\"], \"right_projection\": [\"M1.arg1\", \"M1.st\", \"M1.et\"]}",
+      "2026-08-16 12:08:51",
+      "2026-08-19 09:23:33"
+    ],
+    [
+      "vehicle_escape",
+      "C",
+      "{\"set_operator\": \"∪\", \"intervals\": [{\"pred\": {\"name\": \"engine\", \"arguments\": []}, \"ts\": 0, \"te\": 100, \"set_side\": \"left\", \"group_id\": null}, {\"pred\": {\"name\": \"tire_squeal\", \"arguments\": []}, \"ts\": 50, \"te\": 150, \"set_side\": \"left\", \"group_id\": null}, {\"pred\": {\"name\": \"running\", \"arguments\": [\"person\"]}, \"ts\": 0, \"te\": 100, \"set_side\": \"right\", \"group_id\": null}, {\"pred\": {\"name\": \"enter_or_exit_vehicle\", \"arguments\": [\"person\", \"vehicle\"]}, \"ts\": 50, \"te\": 150, \"set_side\": \"right\", \"group_id\": null}], \"cross_conditions\": [{\"left_alias\": \"M3\", \"left_attr\": \"arg1\", \"op\": \"=\", \"right_alias\": \"M4\", \"right_attr\": \"arg1\"}], \"operator_overrides\": [{\"side\": \"left\", \"pair_idx\": 1, \"operator\": \"SP\"}, {\"side\": \"right\", \"pair_idx\": 1, \"operator\": \"Bef\"}], \"delta_map\": {\"left.0\": {\"delta\": null, \"zeta\": \"zeta_audio_vehicle_escape\", \"rho\": \"rho_audio_vehicle_escape\"}, \"right.0\": {\"delta\": \"delta_visual_vehicle_escape\", \"zeta\": \"zeta_visual_vehicle_escape\", \"rho\": \"rho_visual_vehicle_escape\"}}, \"delta_unit\": \"seconds\", \"iseql_text\": \"π_{M1.st, M1.et, M2.st, M2.et} (\\n  σ_{pred=\\\"engine\\\"}(M1)\\n  SP(δ:∞; ζ:<=, ρ:0)\\n  σ_{pred=\\\"tire_squeal\\\"}(M2)\\n)\\n∪\\nπ_{M1.arg1, M1.st, M1.et, M2.arg1, M2.arg2, M2.st, M2.et} (\\n  σ_{M1.arg1=M2.arg1} (\\n    σ_{pred=\\\"running\\\" ∧ arg1=\\\"person\\\"}(M1)\\n    Bef(δ:2; ζ:<=, ρ:0)\\n    σ_{pred=\\\"enter_or_exit_vehicle\\\" ∧ arg1=\\\"person\\\" ∧ arg2=\\\"vehicle\\\"}(M2)\\n  ))\", \"left_projection\": [\"M1.st\", \"M2.et\"], \"right_projection\": [\"M1.arg1\", \"M2.arg2\", \"M1.st\", \"M2.et\"]}",
+      "2026-08-16 12:08:51",
+      "2026-08-19 09:23:33"
+    ]
+  ],
+  "saved_params": {
+    "deltas": {
+      "delta_visual_handoff": "inf",
+      "zeta_visual_handoff": "<=",
+      "rho_visual_handoff": 0,
+      "delta_visual_vehicle_escape": 2,
+      "zeta_visual_vehicle_escape": "<=",
+      "rho_visual_vehicle_escape": 0,
+      "fight_delta": 5,
+      "zeta_audio_fight": "<=",
+      "rho_audio_fight": 0,
+      "vehicle_collision_delta": "inf",
+      "zeta_audio_vehicle_collision": "<=",
+      "rho_audio_vehicle_collision": 0,
+      "vehicle_escape_delta": "inf",
+      "zeta_audio_vehicle_escape": "<=",
+      "rho_audio_vehicle_escape": 0
+    },
+    "unit": "seconds"
+  }
+}

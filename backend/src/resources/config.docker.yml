@@ -9,3 +9,5 @@ vlm:
   timeout: 60
 log:
   path: /tmp/log
+post_analysis:
+  command: []

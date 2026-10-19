@@ -55,6 +55,7 @@ bitsandbytes = "==0.49.2"
 pytest = "*"
 pytest-cov = "*"
 ruff = "*"
+mypy = "*"
 
 [requires]
 python_version = "3.10"

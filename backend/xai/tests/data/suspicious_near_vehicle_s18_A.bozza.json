@@ -1,0 +1,481 @@
+{
+  "$comment": "Caso golden: nodo duration (M1.et − M1.st) >= 3 secondi. Prodotta da K1 sul database di test (tests/support.py, build_fixture_db) con i parametri di default della regola. Intervalli, partecipanti e riga sono reali (DB di ablation, scena 18); la regola è quella del seed. Il DB di ablation non ha la riga Analyses: SamplingRate=24, AudioWindow/AudioHop e provider sono ipotizzati. I testi della bozza sono in inglese.",
+  "contract_meta": {
+    "contract_version": "0.1.0-k1",
+    "analysis_id": "gemini_3_6_flash_qwen2_audio_s18",
+    "source_snapshot": {
+      "backend_version": "WATCHOUT ISEQL 0.1.0",
+      "extracted_at": "2026-10-06T20:00:00Z",
+      "sources": {
+        "backend_version": {
+          "stage": "code",
+          "store": "backend/src/__init__.py",
+          "record_id": "__app_name__, __version__",
+          "mode": "read"
+        }
+      }
+    },
+    "pipeline_config": {
+      "vlm_backend": "gemini / gemini-3.6-flash",
+      "audio_backend": "huggingface / qwen2_audio",
+      "sampling": {
+        "source_fps": 24,
+        "sample_every_n": 24,
+        "effective_hz": 1.0
+      },
+      "audio_window": {
+        "window_s": 5.0,
+        "hop_s": 2.5
+      },
+      "merge_tolerance_s": 2.0,
+      "determinism": {
+        "temperature": 0.0,
+        "seed": 42
+      },
+      "detection_mode": "visual",
+      "sources": {
+        "vlm_backend": {
+          "stage": "config",
+          "store": "Analyses:gemini_3_6_flash_qwen2_audio_s18",
+          "record_id": "VLMProvider,Model",
+          "mode": "read"
+        },
+        "audio_backend": {
+          "stage": "config",
+          "store": "Analyses:gemini_3_6_flash_qwen2_audio_s18",
+          "record_id": "AudioProvider,AudioModel",
+          "mode": "read"
+        },
+        "sampling.source_fps": {
+          "stage": "config",
+          "store": "Analyses:gemini_3_6_flash_qwen2_audio_s18",
+          "record_id": "SamplingRate",
+          "mode": "read"
+        },
+        "sampling.sample_every_n": {
+          "stage": "code",
+          "store": "backend/src/service/impl/visual_service_impl.py",
+          "record_id": "frame_count % sampling_rate",
+          "mode": "read"
+        },
+        "sampling.effective_hz": {
+          "derived_from": [
+            "sampling.source_fps",
+            "sampling.sample_every_n"
+          ]
+        },
+        "audio_window": {
+          "stage": "config",
+          "store": "Analyses:gemini_3_6_flash_qwen2_audio_s18",
+          "record_id": "AudioWindow,AudioHop",
+          "mode": "read"
+        },
+        "merge_tolerance_s": {
+          "stage": "code",
+          "store": "backend/xai/resources/pipeline_constants.yaml",
+          "record_id": "merge_tolerance",
+          "mode": "read"
+        },
+        "determinism": {
+          "stage": "code",
+          "store": "backend/src/utils/vlm_client.py",
+          "record_id": "VLMClient.__init__: temperature and seed defaults",
+          "mode": "read"
+        },
+        "detection_mode": {
+          "from_request": "condition",
+          "value": "A"
+        }
+      }
+    },
+    "glossary_version": "glossary.yaml@0.1.0#73fdaf8c187c+relation_vocab@2026-08-30 16:51:22",
+    "params_origin": "rule_defaults",
+    "sources": {
+      "glossary_version": {
+        "stage": "config",
+        "store": "AppConfig",
+        "record_id": "relation_vocab.updated_at",
+        "mode": "read"
+      },
+      "params_origin": {
+        "stage": "iseql",
+        "store": "EventSpec",
+        "record_id": "suspicious_near_vehicle/A#/iseql_text",
+        "mode": "read"
+      }
+    }
+  },
+  "event": {
+    "event_id": "ev_69409d7b3e1a",
+    "model_id": "suspicious_near_vehicle/A",
+    "label": "suspicious_near_vehicle",
+    "modality_origin": "visual",
+    "interval": {
+      "start_frame": 48,
+      "end_frame": 168,
+      "start_s": 2.0,
+      "end_s": 7.0,
+      "read_as": "seconds"
+    },
+    "arguments": [
+      {
+        "role": "M1.arg1",
+        "class": "person",
+        "entity_id": "ent_6",
+        "column": "M1_person"
+      },
+      {
+        "role": "M1.arg2",
+        "class": "vehicle",
+        "entity_id": "ent_1",
+        "column": "M1_vehicle"
+      }
+    ],
+    "modality_rules": {
+      "visual": {
+        "rule_ref": "suspicious_near_vehicle/A"
+      },
+      "audio": null
+    },
+    "modality_detections": [
+      {
+        "modality": "visual",
+        "interval": {
+          "start_frame": 48,
+          "end_frame": 168,
+          "start_s": 2.0,
+          "end_s": 7.0,
+          "read_as": "seconds"
+        },
+        "source_ref": {
+          "stage": "iseql",
+          "store": "detection:suspicious_near_vehicle/A@gemini_3_6_flash_qwen2_audio_s18",
+          "record_id": "{\"M1.et\":7.0,\"M1.st\":2.0,\"M1_person\":6,\"M1_vehicle\":1}",
+          "mode": "read"
+        }
+      }
+    ],
+    "source_ref": {
+      "stage": "iseql",
+      "store": "detection:suspicious_near_vehicle/A@gemini_3_6_flash_qwen2_audio_s18",
+      "record_id": "{\"M1.et\":7.0,\"M1.st\":2.0,\"M1_person\":6,\"M1_vehicle\":1}",
+      "mode": "read"
+    },
+    "unavailable": {
+      "modality_rules.audio": {
+        "reason": "modality_rule_absent",
+        "detail": "EventSpec has no suspicious_near_vehicle/B"
+      }
+    }
+  },
+  "rule": {
+    "expression": "π_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{(M1.et − M1.st) >= 3} (\n    σ_{pred=\"suspicious_near_vehicle\" ∧ arg1=\"person\" ∧ arg2=\"vehicle\"}(M1)\n  ))",
+    "expression_saved": "π_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{(M1.et − M1.st) ≥ 3} (\n    σ_{pred=\"suspicious_near_vehicle\" ∧ arg1=\"person\" ∧ arg2=\"vehicle\"}(M1)\n  ))",
+    "structure_ref": {
+      "stage": "iseql",
+      "store": "EventSpec",
+      "record_id": "suspicious_near_vehicle/A",
+      "mode": "read"
+    },
+    "model_form": "F2",
+    "projection": [
+      "M1.arg1",
+      "M1.arg2",
+      "M1.st",
+      "M1.et"
+    ],
+    "bindings": null,
+    "constraints": [
+      {
+        "constraint_id": "c_s1_proj",
+        "branch": "s1",
+        "modality": "visual",
+        "variables": [
+          "M1"
+        ],
+        "parent": null,
+        "text": "π_{M1.arg1, M1.arg2, M1.st, M1.et}",
+        "source_ref": {
+          "stage": "iseql",
+          "store": "EventSpec",
+          "record_id": "suspicious_near_vehicle/A#/set_expression/projection",
+          "mode": "read"
+        },
+        "kind": "projection",
+        "payload": {
+          "fields": [
+            "M1.arg1",
+            "M1.arg2",
+            "M1.st",
+            "M1.et"
+          ]
+        }
+      },
+      {
+        "constraint_id": "c_s1_cc1",
+        "branch": "s1",
+        "modality": "visual",
+        "variables": [
+          "M1"
+        ],
+        "parent": "c_s1_proj",
+        "text": "(M1.et − M1.st) >= 3",
+        "source_ref": {
+          "stage": "iseql",
+          "store": "EventSpec",
+          "record_id": "suspicious_near_vehicle/A#/cross_conditions/0",
+          "mode": "read"
+        },
+        "kind": "duration",
+        "payload": {
+          "end": "M1.et",
+          "start": "M1.st",
+          "op": ">=",
+          "value": 3,
+          "unit": "seconds"
+        }
+      },
+      {
+        "constraint_id": "c_s1_sel1",
+        "branch": "s1",
+        "modality": "visual",
+        "variables": [
+          "M1"
+        ],
+        "parent": "c_s1_proj",
+        "text": "σ_{pred=\"suspicious_near_vehicle\" ∧ arg1=\"person\" ∧ arg2=\"vehicle\"}(M1)",
+        "source_ref": {
+          "stage": "iseql",
+          "store": "EventSpec",
+          "record_id": "suspicious_near_vehicle/A#/intervals/0",
+          "mode": "read"
+        },
+        "kind": "selection",
+        "payload": {
+          "branches": [
+            {
+              "predicates": [
+                "suspicious_near_vehicle"
+              ],
+              "arg_classes": {
+                "1": [
+                  "person"
+                ],
+                "2": [
+                  "vehicle"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "unavailable": {
+      "bindings": {
+        "reason": "lineage_not_persisted",
+        "detail": "WatchOut's SQL projects ClassID and times, not RelationID (iseql/compiler.py)"
+      }
+    }
+  },
+  "entities": [
+    {
+      "entity_id": "ent_1",
+      "class": "vehicle",
+      "reid_evidence": {
+        "status": "not_available",
+        "gallery_match_id": null,
+        "similarity": null
+      },
+      "source_ref": {
+        "stage": "reid",
+        "store": "VisualParticipant",
+        "record_id": "54:1",
+        "mode": "read"
+      },
+      "unavailable": {
+        "reid_evidence": {
+          "reason": "reid_similarity_not_persisted",
+          "detail": "Chroma stores the embeddings, not the match similarity"
+        }
+      }
+    },
+    {
+      "entity_id": "ent_6",
+      "class": "person",
+      "reid_evidence": {
+        "status": "not_available",
+        "gallery_match_id": null,
+        "similarity": null
+      },
+      "source_ref": {
+        "stage": "reid",
+        "store": "VisualParticipant",
+        "record_id": "54:6",
+        "mode": "read"
+      },
+      "unavailable": {
+        "reid_evidence": {
+          "reason": "reid_similarity_not_persisted",
+          "detail": "Chroma stores the embeddings, not the match similarity"
+        }
+      }
+    }
+  ],
+  "intervals": [
+    {
+      "interval_id": "iv_v54",
+      "source": "VisualPerInterval",
+      "predicate": "suspicious_near_vehicle",
+      "args": [
+        "ent_6",
+        "ent_1"
+      ],
+      "args_ordered": true,
+      "anchor": {
+        "start_frame": 48,
+        "end_frame": 168,
+        "start_s": 2.0,
+        "end_s": 7.0,
+        "read_as": "frames"
+      },
+      "used_by_rule": null,
+      "confidence": null,
+      "source_ref": {
+        "stage": "iad",
+        "store": "VisualPerInterval",
+        "record_id": "54",
+        "mode": "read"
+      },
+      "sources": {
+        "args": {
+          "stage": "reid",
+          "store": "VisualParticipant",
+          "record_id": "54:1,54:6",
+          "mode": "read"
+        },
+        "args_order": {
+          "stage": "config",
+          "store": "AppConfig",
+          "record_id": "relation_vocab.relation_classids[suspicious_near_vehicle] = (PersonID, VehicleID)",
+          "mode": "read"
+        }
+      },
+      "unavailable": {
+        "used_by_rule": {
+          "reason": "lineage_not_persisted",
+          "detail": "WatchOut's SQL projects ClassID and times, not RelationID (iseql/compiler.py)"
+        },
+        "confidence": {
+          "reason": "visual_confidence_not_recorded",
+          "detail": "VisualPerInterval has no confidence column"
+        }
+      }
+    }
+  ],
+  "actions": null,
+  "glossary": [
+    {
+      "term_id": "g_event_model_suspicious_near_vehicle",
+      "kind": "event_model",
+      "term": "suspicious_near_vehicle",
+      "definition": "A person remains suspiciously close to or inspecting a parked vehicle for at least 3 seconds.",
+      "plain_template": "a person lingering suspiciously near a vehicle",
+      "source": "event_author",
+      "source_detail": "backend/xai/resources/glossary.yaml events.suspicious_near_vehicle, from docs/iseql_event_queries.md"
+    },
+    {
+      "term_id": "g_predicate_suspicious_near_vehicle",
+      "kind": "predicate",
+      "term": "suspicious_near_vehicle",
+      "definition": "A person is lingering suspiciously around a parked vehicle without entering it: peering into windows with hands cupped around the eyes, crouching near or examining the tires/body, trying door or trunk handles, or pacing/circling the vehicle while repeatedly looking around. Report only when the person is NOT entering or driving the vehicle.",
+      "plain_template": "{arg1} lingers suspiciously around {arg2}",
+      "source": {
+        "stage": "config",
+        "store": "AppConfig",
+        "record_id": "relation_vocab.relation_descriptions.suspicious_near_vehicle",
+        "mode": "read"
+      },
+      "sources": {
+        "plain_template": {
+          "stage": "code",
+          "store": "backend/xai/resources/glossary.yaml",
+          "record_id": "predicates.suspicious_near_vehicle",
+          "mode": "read"
+        }
+      }
+    }
+  ],
+  "unavailable": {
+    "actions": {
+      "reason": "keyframes_not_persisted",
+      "detail": "this WatchOut version does not store key frames"
+    }
+  },
+  "harvest_report": {
+    "request": {
+      "analysis_id": "gemini_3_6_flash_qwen2_audio_s18",
+      "event_type": "suspicious_near_vehicle",
+      "condition": "A",
+      "params": "defaults",
+      "row": {
+        "M1_person": 6,
+        "M1_vehicle": 1,
+        "M1.st": 2.0,
+        "M1.et": 7.0
+      }
+    },
+    "row_match": {
+      "rows_returned": 1,
+      "matches": 1,
+      "matched_index": 0
+    },
+    "checks": [
+      {
+        "name": "completeness",
+        "passed": true,
+        "violations": []
+      },
+      {
+        "name": "referential_closure",
+        "passed": true,
+        "violations": []
+      }
+    ],
+    "missing_fields": [
+      {
+        "path": "event.modality_rules.audio",
+        "reason": "modality_rule_absent"
+      },
+      {
+        "path": "rule.bindings",
+        "reason": "lineage_not_persisted"
+      },
+      {
+        "path": "entities[*].reid_evidence",
+        "reason": "reid_similarity_not_persisted"
+      },
+      {
+        "path": "intervals[*].used_by_rule",
+        "reason": "lineage_not_persisted"
+      },
+      {
+        "path": "intervals[*].confidence",
+        "reason": "visual_confidence_not_recorded"
+      },
+      {
+        "path": "actions",
+        "reason": "keyframes_not_persisted"
+      }
+    ],
+    "notes": [
+      {
+        "code": "selection_basis",
+        "detail": "pertinence_filter: predicates of branch s1 {suspicious_near_vehicle} and intervals with at least one entity of the row {1, 6}"
+      },
+      {
+        "code": "saved_text_diverges_from_structure",
+        "detail": "the saved iseql_text has σ_{(M1.et − M1.st) ≥ 3} where the executed structure renders σ_{(M1.et − M1.st) >= 3}"
+      }
+    ]
+  }
+}
