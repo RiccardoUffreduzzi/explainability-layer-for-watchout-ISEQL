@@ -12,13 +12,11 @@ from typing import TypeVar
 from xai.contract.ids import event_id
 from xai.contract.model import Condition, RowMatch
 from xai.contract.reasons import InputError
-from xai.k1_harvester.context import AnalysisReadings, HarvestContext
+from xai.k1_harvester.context import AnalysisReadings, HarvestContext, PreparedRule
 from xai.k1_harvester.modality import OriginResolver
 from xai.k1_harvester.ports import (
     DetectedRow,
-    Detection,
     DetectionNotPossible,
-    ModelForm,
     ParamsMissing,
     ParamsSnapshot,
     RowColumns,
@@ -98,9 +96,7 @@ class EventLocator:
             )
         return rule
 
-    def prepare(
-        self, readings: AnalysisReadings, rule: RuleSnapshot
-    ) -> tuple[ModelForm, RuleLayout, Detection]:
+    def prepare(self, readings: AnalysisReadings, rule: RuleSnapshot) -> PreparedRule:
         """The rule's form and layout, and its detection with the analysis parameters."""
         form, layout = readings.layout(rule)
         if layout.columns is None and not layout.side_columns:
@@ -109,7 +105,7 @@ class EventLocator:
                 f"{rule.ref}: {layout.columns_problem or 'columns not traceable'}",
             )
         detection = self._engine(lambda: readings.detection(rule), rule.ref)
-        return form, layout, detection
+        return PreparedRule(rule, form, layout, detection)
 
     # row level
 
@@ -119,31 +115,31 @@ class EventLocator:
         """The context of the requested row (single request, ``harvest``)."""
         condition = self.condition(readings, request.condition)
         rule = self.rule(readings, request.event_type, condition)
-        form, layout, detection = self.prepare(readings, rule)
-        matches = [i for i, row in enumerate(detection.rows) if row_matches(request.row, row)]
+        prepared = self.prepare(readings, rule)
+        rows = prepared.detection.rows
+        matches = [i for i, row in enumerate(rows) if row_matches(request.row, row)]
         if not matches:
             raise HarvestFailure.input(
                 InputError.EVENT_NOT_REPRODUCIBLE,
-                f"{rule.ref} returns {len(detection.rows)} row(s) on {readings.analysis.analysis_id} "
+                f"{rule.ref} returns {len(rows)} row(s) on {readings.analysis.analysis_id} "
                 f"with the {readings.params.origin} parameters, none equal to the requested row",
             )
-        return self.context(request, readings, rule, form, layout, detection, matches, extracted_at)
+        return self.context(request, readings, prepared, matches, extracted_at)
 
     def context(
         self,
         request: HarvestRequest,
         readings: AnalysisReadings,
-        rule: RuleSnapshot,
-        form: ModelForm,
-        layout: RuleLayout,
-        detection: Detection,
+        prepared: PreparedRule,
         matches: list[int],
         extracted_at: datetime,
     ) -> HarvestContext:
-        """The context of a row already found among the rows of the detection."""
+        """The context of a row already found: ``matches`` are its index and those of its copies."""
+        rule, layout, detection = prepared.rule, prepared.layout, prepared.detection
         row: DetectedRow = detection.rows[matches[0]]
         columns = self.row_columns(rule.ref, layout, row)
-        if extent_anchor(row.values, columns.extent, readings.timebase, "interval") is None:
+        interval = extent_anchor(row.values, columns.extent, readings.timebase, "interval")
+        if interval is None:
             raise HarvestFailure.input(
                 InputError.ROW_SCHEMA_AMBIGUOUS,
                 f"{rule.ref}: the start and end of the row cannot be read from its columns",
@@ -157,7 +153,7 @@ class EventLocator:
             condition=rule.condition,
             readings=readings,
             rule=rule,
-            form=form,
+            form=prepared.form,
             layout=layout,
             detection=detection,
             row=row,
@@ -166,6 +162,7 @@ class EventLocator:
                 rows_returned=len(detection.rows), matches=len(matches), matched_index=matches[0]
             ),
             event_id=event_id(readings.analysis.analysis_id, rule.event_type, rule.condition, row.values),
+            interval=interval,
             origin=origin,
             extracted_at=extracted_at,
         )

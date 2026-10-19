@@ -1,11 +1,8 @@
 """Rows of F3 rules whose two sides put different kinds at the same position.
 
-WatchOut joins the sides of a ``set_side`` rule with a SQL set operator: the
+WatchOut joins the sides of a ``set_side`` rule with a set operator: the
 columns are aligned by position, the shorter side is padded with NULLs
-(``_pad_fields``) and the columns take the names of the left side. In the
-ablation rules the left side projects ``(st, et)`` and the right one
-``(arg1, st, et)``: a visual row arrives as ``{"st": 3, "et": 10.0, "__p1": 10.0}``,
-with the vehicle in ``st``. Such a row is read by position, once its side is known.
+and the columns take the names of the left side. In the
 
 A row fits a side when the columns past the side's own fields are null (the
 padding) and the side's start and end hold a time (``StartFrame`` and

@@ -1,9 +1,8 @@
 """WatchOut's ISEQL+ engine
 
-Every function here calls WatchOut's own code (compiler, helpers, detection) so K1
-reads the rule as the engine executes it and never evaluates it with code of its
-own. Several of these WatchOut functions are private: if WatchOut
-changes them, a conformance test of this package fails, not the core.
+Every function here calls WatchOut's own code to grasp the rule's structure and
+behavior.
+
 """
 
 import json

@@ -1,8 +1,8 @@
 """Values of detection rows: comparison, event extent and entities.
 
-The engine returns rows as JSON objects; numbers may come back as ``3`` or ``3.0``
-(pandas turns an integer column with NULLs into floats), so values are compared
-as numbers, never as text, and booleans are never numbers.
+The engine returns rows as JSON objects (pandas turns an integer column with NULLs into floats),
+so values are forced to be compared
+as numbers.
 """
 
 from collections.abc import Mapping

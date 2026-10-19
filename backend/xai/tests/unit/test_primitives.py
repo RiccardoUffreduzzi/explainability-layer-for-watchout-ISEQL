@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from xai.contract import Anchor, Fact, Reading, Reason, SourceRef, Stage, Unavailable
+from xai.contract import Anchor, Reason, SourceRef, Stage, Unavailable
 from xai.contract.primitives import DerivedSource, RequestSource
 from xai.tests.support import from_json_data
 
@@ -55,18 +55,3 @@ def test_sources_union_keeps_each_shape() -> None:
     assert request.model_dump() == {"from_request": "condition", "value": "A"}
     with pytest.raises(ValidationError):
         DerivedSource(derived_from=[])
-
-
-def _describe(reading: Reading[int]) -> str:
-    if isinstance(reading, Unavailable):
-        return f"null because {reading.reason.value}"
-    return f"{reading.value} from {reading.source.model_dump()}"
-
-
-def test_reading_is_a_fact_or_the_reason_it_is_missing() -> None:
-    ref = SourceRef(stage=Stage.CONFIG, store="Analyses:a1", record_id="SamplingRate", mode="read")
-
-    assert _describe(Fact(value=24, source=ref)).startswith("24 from {'stage': <Stage.CONFIG")
-    assert _describe(Unavailable(reason=Reason.FPS_NOT_RECORDED, detail="0")) == (
-        "null because fps_not_recorded"
-    )

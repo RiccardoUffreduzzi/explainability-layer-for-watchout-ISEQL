@@ -5,9 +5,8 @@ or it is null with a reason from a closed catalog.
 """
 
 import re
-from dataclasses import dataclass
 from enum import Enum
-from typing import Annotated, Any, Generic, Literal, TypeVar, Union
+from typing import Annotated, Any, Literal, Union
 
 from pydantic import (
     AwareDatetime,
@@ -244,23 +243,4 @@ class Anchor(ContractModel):
         if None in read:
             raise ValueError(f"read_as={self.read_as!r} but that pair is not complete")
         return self
-
-
-T = TypeVar("T")
-
-
-@dataclass(frozen=True)
-class Fact(Generic[T]):
-    """A value read from WatchOut together with where it was read.
-
-    Harvesters work with ``Fact[T] | Unavailable`` (alias ``Reading[T]``) and only
-    at the end split it into the record value, its ``sources`` entry or its
-    ``unavailable`` entry. It is not part of the serialized draft.
-    """
-
-    value: T
-    source: Source
-
-
-Reading = Union[Fact[T], Unavailable]
-"""Either a fact with its source or the reason it is missing."""
+    

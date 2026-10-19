@@ -15,7 +15,6 @@ from xai.k1_harvester.context import AnalysisReadings
 from xai.k1_harvester.ports import EngineError, ParamsOrigin, RuleSnapshot
 from xai.k1_harvester.request import HarvestRequest, ParamsMode
 from xai.k1_harvester.result import HarvestFailure, HarvestResult
-from xai.k1_harvester.rows import row_matches
 from xai.k1_harvester.service import StageHarvester
 
 
@@ -61,9 +60,8 @@ class AnalysisHarvester:
         self, analysis_id: str, condition: Condition | None = None, params: ParamsMode = "defaults"
     ) -> AnalysisOutcome:
         """The drafts of every row; ``params = defaults`` at the end of an analysis."""
-        locator = self.stage.locator
-        readings = locator.readings(analysis_id, params)
-        condition = locator.condition(readings, condition)
+        readings = self.stage.readings(analysis_id, params)
+        condition = self.stage.condition(readings, condition)
         extracted_at = self.stage.clock.now()
         rules = sorted(readings.reader.rules(condition), key=lambda r: r.event_type)
         return AnalysisOutcome(
@@ -78,33 +76,34 @@ class AnalysisHarvester:
     def _rule(
         self, readings: AnalysisReadings, rule: RuleSnapshot, params: ParamsMode, extracted_at: datetime
     ) -> RuleOutcome:
-        locator = self.stage.locator
         try:
-            form, layout, detection = locator.prepare(readings, rule)
+            prepared = self.stage.prepare(readings, rule)
         except HarvestFailure as failure:
             return RuleOutcome(rule.event_type, rule.ref, None, failure=failure)
         except EngineError as exc:
             return RuleOutcome(rule.event_type, rule.ref, None, engine_error=str(exc))
 
         analysis_id = readings.analysis.analysis_id
+        rows = prepared.detection.rows
+        ids = [event_id(analysis_id, rule.event_type, rule.condition, row.values) for row in rows]
+        # Rows with the same event_id are copies of one row: the first gets the draft.
+        copies: dict[str, list[int]] = {}
+        for index, ev_id in enumerate(ids):
+            copies.setdefault(ev_id, []).append(index)
         results: list[HarvestResult] = []
-        first: dict[str, int] = {}
-        for index, row in enumerate(detection.rows):
-            ev_id = event_id(analysis_id, rule.event_type, rule.condition, row.values)
-            if ev_id in first:
-                results.append(HarvestResult(index, row.values, ev_id, duplicate_of=first[ev_id]))
+        for index, row in enumerate(rows):
+            ev_id = ids[index]
+            matches = copies[ev_id]
+            if matches[0] != index:
+                results.append(HarvestResult(index, row.values, ev_id, duplicate_of=matches[0]))
                 continue
-            first[ev_id] = index
-            # The same search as a single request with this row, so both give the same draft.
             request = HarvestRequest(analysis_id, rule.event_type, row.values, rule.condition, params)
-            matches = [i for i, other in enumerate(detection.rows) if row_matches(row.values, other)]
             try:
-                ctx = locator.context(request, readings, rule, form, layout, detection, matches, extracted_at)
-                draft = self.stage.draft(ctx)
+                draft = self.stage.harvest_row(request, readings, prepared, matches, extracted_at)
             except HarvestFailure as failure:
                 results.append(HarvestResult(index, row.values, ev_id, failure=failure))
             except EngineError as exc:
                 results.append(HarvestResult(index, row.values, ev_id, engine_error=str(exc)))
             else:
                 results.append(HarvestResult(index, row.values, ev_id, draft=draft))
-        return RuleOutcome(rule.event_type, rule.ref, len(detection.rows), tuple(results))
+        return RuleOutcome(rule.event_type, rule.ref, len(rows), tuple(results))

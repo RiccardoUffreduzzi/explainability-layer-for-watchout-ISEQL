@@ -29,7 +29,7 @@ from xai.k1_harvester.ports import (
 )
 from xai.k1_harvester.request import HarvestRequest
 from xai.k1_harvester.rule.form_detector import ModelFormDetector
-from xai.k1_harvester.timebase import TimeBase
+from xai.k1_harvester.timebase import TimeBase, TimedAnchor
 
 MODALITY_CONDITIONS: dict[Modality, Condition] = {"visual": "A", "audio": "B"}
 """Condition of the rule that detects an event in one modality (Evento_A, Evento_B)."""
@@ -147,6 +147,16 @@ class RowOrigin:
 
 
 @dataclass(frozen=True)
+class PreparedRule:
+    """A rule and what all the rows of its detection share: form, layout and the rows."""
+
+    rule: RuleSnapshot
+    form: ModelForm
+    layout: RuleLayout
+    detection: Detection
+
+
+@dataclass(frozen=True)
 class HarvestContext:
     """One located detection row and everything read to find it."""
 
@@ -162,6 +172,8 @@ class HarvestContext:
     """What each column of the row holds; ``layout`` stays the rule's."""
     row_match: RowMatch
     event_id: str
+    interval: TimedAnchor
+    """The row's start and end, as ``detect_event`` finds them."""
     origin: RowOrigin
     extracted_at: datetime
 

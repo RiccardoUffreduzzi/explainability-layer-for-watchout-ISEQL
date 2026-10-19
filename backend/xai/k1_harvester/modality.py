@@ -194,12 +194,7 @@ class ModalityHarvester:
     def harvest(self, ctx: HarvestContext) -> tuple[EventRecord, list[Note]]:
         origin = ctx.origin
         unavailable: dict[str, Unavailable] = {}
-        timed = extent_anchor(ctx.row.values, ctx.row_columns.extent, ctx.timebase, "interval")
-        if timed is None:  # EventLocator refuses such rows
-            raise HarvestFailure.input(
-                InputError.ROW_SCHEMA_AMBIGUOUS, f"{ctx.rule.ref}: no start and end in the row"
-            )
-        unavailable.update(timed.unavailable)
+        unavailable.update(ctx.interval.unavailable)
 
         rules: dict[Modality, RuleRef | None] = {}
         for modality, condition in MODALITY_CONDITIONS.items():
@@ -235,7 +230,7 @@ class ModalityHarvester:
             label=ctx.rule.event_type,
             modality_origin=origin.modality,
             origin_basis=origin_basis,
-            interval=timed.anchor,
+            interval=ctx.interval.anchor,
             arguments=self._arguments(ctx),
             modality_rules=ModalityRules(visual=rules["visual"], audio=rules["audio"]),
             modality_detections=self._detections(ctx),
