@@ -1,19 +1,27 @@
 """Rows of F3 rules whose sides are not aligned: read by position once their side is known."""
 
+from dataclasses import replace
+from typing import cast
+
 import pytest
 
+from xai.adapters.watchout.set_sides import fits, read_by_side, row_columns, row_extent
 from xai.contract.reasons import InputError
+from xai.k1_harvester.locate import EventLocator
 from xai.k1_harvester.ports import (
     Branch,
     DetectedRow,
     Extent,
+    ResultColumn,
+    RowColumns,
+    RowNotReadable,
     RuleLayout,
     SetOperationLayout,
     SideColumns,
     SideField,
+    WatchOutReader,
 )
 from xai.k1_harvester.result import HarvestFailure
-from xai.k1_harvester.set_sides import fits, read_by_side, row_extent
 
 
 def _branch(name: str, projection: tuple[str, ...]) -> Branch:
@@ -56,36 +64,60 @@ def _row(values: dict[str, float | int | None]) -> DetectedRow:
     return DetectedRow(values=values, gui_values=values)
 
 
-def test_a_padded_row_is_read_as_the_left_side() -> None:
-    layout, branch = read_by_side("vehicle_collision/C", LAYOUT, _row({"st": 0.0, "et": 7.5, "__p1": None}))
+class _SideReader:
+    """The one port method the locator calls to read a row by side."""
 
-    assert branch.name == "left"
-    assert [(c.label, c.kind, c.fields) for c in layout.columns or ()] == [
+    def row_columns(self, layout: RuleLayout, row: DetectedRow) -> RowColumns:
+        return row_columns(layout, row)
+
+
+def test_a_padded_row_is_read_as_the_left_side() -> None:
+    read = read_by_side(LAYOUT, _row({"st": 0.0, "et": 7.5, "__p1": None}))
+
+    assert read.side is not None and read.side.name == "left"
+    assert [(c.label, c.kind, c.fields) for c in read.columns] == [
         ("st", "st", {"left": "M1.st"}),
         ("et", "et", {"left": "M2.et"}),
     ]
-    assert layout.extent.start_seconds == "st" and layout.extent.end_seconds == "et"
+    assert read.extent.start_seconds == "st" and read.extent.end_seconds == "et"
 
 
 def test_a_full_row_is_read_as_the_right_side_with_the_vehicle_in_st() -> None:
-    layout, branch = read_by_side("vehicle_collision/C", LAYOUT, _row({"st": 12.0, "et": 6.0, "__p1": 10.0}))
+    read = read_by_side(LAYOUT, _row({"st": 12.0, "et": 6.0, "__p1": 10.0}))
 
-    assert branch.name == "right"
-    assert [(c.label, c.kind, c.arg_class) for c in layout.columns or ()] == [
+    assert read.side is not None and read.side.name == "right"
+    assert [(c.label, c.kind, c.arg_class) for c in read.columns] == [
         ("st", "arg1", "vehicle"),
         ("et", "st", None),
         ("__p1", "et", None),
     ]
-    assert layout.extent == Extent(start_seconds="et", end_seconds="__p1", start_frames=None, end_frames=None)
-    assert layout.form == "F3" and layout.branches == LAYOUT.branches
+    assert read.extent == Extent(start_seconds="et", end_seconds="__p1", start_frames=None, end_frames=None)
+    assert read.method is not None and "as its right side" in read.method
+
+
+def test_a_rule_with_columns_gives_them_to_every_row() -> None:
+    columns = (ResultColumn(label="M1.st", kind="st", fields={"left": "M1.st"}, arg_class=None),)
+    layout = replace(LAYOUT, columns=columns, side_columns={})
+
+    assert row_columns(layout, _row({"M1.st": 1.0})) == RowColumns(columns=columns, extent=LAYOUT.extent)
 
 
 def test_a_row_that_fits_no_side_is_ambiguous() -> None:
+    with pytest.raises(RowNotReadable) as raised:
+        read_by_side(LAYOUT, _row({"st": 3, "et": None, "__p1": 10.0}))
+
+    assert "fits neither side" in str(raised.value)
+
+
+def test_the_locator_refuses_a_row_it_cannot_read() -> None:
+    locator = EventLocator(cast(WatchOutReader, _SideReader()))
+
     with pytest.raises(HarvestFailure) as raised:
-        read_by_side("vehicle_collision/C", LAYOUT, _row({"st": 3, "et": None, "__p1": 10.0}))
+        locator.row_columns("vehicle_collision/C", LAYOUT, _row({"st": 3, "et": None, "__p1": 10.0}))
 
     assert raised.value.code == InputError.ROW_SCHEMA_AMBIGUOUS
-    assert "fits neither side" in str(raised.value)
+    assert raised.value.detail.startswith("vehicle_collision/C: set_side rule: ")
+    assert "fits neither side" in raised.value.detail
 
 
 def test_a_row_that_fits_both_sides_is_ambiguous() -> None:
@@ -102,8 +134,8 @@ def test_a_row_that_fits_both_sides_is_ambiguous() -> None:
         side_columns={"left": other, "right": same_width},
     )
 
-    with pytest.raises(HarvestFailure) as raised:
-        read_by_side("r/C", layout, _row({"st": 2, "et": 5.0}))
+    with pytest.raises(RowNotReadable) as raised:
+        read_by_side(layout, _row({"st": 2, "et": 5.0}))
 
     assert "fits both sides" in str(raised.value)
 

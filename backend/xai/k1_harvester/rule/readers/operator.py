@@ -2,7 +2,7 @@
 
 The name is not stored in the model: WatchOut deduces it from the template geometry
 or reads an ``operator_overrides`` entry. The reader asks the engine
-(``WatchOutReader.resolve_operator``) and reports each parameter as written and as
+(``WatchOutReader.resolve_operators``) and reports each parameter as written and as
 passed to the SQL.
 """
 
@@ -29,10 +29,7 @@ class OperatorReader:
             return []
         ctx = scope.ctx
         nodes: list[ConstraintNode] = []
-        for pair in range(len(branch.intervals) - 1):
-            resolved = ctx.reader.resolve_operator(
-                ctx.rule, ctx.form, branch, pair, ctx.params, ctx.analysis.fps
-            )
+        for pair, resolved in enumerate(ctx.readings.operators(ctx.rule, ctx.form, branch)):
             first, second = branch.intervals[pair], branch.intervals[pair + 1]
             nodes.append(
                 TemporalOperatorNode(

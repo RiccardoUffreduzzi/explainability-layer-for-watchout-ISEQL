@@ -34,9 +34,7 @@ def _operators(
     reader: PinnedReader, rule: RuleSnapshot, branch: Branch, params: ParamsSnapshot
 ) -> list[ResolvedOperator]:
     form, _ = _layout(reader, rule)
-    return [
-        reader.resolve_operator(rule, form, branch, k, params, FPS) for k in range(len(branch.intervals) - 1)
-    ]
+    return list(reader.resolve_operators(rule, form, branch, params, FPS))
 
 
 def _fragment(operator: ResolvedOperator, left: str, right: str) -> str:

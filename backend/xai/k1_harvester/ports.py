@@ -1,9 +1,8 @@
-"""The two ports of K1 and the snapshot types they return.
+"""K1's ports and the snapshot types they return.
 
-The core sees WatchOut only through ``WatchOutReader`` and the time only through
-``Clock``. The types below are plain
-immutable values: the core can be tested with snapshots built by hand, and only
-``xai.adapters.watchout`` knows how they are read from WatchOut.
+The core reaches WatchOut only through ``WatchOutReader`` and time only through ``Clock``.
+``WatchOutReader`` bundles three ports: ``WatchOutRecords`` (database rows), ``IseqlEngine``
+(WatchOut's engine run on a rule) and ``CodeFacts`` (values that live only in WatchOut's code).
 """
 
 from collections.abc import Mapping, Sequence
@@ -16,22 +15,22 @@ from xai.contract.model import Condition, TimeUnit
 from xai.contract.primitives import SourceRef, Stage
 
 ModelForm = Literal["F1", "F2", "F3"]
-"""How a rule is stored: F1 flat chain, F2 ``set_expression`` of groups, F3 ``set_side`` intervals."""
+"""How a rule is stored: F1 flat chain, F2 ``set_expression`` over groups, F3 ``set_side`` intervals."""
 
 ParamsOrigin = Literal["rule_defaults", "saved_by_gui"]
 ParamValue = int | float | str
-"""A detection parameter as written: a number, ``inf`` or a strictness operator."""
+"""A parameter as written: a number, ``inf`` or a strictness operator."""
 
 ParamName = Literal["delta", "epsilon", "zeta", "eta", "rho"]
 ParamOrigin = Literal["literal", "named_key", "template_geometry", "engine_default"]
 
 
-# --------------------------------------------------------------------------- analysis and rules
+# analysis and rules
 
 
 @dataclass(frozen=True)
 class AnalysisSnapshot:
-    """One ``Analyses`` row. Columns that the table does not have (older databases) are None."""
+    """One ``Analyses`` row. Columns missing in older databases are None."""
 
     analysis_id: str
     condition: str
@@ -47,18 +46,17 @@ class AnalysisSnapshot:
 
     @property
     def store(self) -> str:
-        """``store`` of the SourceRefs that point to this row."""
+        """Store name used by the SourceRefs pointing to this row."""
         return f"Analyses:{self.analysis_id}"
 
     @property
     def fps(self) -> int | None:
-        """The declared fps, or None when ``SamplingRate`` is missing or zero."""
         return self.sampling_rate if self.sampling_rate else None
 
 
 @dataclass(frozen=True)
 class RuleSnapshot:
-    """One ``EventSpec`` row with its model already parsed."""
+    """One ``EventSpec`` row, with its model already parsed."""
 
     event_type: str
     condition: Condition
@@ -70,39 +68,39 @@ class RuleSnapshot:
         return f"{self.event_type}/{self.condition}"
 
     def pointer(self, path: str) -> str:
-        """``record_id`` of a part of the model: ``handoff/A#/intervals/0``."""
+        """``record_id`` of a part of the model, e.g. ``handoff/A#/intervals/0``."""
         return f"{self.ref}#{path}"
 
     def source(self, path: str | None = None) -> SourceRef:
-        """SourceRef of the rule (``path`` None) or of a part of its model."""
+        """SourceRef of the whole rule, or of the model part at ``path``."""
         record_id = self.ref if path is None else self.pointer(path)
         return SourceRef(stage=Stage.ISEQL, store="EventSpec", record_id=record_id, mode="read")
 
 
 @dataclass(frozen=True)
 class ParamsSnapshot:
-    """The parameters of a detection, as written before WatchOut converts them.
+    """Detection parameters as written, before WatchOut converts them.
 
-    ``rule_defaults``: the union of ``default_deltas_for`` over every rule, merged as
-    the GUI does (later rules win). ``saved_by_gui``: ``Analyses.DeltasJson``.
+    ``rule_defaults`` merges every rule's ``default_deltas_for`` the way the GUI does
+    (later rules win); ``saved_by_gui`` comes from ``Analyses.DeltasJson``.
     """
 
     origin: ParamsOrigin
     unit: TimeUnit
-    """Unit of the numeric values; WatchOut converts seconds to frames before compiling."""
+    """Unit of the numbers; WatchOut turns seconds into frames before compiling."""
     values: Mapping[str, ParamValue]
     analysis_id: str | None = None
     """Analysis whose ``DeltasJson`` was read (``saved_by_gui`` only)."""
     rule_defaults: Mapping[str, Mapping[str, ParamValue]] = field(default_factory=dict)
     """Rule ref -> that rule's own defaults (``rule_defaults`` only)."""
     provider: Mapping[str, str] = field(default_factory=dict)
-    """Key -> ref of the rule whose default the merge kept (``rule_defaults`` only)."""
+    """Key -> ref of the rule whose default won the merge (``rule_defaults`` only)."""
 
     def source_for(self, key: str, rule_ref: str) -> SourceRef:
-        """Where the value of a named key was read, seen from the rule being explained.
+        """Where a named key's value comes from, as seen by the rule being explained.
 
-        For defaults it is the explained rule's own text when that text gives the
-        merged value, otherwise the text of the rule the merge took it from.
+        For defaults: the rule's own text if it yields the merged value,
+        otherwise the text of the rule that won the merge.
         """
         if self.origin == "saved_by_gui":
             return SourceRef(
@@ -131,18 +129,18 @@ class Vocabulary:
     """``AppConfig.relation_vocab`` and ``AppConfig.audio_taxonomy``."""
 
     signatures: Mapping[str, str]
-    """Relation -> signature as stored, e.g. ``(PersonID, ObjectID)``."""
+    """Relation -> stored signature, e.g. ``(PersonID, ObjectID)``."""
     slots: Mapping[str, tuple[tuple[str, ...], ...]]
-    """Relation -> argument slots, read with WatchOut's ``signature_slots``."""
+    """Relation -> argument slots, parsed with WatchOut's ``signature_slots``."""
     descriptions: Mapping[str, str]
-    """Relation -> description given to the VLM."""
+    """Relation -> description shown to the VLM."""
     audio_classes: tuple[str, ...]
     relation_vocab_updated_at: str | None
 
 
 @dataclass(frozen=True)
 class VlmDefaults:
-    """Defaults of ``VLMClient.__init__``, the values the analysis uses."""
+    """``VLMClient.__init__`` defaults, i.e. what the analysis actually uses."""
 
     temperature: float
     seed: int
@@ -154,47 +152,47 @@ class BackendVersion:
     source: SourceRef
 
 
-# --------------------------------------------------------------------------- rule structure
+# rule structure
 
 
 @dataclass(frozen=True)
 class SelectionAlternative:
-    """One alternative of a selection: predicates and admitted classes per argument slot."""
+    """One alternative of a selection: its predicates and the classes allowed per argument slot."""
 
     predicates: tuple[str, ...]
     arg_classes: Mapping[str, tuple[str, ...]]
-    """Argument slot (``"1"``, ``"2"``) -> admitted classes."""
+    """Slot (``"1"``, ``"2"``) -> allowed classes."""
 
 
 @dataclass(frozen=True)
 class BranchInterval:
-    """An interval (selection) of a branch."""
+    """One interval (selection) of a branch."""
 
     index: int
     """Position in ``model.intervals``."""
     alias: str
-    """Variable local to the branch, ``M1``..``Mn``, as the compiler assigns it."""
+    """Branch-local variable (``M1``..``Mn``), named as the compiler does."""
     selection: tuple[SelectionAlternative, ...]
-    """The selection as the compiler reads it; several alternatives are a disjunction."""
+    """The selection as the compiler reads it; multiple alternatives are OR-ed."""
     text: str
-    """Fragment rendered by WatchOut's renderer, e.g. ``σ_{pred="carrying"}(M1)``."""
+    """Fragment rendered by WatchOut, e.g. ``σ_{pred="carrying"}(M1)``."""
 
 
 @dataclass(frozen=True)
 class BranchCondition:
-    """A cross-condition of a branch, with aliases local to the branch."""
+    """A cross-condition of a branch, using branch-local aliases."""
 
     index: int
     """Position in ``model.cross_conditions``."""
     left: str
-    """``<alias>.<attribute>``, e.g. ``M1.arg1``; for a duration, the end."""
+    """``<alias>.<attribute>``, e.g. ``M1.arg1``; the end, for a duration."""
     op: str
     right: str
-    """For a duration, the start."""
+    """The start, for a duration."""
     duration_value: int | float | None
-    """``value`` of a duration condition, ``(left − right) op value``; None otherwise."""
+    """``value`` in ``(left − right) op value`` for a duration; None otherwise."""
     duration_unit: TimeUnit | None
-    """Unit of ``duration_value``: the domain of the two attributes."""
+    """Unit of ``duration_value``, i.e. the domain of the two attributes."""
     text: str
 
 
@@ -219,7 +217,7 @@ class SetOperationLayout:
     op: str
     pointer: str
     children: tuple[Union["SetOperationLayout", str], ...]
-    """Nested operations, or the names of the branches they combine."""
+    """Nested operations, or names of the branches they combine."""
 
 
 @dataclass(frozen=True)
@@ -230,13 +228,13 @@ class ResultColumn:
     kind: str
     """``arg1``.., ``st``, ``et``, ``sf``, ``ef``."""
     fields: Mapping[str, str]
-    """Branch name -> projected field that fills this column in that branch."""
+    """Branch name -> projected field that fills this column there."""
     arg_class: str | None
 
 
 @dataclass(frozen=True)
 class Extent:
-    """Row keys of the event's start and end, as ``detect_event`` finds them."""
+    """Row keys holding the event's start and end, as ``detect_event`` finds them."""
 
     start_seconds: str | None
     end_seconds: str | None
@@ -246,7 +244,7 @@ class Extent:
 
 @dataclass(frozen=True)
 class SideField:
-    """A field a set side projects, at its position in the result row."""
+    """A field projected by a set side, at its position in the result row."""
 
     field: str
     kind: str
@@ -256,17 +254,17 @@ class SideField:
 
 @dataclass(frozen=True)
 class SideColumns:
-    """How a row of one set side of an F3 rule fills the result columns.
+    """How a row from one set side of an F3 rule maps onto the result columns.
 
-    The compiler aligns the two sides by position and pads the shorter one with
-    NULLs, and the columns take the names of the left side: a column holds a
-    different kind in each side, so it is read only once the row's side is known.
+    The compiler aligns the two sides by position, pads the shorter one with NULLs
+    and names the columns after the left side. So a column can hold something
+    different on each side, and can only be read once the row's side is known.
     """
 
     fields: tuple[SideField, ...]
-    """The side's projected fields, in the order of the result columns."""
+    """The side's projected fields, in result-column order."""
     extent: Extent
-    """The fields with the side's start and end (projected fields, not row keys)."""
+    """The side's start and end fields (projected fields, not row keys)."""
 
 
 @dataclass(frozen=True)
@@ -279,26 +277,38 @@ class RuleLayout:
     multiset: bool
     """Branches combined by a set operation with kind-aligned columns (F2 with ``op``)."""
     columns: tuple[ResultColumn, ...] | None
-    """None when the columns cannot be traced to the branches (``columns_problem`` says why)."""
+    """None when the columns can't be traced back to the branches (see ``columns_problem``)."""
     columns_problem: str | None
     extent: Extent
     side_columns: Mapping[str, SideColumns] = field(default_factory=dict)
-    """F3 with ``columns`` None: each side's columns by position; the row tells its side."""
+    """F3 with ``columns`` None: each side's columns by position; the row tells which side it is."""
+
+
+@dataclass(frozen=True)
+class RowColumns:
+    """What each column of a detection row holds: the rule's columns, or its set side's."""
+
+    columns: tuple[ResultColumn, ...]
+    extent: Extent
+    side: Branch | None = None
+    """The set side the row was read as, if the columns depend on the side."""
+    method: str | None = None
+    """How the row's side was determined; None when the rule's columns fit every row."""
 
 
 @dataclass(frozen=True)
 class ResolvedParam:
-    """One operator parameter, as written and as the compiler applies it."""
+    """An operator parameter, both as written and as the compiler applies it."""
 
     name: ParamName
     origin: ParamOrigin
     key: str | None
-    """Named key, for ``named_key``."""
+    """Named key (``named_key`` only)."""
     value: ParamValue
     unit: TimeUnit | None
     engine_value: ParamValue
     pointer: str | None
-    """JSON pointer of the ``delta_map`` entry, for ``literal`` and ``named_key``."""
+    """JSON pointer to the ``delta_map`` entry (``literal`` and ``named_key`` only)."""
 
 
 @dataclass(frozen=True)
@@ -313,15 +323,15 @@ class ResolvedOperator:
     text: str
 
 
-# --------------------------------------------------------------------------- detection and evidence
+# detection and evidence
 
 
 @dataclass(frozen=True)
 class DetectedRow:
     values: Mapping[str, RowValue]
-    """The row as ``run_sql_detection`` returns it."""
+    """Row as returned by ``run_sql_detection``."""
     gui_values: Mapping[str, RowValue]
-    """The row as ``detect_event`` hands it to the GUI (frames added, times formatted)."""
+    """Row as ``detect_event`` passes it to the GUI (frames added, times formatted)."""
 
 
 @dataclass(frozen=True)
@@ -359,11 +369,11 @@ class AudioIntervalRow:
     confidence: float | None
 
 
-# --------------------------------------------------------------------------- errors the reader raises
+# errors raised by the reader
 
 
 class ParamsMissing(Exception):
-    """The parameters lack keys that the rules of the condition need."""
+    """The parameters lack keys required by the condition's rules."""
 
     def __init__(self, missing: Sequence[str]) -> None:
         super().__init__(", ".join(missing))
@@ -371,18 +381,22 @@ class ParamsMissing(Exception):
 
 
 class DetectionNotPossible(Exception):
-    """WatchOut itself could not run this detection (e.g. seconds without an fps)."""
+    """WatchOut itself couldn't run this detection (e.g. seconds without an fps)."""
 
 
 class EngineError(RuntimeError):
-    """WatchOut's engine reported an error: an infrastructure failure, not a data gap."""
+    """WatchOut's engine failed: an infrastructure problem, not missing data."""
 
 
-# --------------------------------------------------------------------------- ports
+class RowNotReadable(Exception):
+    """Can't tell what the columns of a row hold (``ROW_SCHEMA_AMBIGUOUS``)."""
 
 
-class WatchOutReader(Protocol):
-    """Everything K1 reads from WatchOut, over one read-only connection."""
+# ports
+
+
+class WatchOutRecords(Protocol):
+    """Rows from WatchOut's database: analyses, rules, parameters, configuration, intervals."""
 
     def analysis(self, analysis_id: str) -> AnalysisSnapshot | None: ...
 
@@ -396,31 +410,43 @@ class WatchOutReader(Protocol):
 
     def vocabulary(self) -> Vocabulary | None: ...
 
-    def detect(self, rule: RuleSnapshot, analysis: AnalysisSnapshot, params: ParamsSnapshot) -> Detection: ...
-
-    def rule_layout(self, rule: RuleSnapshot, form: ModelForm) -> RuleLayout: ...
-
-    def resolve_operator(
-        self,
-        rule: RuleSnapshot,
-        form: ModelForm,
-        branch: Branch,
-        pair_index: int,
-        params: ParamsSnapshot,
-        fps: int | None,
-    ) -> ResolvedOperator: ...
-
-    def render_rule(self, rule: RuleSnapshot, params: ParamsSnapshot) -> str: ...
-
     def visual_intervals(self, analysis_id: str, predicates: set[str]) -> list[VisualIntervalRow]: ...
 
     def participants(self, relation_ids: Sequence[int]) -> list[ParticipantRow]: ...
 
     def audio_intervals(self, analysis_id: str, classes: set[str]) -> list[AudioIntervalRow]: ...
 
+
+class IseqlEngine(Protocol):
+    """WatchOut's ISEQL+ engine applied to a rule: rows, layout, operators, rendering."""
+
+    def detect(self, rule: RuleSnapshot, analysis: AnalysisSnapshot, params: ParamsSnapshot) -> Detection: ...
+
+    def rule_layout(self, rule: RuleSnapshot, form: ModelForm) -> RuleLayout: ...
+
+    def row_columns(self, layout: RuleLayout, row: DetectedRow) -> RowColumns:
+        """What each column of the row holds; raises ``RowNotReadable`` if that can't be told."""
+        ...
+
+    def resolve_operators(
+        self, rule: RuleSnapshot, form: ModelForm, branch: Branch, params: ParamsSnapshot, fps: int | None
+    ) -> tuple[ResolvedOperator, ...]:
+        """Operators between consecutive intervals of the branch, in order."""
+        ...
+
+    def render_rule(self, rule: RuleSnapshot, params: ParamsSnapshot) -> str: ...
+
+
+class CodeFacts(Protocol):
+    """Values that live only in WatchOut's code."""
+
     def vlm_defaults(self) -> VlmDefaults: ...
 
     def backend_version(self) -> BackendVersion | None: ...
+
+
+class WatchOutReader(WatchOutRecords, IseqlEngine, CodeFacts, Protocol):
+    """Everything K1 reads from WatchOut, over a single read-only connection."""
 
 
 class Clock(Protocol):

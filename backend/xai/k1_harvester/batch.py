@@ -2,9 +2,7 @@
 
 For each rule of the analysis's condition it runs the detection once and calls
 ``StageHarvester`` on each row, reusing the rule, the configuration, the rows and
-the A and B detections already read. A failure on a rule or a row is kept in
-the outcome and does not stop the others; only a failure of the analysis
-itself (not found, not ready, no configuration) is raised.
+the A and B detections already read.
 """
 
 from collections.abc import Iterator

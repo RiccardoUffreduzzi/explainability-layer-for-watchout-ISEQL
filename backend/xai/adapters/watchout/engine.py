@@ -131,8 +131,7 @@ def _expression_layout(
 
 def _group_branch(model: Model, leaf: Model, pointer: str) -> Branch:
     group = leaf.get("group")
-    intervals = _group_intervals(model, group)
-    branch_model = _group_model(model, group, intervals, leaf.get("projection"))
+    branch_model, intervals = _group_operand(model, leaf)
     indices = [i for i, iv in enumerate(model["intervals"]) if (iv.get("group") or None) == group]
     conditions = []
     for index, condition in enumerate(model.get("cross_conditions") or []):
@@ -144,17 +143,7 @@ def _group_branch(model: Model, leaf: Model, pointer: str) -> Branch:
 
 
 def _side_branch(model: Model, side: str) -> Branch:
-    left = _side_intervals(model, "left")
-    intervals = _side_intervals(model, side)
-    offset = 0 if side == "left" else len(left)
-    # The operand model of _render_set_operation.
-    side_model = dict(
-        model,
-        intervals=intervals,
-        set_side=None,
-        custom_projection=model.get(f"{side}_projection"),
-        cross_conditions=_side_cross_conditions(model, len(intervals), offset),
-    )
+    side_model, intervals, offset = _side_operand(model, side)
     indices = [i for i, iv in enumerate(model["intervals"]) if iv.get("set_side") == side]
     conditions = []
     for index, condition in enumerate(model.get("cross_conditions") or []):
@@ -163,6 +152,28 @@ def _side_branch(model: Model, side: str) -> Branch:
             conditions.append((index, rebased[0]))
     projection_pointer = f"/{side}_projection" if model.get(f"{side}_projection") else "/intervals"
     return _branch(side, side, side_model, intervals, indices, conditions, projection_pointer)
+
+
+def _group_operand(model: Model, leaf: Model) -> tuple[Model, list[Model]]:
+    """The model slice the compiler renders for a group of ``set_expression``, and its intervals."""
+    group = leaf.get("group")
+    intervals: list[Model] = _group_intervals(model, group)
+    sliced: Model = _group_model(model, group, intervals, leaf.get("projection"))
+    return sliced, intervals
+
+
+def _side_operand(model: Model, side: str) -> tuple[Model, list[Model], int]:
+    """The operand model ``_render_set_operation`` renders for a set side, its intervals and their offset."""
+    intervals: list[Model] = _side_intervals(model, side)
+    offset = 0 if side == "left" else len(_side_intervals(model, "left"))
+    operand = dict(
+        model,
+        intervals=intervals,
+        set_side=None,
+        custom_projection=model.get(f"{side}_projection"),
+        cross_conditions=_side_cross_conditions(model, len(intervals), offset),
+    )
+    return operand, intervals, offset
 
 
 def _flat_branch(model: Model) -> Branch:
@@ -318,13 +329,19 @@ def _columns(
     columns = []
     for position, (label, field) in enumerate(zip(labels_or_none, reference.projection, strict=True)):
         kind = _field_kind(field)
-        arg_class = None
-        alias = field.split(".", 1)[0]
-        if kind.startswith("arg") and kind[3:].isdigit() and alias in by_alias:
-            arg_class = str(_interval_arg_class(dict(by_alias[alias]), int(kind[3:])))
         fields = {b.name: b.projection[position] for b in branches}
-        columns.append(ResultColumn(label=label, kind=kind, fields=fields, arg_class=arg_class))
+        columns.append(
+            ResultColumn(label=label, kind=kind, fields=fields, arg_class=_arg_class(field, kind, by_alias))
+        )
     return tuple(columns), None
+
+
+def _arg_class(field: str, kind: str, by_alias: Mapping[str, Model]) -> str | None:
+    """The class WatchOut names an argument column after (``_interval_arg_class``)."""
+    alias = field.split(".", 1)[0]
+    if not (kind.startswith("arg") and kind[3:].isdigit() and alias in by_alias):
+        return None
+    return str(_interval_arg_class(dict(by_alias[alias]), int(kind[3:])))
 
 
 def _positional_problem(left: Sequence[str], right: Sequence[str]) -> str | None:
@@ -348,11 +365,7 @@ def _side_columns(model: Model, branches: Sequence[Branch]) -> dict[str, SideCol
         fields = []
         for field in branch.projection:
             kind = _field_kind(field)
-            alias = field.split(".", 1)[0]
-            arg_class = None
-            if kind.startswith("arg") and kind[3:].isdigit() and alias in by_alias:
-                arg_class = str(_interval_arg_class(dict(by_alias[alias]), int(kind[3:])))
-            fields.append(SideField(field=field, kind=kind, arg_class=arg_class))
+            fields.append(SideField(field=field, kind=kind, arg_class=_arg_class(field, kind, by_alias)))
         sides[branch.name] = SideColumns(fields=tuple(fields), extent=_projection_extent(branch.projection))
     return sides
 
@@ -372,16 +385,16 @@ def _projection_extent(projection: Sequence[str]) -> Extent:
                 start = alias
             if attr in ("ef", "et"):
                 end = alias
-    return Extent(
-        start_seconds=f"{start}.st" if start else None,
-        end_seconds=f"{end}.et" if end else None,
-        start_frames=f"{start}.sf" if start else None,
-        end_frames=f"{end}.ef" if end else None,
-    )
+    return _alias_extent(start, end)
 
 
 def _extent(rule: RuleSnapshot) -> Extent:
     start, end = _projection_extent_aliases(rule.event_type, rule.condition, [_spec(rule)])
+    return _alias_extent(start, end)
+
+
+def _alias_extent(start: str | None, end: str | None) -> Extent:
+    """The start and end fields of the intervals that open and close the event."""
     return Extent(
         start_seconds=f"{start}.st" if start else None,
         end_seconds=f"{end}.et" if end else None,
@@ -393,14 +406,31 @@ def _extent(rule: RuleSnapshot) -> Extent:
 # --------------------------------------------------------------------------- operators
 
 
-def resolve_operator(
+def resolve_operators(
     conn: sqlite3.Connection,
     rule: RuleSnapshot,
     form: ModelForm,
     branch: Branch,
+    params: ParamsSnapshot,
+    fps: int | None,
+) -> tuple[ResolvedOperator, ...]:
+    """The operators between consecutive intervals of a branch, in order."""
+    branch_model = _branch_model(_model(rule), form, branch)
+    deltas = compiler_deltas(conn, rule, params, fps)
+    return tuple(
+        _resolve_operator(rule, branch, branch_model, pair_index, params, fps, deltas)
+        for pair_index in range(len(branch.intervals) - 1)
+    )
+
+
+def _resolve_operator(
+    rule: RuleSnapshot,
+    branch: Branch,
+    branch_model: Model,
     pair_index: int,
     params: ParamsSnapshot,
     fps: int | None,
+    deltas: Mapping[str, Any],
 ) -> ResolvedOperator:
     """The operator between intervals ``pair_index`` and ``pair_index + 1`` of a branch.
 
@@ -409,8 +439,6 @@ def resolve_operator(
     ``delta_map`` entry resolved with the detection's parameters; the helpers
     finally apply ``int()`` to δ, ε and ρ.
     """
-    model = _model(rule)
-    branch_model = _branch_model(model, form, branch)
     intervals = branch_model["intervals"]
     side = branch.side
     r = Interval(Predicate("slot", []), *_slot_bounds(intervals[pair_index]))
@@ -435,7 +463,6 @@ def resolve_operator(
     _, threshold_names = OPERATOR_HELPERS[op]
     time_domain = _domain_cols(branch_model) == ("st", "et")
     domain: TimeUnit = "seconds" if time_domain else "frames"
-    deltas = compiler_deltas(conn, rule, params, fps)
     entry: Mapping[str, Any] = _delta_entry(branch_model, pair_index, side)
     entry_key = _delta_map_key(branch_model, pair_index, side)
     resolved = []
@@ -654,21 +681,9 @@ def _spec(rule: RuleSnapshot) -> EventSpec:
 def _branch_model(model: Model, form: ModelForm, branch: Branch) -> Model:
     """The model slice the compiler renders for a branch."""
     if form == "F2":
-        leaf = _find_leaf(model["set_expression"], branch.side)
-        intervals = _group_intervals(model, branch.side)
-        sliced: Model = _group_model(model, branch.side, intervals, leaf.get("projection"))
-        return sliced
+        return _group_operand(model, _find_leaf(model["set_expression"], branch.side))[0]
     if form == "F3":
-        left = _side_intervals(model, "left")
-        intervals = _side_intervals(model, branch.name)
-        offset = 0 if branch.name == "left" else len(left)
-        return dict(
-            model,
-            intervals=intervals,
-            set_side=None,
-            custom_projection=model.get(f"{branch.name}_projection"),
-            cross_conditions=_side_cross_conditions(model, len(intervals), offset),
-        )
+        return _side_operand(model, branch.name)[0]
     return model
 
 
@@ -692,7 +707,7 @@ __all__ = [
     "detect",
     "gui_row",
     "render_rule",
-    "resolve_operator",
+    "resolve_operators",
     "rule_layout",
     "written_lits",
 ]

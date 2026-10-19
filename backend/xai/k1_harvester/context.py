@@ -15,13 +15,17 @@ from xai.k1_harvester.ports import (
     Branch,
     DetectedRow,
     Detection,
+    IseqlEngine,
     ModelForm,
     ParamsSnapshot,
+    ResolvedOperator,
+    RowColumns,
     RuleLayout,
     RuleSnapshot,
     VlmDefaults,
     Vocabulary,
     WatchOutReader,
+    WatchOutRecords,
 )
 from xai.k1_harvester.request import HarvestRequest
 from xai.k1_harvester.rule.form_detector import ModelFormDetector
@@ -49,6 +53,7 @@ class AnalysisReadings:
         self._rules: dict[tuple[str, str], RuleSnapshot | None] = {}
         self._layouts: dict[str, tuple[ModelForm, RuleLayout]] = {}
         self._detections: dict[str, Detection] = {}
+        self._operators: dict[tuple[str, str], tuple[ResolvedOperator, ...]] = {}
         self._default_params: ParamsSnapshot | None = None
         self._vlm_defaults: VlmDefaults | None = None
         self._backend_version: tuple[BackendVersion | None] | None = None
@@ -71,6 +76,15 @@ class AnalysisReadings:
         if rule.ref not in self._detections:
             self._detections[rule.ref] = self.reader.detect(rule, self.analysis, self.params)
         return self._detections[rule.ref]
+
+    def operators(self, rule: RuleSnapshot, form: ModelForm, branch: Branch) -> tuple[ResolvedOperator, ...]:
+        """The operators of a branch with the analysis parameters, the same for every row."""
+        key = (rule.ref, branch.name)
+        if key not in self._operators:
+            self._operators[key] = self.reader.resolve_operators(
+                rule, form, branch, self.params, self.analysis.fps
+            )
+        return self._operators[key]
 
     def default_params(self) -> ParamsSnapshot:
         """The rule defaults, also when the detection uses the parameters saved by the GUI."""
@@ -144,6 +158,8 @@ class HarvestContext:
     layout: RuleLayout
     detection: Detection
     row: DetectedRow
+    row_columns: RowColumns
+    """What each column of the row holds; ``layout`` stays the rule's."""
     row_match: RowMatch
     event_id: str
     origin: RowOrigin
@@ -166,5 +182,10 @@ class HarvestContext:
         return self.readings.timebase
 
     @property
-    def reader(self) -> WatchOutReader:
+    def records(self) -> WatchOutRecords:
+        """Rows of WatchOut's database, for the sections that read rows of their own."""
+        return self.readings.reader
+
+    @property
+    def engine(self) -> IseqlEngine:
         return self.readings.reader

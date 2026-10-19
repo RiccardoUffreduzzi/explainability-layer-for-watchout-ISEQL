@@ -21,6 +21,8 @@ from xai.k1_harvester.ports import (
     ModelForm,
     ParamsMissing,
     ParamsSnapshot,
+    RowColumns,
+    RowNotReadable,
     RuleLayout,
     RuleSnapshot,
     WatchOutReader,
@@ -28,7 +30,6 @@ from xai.k1_harvester.ports import (
 from xai.k1_harvester.request import HarvestRequest, ParamsMode
 from xai.k1_harvester.result import HarvestFailure
 from xai.k1_harvester.rows import extent_anchor, row_matches
-from xai.k1_harvester.set_sides import read_by_side
 
 CONDITIONS: tuple[Condition, ...] = ("A", "B", "C")
 DONE = "done"
@@ -141,16 +142,14 @@ class EventLocator:
     ) -> HarvestContext:
         """The context of a row already found among the rows of the detection."""
         row: DetectedRow = detection.rows[matches[0]]
-        side = None
-        if layout.columns is None:  # F3 sides not aligned: the row's own side gives its columns
-            layout, side = read_by_side(rule.ref, layout, row)
-        if extent_anchor(row.values, layout.extent, readings.timebase, "interval") is None:
+        columns = self.row_columns(rule.ref, layout, row)
+        if extent_anchor(row.values, columns.extent, readings.timebase, "interval") is None:
             raise HarvestFailure.input(
                 InputError.ROW_SCHEMA_AMBIGUOUS,
                 f"{rule.ref}: the start and end of the row cannot be read from its columns",
             )
         origin = self._engine(
-            lambda: self.origins.resolve(readings, rule, layout, detection, row, side),
+            lambda: self.origins.resolve(readings, rule, layout, detection, row, columns),
             f"{rule.event_type} (rules A and B)",
         )
         return HarvestContext(
@@ -162,6 +161,7 @@ class EventLocator:
             layout=layout,
             detection=detection,
             row=row,
+            row_columns=columns,
             row_match=RowMatch(
                 rows_returned=len(detection.rows), matches=len(matches), matched_index=matches[0]
             ),
@@ -169,6 +169,13 @@ class EventLocator:
             origin=origin,
             extracted_at=extracted_at,
         )
+
+    def row_columns(self, rule_ref: str, layout: RuleLayout, row: DetectedRow) -> RowColumns:
+        """What each column of the row holds, as the engine aligns the rule's columns."""
+        try:
+            return self.reader.row_columns(layout, row)
+        except RowNotReadable as exc:
+            raise HarvestFailure.input(InputError.ROW_SCHEMA_AMBIGUOUS, f"{rule_ref}: {exc}") from exc
 
     @staticmethod
     def _engine(call: Callable[[], T], what: str) -> T:

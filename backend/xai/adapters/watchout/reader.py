@@ -20,7 +20,7 @@ from service.impl.events_service_impl import default_deltas_for, derive_delta_fi
 from service.relation_vocab import signature_slots
 from utils.vlm_client import VLMClient
 
-from xai.adapters.watchout import engine, queries
+from xai.adapters.watchout import engine, queries, set_sides
 from xai.contract.model import Condition, TimeUnit
 from xai.contract.primitives import SourceRef, Stage
 from xai.k1_harvester.ports import (
@@ -28,6 +28,7 @@ from xai.k1_harvester.ports import (
     AudioIntervalRow,
     BackendVersion,
     Branch,
+    DetectedRow,
     Detection,
     EngineError,
     ModelForm,
@@ -35,6 +36,7 @@ from xai.k1_harvester.ports import (
     ParamValue,
     ParticipantRow,
     ResolvedOperator,
+    RowColumns,
     RuleLayout,
     RuleSnapshot,
     VisualIntervalRow,
@@ -160,16 +162,13 @@ class SqliteWatchOutReader:
     def rule_layout(self, rule: RuleSnapshot, form: ModelForm) -> RuleLayout:
         return engine.rule_layout(rule, form)
 
-    def resolve_operator(
-        self,
-        rule: RuleSnapshot,
-        form: ModelForm,
-        branch: Branch,
-        pair_index: int,
-        params: ParamsSnapshot,
-        fps: int | None,
-    ) -> ResolvedOperator:
-        return engine.resolve_operator(self.conn, rule, form, branch, pair_index, params, fps)
+    def row_columns(self, layout: RuleLayout, row: DetectedRow) -> RowColumns:
+        return set_sides.row_columns(layout, row)
+
+    def resolve_operators(
+        self, rule: RuleSnapshot, form: ModelForm, branch: Branch, params: ParamsSnapshot, fps: int | None
+    ) -> tuple[ResolvedOperator, ...]:
+        return engine.resolve_operators(self.conn, rule, form, branch, params, fps)
 
     def render_rule(self, rule: RuleSnapshot, params: ParamsSnapshot) -> str:
         return engine.render_rule(rule, params)

@@ -1,9 +1,4 @@
-"""Which of the stored forms a rule has, with the compiler's own dispatch order.
-
-``compile_event`` renders ``set_expression`` first, then ``set_side`` intervals,
-then the flat chain. Groups of contiguous intervals (``group_id``) and nested
-queries (``query_ref``) form F4, which K1 does not support.
-"""
+"""Which of the stored forms a rule has2"""
 
 from xai.contract.reasons import InputError
 from xai.k1_harvester.ports import ModelForm, RuleSnapshot

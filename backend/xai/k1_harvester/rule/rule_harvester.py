@@ -23,11 +23,11 @@ class RuleHarvester:
 
     def harvest(self, ctx: HarvestContext) -> tuple[RuleRecord, list[Note]]:
         nodes = self.nodes(ctx)
-        expression = ctx.reader.render_rule(ctx.rule, ctx.params)
+        expression = ctx.engine.render_rule(ctx.rule, ctx.params)
         saved = ctx.rule.model.get("iseql_text")
         notes = []
         if isinstance(saved, str) and saved.strip():
-            structural = ctx.reader.render_rule(ctx.rule, self._own_defaults(ctx))
+            structural = ctx.engine.render_rule(ctx.rule, self._own_defaults(ctx))
             if structural != saved:
                 notes.append(
                     Note(
@@ -47,7 +47,7 @@ class RuleHarvester:
         if params_note is not None:
             notes.append(params_note)
         branch = ctx.origin.branch
-        projection = list(branch.projection) if branch else [c.label for c in ctx.layout.columns or ()]
+        projection = list(branch.projection) if branch else [c.label for c in ctx.row_columns.columns]
         record = RuleRecord(
             expression=expression,
             expression_saved=saved,

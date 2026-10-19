@@ -6,6 +6,8 @@ because the rule and evidence sections need the row's branch too.
 comparison between the modalities (reinforcement) is K2's.
 """
 
+from collections.abc import Sequence
+
 from xai.contract.ids import canonical_row
 from xai.contract.model import (
     Argument,
@@ -34,13 +36,13 @@ from xai.k1_harvester.ports import (
     DetectedRow,
     Detection,
     ResultColumn,
+    RowColumns,
     RuleLayout,
     RuleSnapshot,
 )
 from xai.k1_harvester.predicates import branch_modality
 from xai.k1_harvester.result import HarvestFailure
 from xai.k1_harvester.rows import class_id, extent_anchor, same_row, same_value
-from xai.k1_harvester.set_sides import side_method
 
 CONDITION_MODALITY: dict[Condition, Modality] = {"A": "visual", "B": "audio"}
 
@@ -69,9 +71,9 @@ class OriginResolver:
         layout: RuleLayout,
         detection: Detection,
         row: DetectedRow,
-        side: Branch | None = None,
+        columns: RowColumns,
     ) -> RowOrigin:
-        """``side``: the set side an F3 row was read as (``set_sides``), when it had to be."""
+        """``columns``: what each column of the row holds, with the set side it was read as."""
         absent = tuple(
             modality
             for modality, condition in MODALITY_CONDITIONS.items()
@@ -93,19 +95,20 @@ class OriginResolver:
             for s in sets
             for other in s.detection.rows
             if (
-                self._same_by_kind(row, layout, other, s.layout)
+                self._same_by_kind(row, columns.columns, other, s.layout)
                 if by_kind
                 else same_row(row.values, other.values)
             )
         )
         modalities = {m.modality for m in matched}
         origin = "both" if len(modalities) == 2 else (modalities.pop() if modalities else None)
-        method = self._kind_method(layout) if by_kind else SAME_COLUMNS_METHOD
-        if side is not None:
-            method = f"{side_method(side, layout.columns or ())}; {_MATCH_ON_KINDS}"
+        method = self._kind_method(columns.columns) if by_kind else SAME_COLUMNS_METHOD
+        if columns.method is not None:
+            method = f"{columns.method}; {_MATCH_ON_KINDS}"
+        branches = (columns.side,) if columns.side is not None else self._branches(readings, layout, origin)
         return RowOrigin(
             modality=origin,
-            branches=(side,) if side is not None else self._branches(readings, layout, origin),
+            branches=branches,
             modality_sets=sets,
             absent_modalities=absent,
             matched=matched,
@@ -125,12 +128,12 @@ class OriginResolver:
 
     @staticmethod
     def _same_by_kind(
-        row: DetectedRow, layout: RuleLayout, other: DetectedRow, other_layout: RuleLayout
+        row: DetectedRow, columns: Sequence[ResultColumn], other: DetectedRow, other_layout: RuleLayout
     ) -> bool:
         """The C row equals the modality row on the kinds that row projects; its other kinds are null."""
-        if layout.columns is None or other_layout.columns is None:
+        if other_layout.columns is None:
             return False
-        mine = {c.kind: row.values.get(c.label) for c in layout.columns}
+        mine = {c.kind: row.values.get(c.label) for c in columns}
         theirs = {c.kind: other.values.get(c.label) for c in other_layout.columns}
         if len(theirs) != len(other_layout.columns):
             return False  # the modality rule projects two columns of the same kind
@@ -148,8 +151,8 @@ class OriginResolver:
         return same or layout.branches
 
     @staticmethod
-    def _kind_method(layout: RuleLayout) -> str:
-        kinds = ", ".join(f"{c.label} → {c.kind}" for c in layout.columns or ())
+    def _kind_method(columns: Sequence[ResultColumn]) -> str:
+        kinds = ", ".join(f"{c.label} → {c.kind}" for c in columns)
         return (
             f"result columns mapped to their kind ({kinds}) as WatchOut aligns them "
             f"(_canonical_schema, _multimodal_labels); {_MATCH_ON_KINDS}"
@@ -181,8 +184,8 @@ def _argument_class(ctx: HarvestContext, column: ResultColumn, entity: int) -> s
     assert column.arg_class is not None
     if len(admitted) <= 1 or not predicates:
         return column.arg_class
-    relations = ctx.reader.visual_intervals(ctx.analysis.analysis_id, set(predicates))
-    participants = ctx.reader.participants([r.relation_id for r in relations]) if relations else []
+    relations = ctx.records.visual_intervals(ctx.analysis.analysis_id, set(predicates))
+    participants = ctx.records.participants([r.relation_id for r in relations]) if relations else []
     classes = [p.class_name for p in participants if p.class_id == entity and p.class_name in admitted]
     return classes[0] if classes else column.arg_class
 
@@ -191,7 +194,7 @@ class ModalityHarvester:
     def harvest(self, ctx: HarvestContext) -> tuple[EventRecord, list[Note]]:
         origin = ctx.origin
         unavailable: dict[str, Unavailable] = {}
-        timed = extent_anchor(ctx.row.values, ctx.layout.extent, ctx.timebase, "interval")
+        timed = extent_anchor(ctx.row.values, ctx.row_columns.extent, ctx.timebase, "interval")
         if timed is None:  # EventLocator refuses such rows
             raise HarvestFailure.input(
                 InputError.ROW_SCHEMA_AMBIGUOUS, f"{ctx.rule.ref}: no start and end in the row"
@@ -240,17 +243,16 @@ class ModalityHarvester:
             unavailable=unavailable or None,
         )
         notes = []
-        if ctx.layout.multiset and ctx.layout.columns:
+        if ctx.layout.multiset and ctx.row_columns.columns:
             notes.append(Note(code=NoteCode.C_LABELS_BY_KIND, detail=self._labels_note(ctx)))
-        elif ctx.layout.side_columns and ctx.origin.branch is not None:
-            detail = side_method(ctx.origin.branch, ctx.layout.columns or ())
-            notes.append(Note(code=NoteCode.C_LABELS_BY_KIND, detail=detail))
+        elif ctx.row_columns.method is not None:
+            notes.append(Note(code=NoteCode.C_LABELS_BY_KIND, detail=ctx.row_columns.method))
         return event, notes
 
     @staticmethod
     def _arguments(ctx: HarvestContext) -> list[Argument]:
         arguments = []
-        for column in ctx.layout.columns or ():
+        for column in ctx.row_columns.columns:
             if not column.kind.startswith("arg"):
                 continue
             entity = class_id(ctx.row.values.get(column.label))
@@ -300,7 +302,7 @@ class ModalityHarvester:
     @staticmethod
     def _labels_note(ctx: HarvestContext) -> str:
         parts = []
-        for column in ctx.layout.columns or ():
+        for column in ctx.row_columns.columns:
             fields = ", ".join(f"{b}: {f}" for b, f in column.fields.items())
             parts.append(f"{column.label} → {column.kind} ({fields})")
         return "C columns mapped to their kind, labels from the first branch: " + "; ".join(parts)

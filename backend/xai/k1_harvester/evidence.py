@@ -85,8 +85,8 @@ class EvidenceHarvester:
         audio = [p for p in predicates if is_audio(p, ctx.vocabulary)]
         row_entities = {int(a.entity_id[len("ent_") :]): a.class_ for a in event.arguments}
 
-        visual_rows = ctx.reader.visual_intervals(ctx.analysis.analysis_id, set(visual)) if visual else []
-        participants = ctx.reader.participants([r.relation_id for r in visual_rows]) if visual_rows else []
+        visual_rows = ctx.records.visual_intervals(ctx.analysis.analysis_id, set(visual)) if visual else []
+        participants = ctx.records.participants([r.relation_id for r in visual_rows]) if visual_rows else []
         by_relation: dict[int, list[ParticipantRow]] = {}
         for p in participants:
             by_relation.setdefault(p.relation_id, []).append(p)
@@ -96,7 +96,7 @@ class EvidenceHarvester:
                 for r in visual_rows
                 if any(p.class_id in row_entities for p in by_relation.get(r.relation_id, []))
             ]
-        audio_rows = ctx.reader.audio_intervals(ctx.analysis.analysis_id, set(audio)) if audio else []
+        audio_rows = ctx.records.audio_intervals(ctx.analysis.analysis_id, set(audio)) if audio else []
 
         intervals = [self._audio(ctx, r) for r in audio_rows]
         intervals += [self._visual(ctx, r, by_relation.get(r.relation_id, [])) for r in visual_rows]
