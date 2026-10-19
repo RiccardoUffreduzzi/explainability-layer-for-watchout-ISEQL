@@ -113,7 +113,7 @@ class SqliteWatchOutReader:
         )
 
     def default_params(self) -> ParamsSnapshot:
-        """ The defaults the GUI pre-fills: ``default_deltas_for`` of every rule """
+        """The defaults the GUI pre-fills: ``default_deltas_for`` of every rule"""
         merged: dict[str, ParamValue] = {}
         per_rule: dict[str, dict[str, ParamValue]] = {}
         provider: dict[str, str] = {}

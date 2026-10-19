@@ -84,7 +84,6 @@ def term_id(kind: str, term: str) -> str:
     return f"g_{_name(kind, 'kind')}_{_name(term, 'term')}"
 
 
-
 # auxilliary functions to validate the arguments
 def _non_negative(value: int, name: str) -> int:
     if isinstance(value, bool) or value < 0:

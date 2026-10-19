@@ -52,7 +52,7 @@ class HarvestFailure(Exception):
 
 @dataclass(frozen=True)
 class HarvestResult:
-    """What the batch made of one row of a detection: a draft, a failure or a duplicate. """
+    """What the batch made of one row of a detection: a draft, a failure or a duplicate."""
 
     index: int
     """Position of the row among the rows the engine returned."""

@@ -1,4 +1,4 @@
-"""Loads the glossary and pipeline constants files """
+"""Loads the glossary and pipeline constants files"""
 
 import hashlib
 from collections.abc import Mapping

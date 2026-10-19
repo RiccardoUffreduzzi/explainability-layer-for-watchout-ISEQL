@@ -25,9 +25,10 @@ jobs:
           python-version: '3.10'
 
       # The ISEQL engine tests are dependency-light (no torch/VLM/audio); only
-      # pytest + pytest-cov are required. `pytest.ini` sets `pythonpath = src`.
+      # pytest + pytest-cov are required, plus munch for the post-analysis hook
+      # tests (same version as Pipfile.lock). `pytest.ini` sets `pythonpath = src`.
       - name: Install test dependencies
-        run: pip install pytest pytest-cov
+        run: pip install pytest pytest-cov "munch==4.0.0"
 
       - name: Run backend tests with coverage
         run: pytest --cov=iseql --cov=service.relation_vocab --cov-report=term-missing --cov-report=xml

@@ -91,7 +91,9 @@ def harvest(args: argparse.Namespace) -> int:
         sys.stdout.write(text)
     return EXIT_OK
 
+
 # test if a row is a JSON object
+
 
 def _row(text: str) -> dict[str, Any] | None:
     try:

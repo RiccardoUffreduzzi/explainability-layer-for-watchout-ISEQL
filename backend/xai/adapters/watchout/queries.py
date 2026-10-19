@@ -1,4 +1,4 @@
-""" SQL queries on WatchOut's tables """
+"""SQL queries on WatchOut's tables"""
 
 import sqlite3
 from collections.abc import Sequence
@@ -37,7 +37,7 @@ def analysis_row(conn: sqlite3.Connection, analysis_id: str) -> dict[str, Any] |
 
 
 def saved_params_row(conn: sqlite3.Connection, analysis_id: str) -> tuple[str | None, str | None]:
-    """ reads DeltasJson, DeltaUnit of the analysis; None for a missing column."""
+    """reads DeltasJson, DeltaUnit of the analysis; None for a missing column."""
     present = table_columns(conn, "Analyses")
     columns = [c for c in ("DeltasJson", "DeltaUnit") if c in present]
     if not columns:

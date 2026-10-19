@@ -1,8 +1,9 @@
 """The only place that opens WatchOut's database: read-only.
 
 The file is opened in ``mode=ro`` and the connection is set to
-``PRAGMA query_only``, so this part cannot write. With ``config_db`` (ablation databases without ``AppConfig``)
-the configuration is copied from that database into a temporary
+``PRAGMA query_only``, so this part cannot write. With ``config_db``
+(ablation databases without ``AppConfig``) the configuration is copied
+from that database into a temporary
 """
 
 import sqlite3
