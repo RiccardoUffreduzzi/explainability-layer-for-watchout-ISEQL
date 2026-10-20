@@ -14,7 +14,7 @@ from xai.contract.model import Entity, EventRecord, IntervalRecord, Note, ReidEv
 from xai.contract.primitives import Source, SourceRef, Stage, Unavailable
 from xai.contract.reasons import NoteCode, Reason
 from xai.k1_harvester.context import HarvestContext
-from xai.k1_harvester.gaps import LINEAGE, REID, VISUAL_CONFIDENCE
+from xai.k1_harvester.gaps import REID, VISUAL_CONFIDENCE
 from xai.k1_harvester.ports import AudioIntervalRow, ParticipantRow, VisualIntervalRow
 from xai.k1_harvester.predicates import branch_predicates, is_audio
 from xai.k1_harvester.resource_data import PipelineConstants
@@ -137,18 +137,17 @@ class EvidenceHarvester:
             args=[entity_id(p.class_id) for p in args.participants],
             args_ordered=args.ordered,
             anchor=timed.anchor,
-            used_by_rule=None,
             confidence=None,
             source_ref=SourceRef(
                 stage=Stage.IAD, store="VisualPerInterval", record_id=str(row.relation_id), mode="read"
             ),
             sources=sources or None,
-            unavailable={"used_by_rule": LINEAGE, "confidence": VISUAL_CONFIDENCE, **timed.unavailable},
+            unavailable={"confidence": VISUAL_CONFIDENCE, **timed.unavailable},
         )
 
     def _audio(self, ctx: HarvestContext, row: AudioIntervalRow) -> IntervalRecord:
         timed = ctx.timebase.from_frames(row.start_frame, row.end_frame, "anchor")
-        unavailable: dict[str, Unavailable] = {"used_by_rule": LINEAGE, **timed.unavailable}
+        unavailable: dict[str, Unavailable] = dict(timed.unavailable)
         if row.confidence is None:
             unavailable["confidence"] = Unavailable(
                 reason=Reason.ANALYSIS_RECORD_MISSING,
@@ -161,13 +160,12 @@ class EvidenceHarvester:
             args=[],
             args_ordered=True,
             anchor=timed.anchor,
-            used_by_rule=None,
             confidence=row.confidence,
             source_ref=SourceRef(
                 stage=Stage.AUDIO, store="AudioPerInterval", record_id=str(row.interval_id), mode="read"
             ),
             sources=confidence_source(self.constants, ctx.analysis.audio_provider, row),
-            unavailable=unavailable,
+            unavailable=unavailable or None,
         )
 
     @staticmethod

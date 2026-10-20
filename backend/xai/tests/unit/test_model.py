@@ -81,9 +81,9 @@ def test_unknown_keys_are_rejected(example: dict[str, Any], path: tuple[str, ...
 
 def test_required_nullable_field_cannot_be_left_out(example: dict[str, Any]) -> None:
     data = copy.deepcopy(example)
-    del data["rule"]["bindings"]
+    del data["intervals"][0]["confidence"]
 
-    with pytest.raises(ValidationError, match="bindings"):
+    with pytest.raises(ValidationError, match="confidence"):
         from_json_data(ContractDraft, data)
 
 
@@ -231,7 +231,11 @@ def test_row_match_must_point_to_a_returned_row(rows_returned: int, matches: int
 
 
 def test_check_result_passed_agrees_with_violations() -> None:
-    violation = {"check": "completeness", "element_path": "rule.bindings", "detail": "null without a reason"}
+    violation = {
+        "check": "completeness",
+        "element_path": "intervals[0].confidence",
+        "detail": "null without a reason",
+    }
 
     with pytest.raises(ValidationError, match="passed"):
         from_json_data(CheckResult, {"name": "completeness", "passed": True, "violations": [violation]})

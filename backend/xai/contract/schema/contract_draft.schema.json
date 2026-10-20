@@ -223,24 +223,6 @@
       "title": "AudioWindow",
       "type": "object"
     },
-    "Binding": {
-      "additionalProperties": false,
-      "properties": {
-        "variable": {
-          "minLength": 1,
-          "type": "string"
-        },
-        "interval_id": {
-          "$ref": "#/$defs/IntervalId"
-        }
-      },
-      "required": [
-        "variable",
-        "interval_id"
-      ],
-      "title": "Binding",
-      "type": "object"
-    },
     "CheckName": {
       "description": "The two closing checks of K1.",
       "enum": [
@@ -845,16 +827,6 @@
         "anchor": {
           "$ref": "#/$defs/Anchor"
         },
-        "used_by_rule": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
         "confidence": {
           "anyOf": [
             {
@@ -882,7 +854,6 @@
         "args",
         "args_ordered",
         "anchor",
-        "used_by_rule",
         "confidence",
         "source_ref"
       ],
@@ -1349,7 +1320,6 @@
     "Reason": {
       "description": "Why a field of the draft is null (``Unavailable.reason``).",
       "enum": [
-        "lineage_not_persisted",
         "keyframes_not_persisted",
         "vlm_output_not_persisted",
         "reid_similarity_not_persisted",
@@ -1541,19 +1511,6 @@
           },
           "type": "array"
         },
-        "bindings": {
-          "anyOf": [
-            {
-              "items": {
-                "$ref": "#/$defs/Binding"
-              },
-              "type": "array"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
         "constraints": {
           "items": {
             "discriminator": {
@@ -1605,7 +1562,6 @@
         "structure_ref",
         "model_form",
         "projection",
-        "bindings",
         "constraints"
       ],
       "title": "RuleRecord",

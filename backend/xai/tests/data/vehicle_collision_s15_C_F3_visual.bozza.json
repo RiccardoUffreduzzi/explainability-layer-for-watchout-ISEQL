@@ -236,7 +236,6 @@
       "M1.st",
       "M1.et"
     ],
-    "bindings": null,
     "constraints": [
       {
         "constraint_id": "c_set1",
@@ -474,13 +473,7 @@
           ]
         }
       }
-    ],
-    "unavailable": {
-      "bindings": {
-        "reason": "lineage_not_persisted",
-        "detail": "WatchOut's SQL projects ClassID and times, not RelationID (iseql/compiler.py)"
-      }
-    }
+    ]
   },
   "entities": [
     {
@@ -521,7 +514,6 @@
         "end_s": 10.0,
         "read_as": "frames"
       },
-      "used_by_rule": null,
       "confidence": null,
       "source_ref": {
         "stage": "iad",
@@ -544,10 +536,6 @@
         }
       },
       "unavailable": {
-        "used_by_rule": {
-          "reason": "lineage_not_persisted",
-          "detail": "WatchOut's SQL projects ClassID and times, not RelationID (iseql/compiler.py)"
-        },
         "confidence": {
           "reason": "visual_confidence_not_recorded",
           "detail": "VisualPerInterval has no confidence column"
@@ -725,16 +713,8 @@
     ],
     "missing_fields": [
       {
-        "path": "rule.bindings",
-        "reason": "lineage_not_persisted"
-      },
-      {
         "path": "entities[*].reid_evidence",
         "reason": "reid_similarity_not_persisted"
-      },
-      {
-        "path": "intervals[*].used_by_rule",
-        "reason": "lineage_not_persisted"
       },
       {
         "path": "intervals[*].confidence",

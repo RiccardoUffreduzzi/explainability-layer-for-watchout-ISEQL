@@ -10,7 +10,6 @@ from collections.abc import Sequence
 from xai.contract.model import ConstraintNode, Note, RuleRecord, TemporalOperatorNode
 from xai.contract.reasons import NoteCode
 from xai.k1_harvester.context import HarvestContext
-from xai.k1_harvester.gaps import LINEAGE
 from xai.k1_harvester.ports import ParamsSnapshot
 from xai.k1_harvester.rule.readers import DEFAULT_READERS, NodeReader
 from xai.k1_harvester.rule.readers.set_operation import projection_parents
@@ -54,9 +53,7 @@ class RuleHarvester:
             structure_ref=ctx.rule.source(),
             model_form=ctx.form,
             projection=projection,
-            bindings=None,
             constraints=nodes,
-            unavailable={"bindings": LINEAGE},
         )
         return record, notes
 

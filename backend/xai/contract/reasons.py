@@ -9,9 +9,6 @@ from enum import Enum
 class Reason(str, Enum):
     """Why a field of the draft is null (``Unavailable.reason``)."""
 
-    LINEAGE_NOT_PERSISTED = "lineage_not_persisted"
-    """WatchOut does not store which intervals a rule used, nor variable bindings."""
-
     KEYFRAMES_NOT_PERSISTED = "keyframes_not_persisted"
     """The WatchOut version in use does not store key frames."""
 

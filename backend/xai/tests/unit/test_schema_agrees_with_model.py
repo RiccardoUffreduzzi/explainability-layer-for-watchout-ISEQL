@@ -42,7 +42,7 @@ def _check(draft: Draft) -> dict[str, Any]:
 def _violation(draft: Draft) -> dict[str, str]:
     return {
         "check": _check(draft)["name"],
-        "element_path": "rule.bindings",
+        "element_path": "intervals[0].confidence",
         "detail": "null without a reason",
     }
 
@@ -125,7 +125,7 @@ CASES: dict[str, tuple[Mutation, bool]] = {
     "payload of another kind": (lambda d: _node(d, "projection").update(kind="selection"), False),
     "unknown key": (lambda d: d["rule"].update(unknown=1), False),
     "K2 field": (lambda d: d["contract_meta"].update(contract_hash="abc"), False),
-    "required nullable field left out": (lambda d: d["rule"].pop("bindings"), False),
+    "required nullable field left out": (lambda d: d["intervals"][0].pop("confidence"), False),
 }
 
 # Cases on the parameters of a temporal operator: run on the examples that have one.

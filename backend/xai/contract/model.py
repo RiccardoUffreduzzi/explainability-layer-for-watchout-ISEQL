@@ -356,11 +356,6 @@ ConstraintNode = Annotated[
 """A rule node; ``kind`` decides the type of ``payload``."""
 
 
-class Binding(ContractModel):
-    variable: NonEmptyStr
-    interval_id: IntervalId
-
-
 class RuleRecord(ContractModel):
     expression: NonEmptyStr
     """Text rendered from the executed structure with the parameters used."""
@@ -369,8 +364,6 @@ class RuleRecord(ContractModel):
     structure_ref: SourceRef
     model_form: Literal["F1", "F2", "F3"]
     projection: list[NonEmptyStr]
-    bindings: list[Binding] | None
-    """Always null today: WatchOut does not store the lineage."""
     constraints: Annotated[list[ConstraintNode], Field(min_length=1)]
     unavailable: UnavailableMap | None = absent_if_none()
 
@@ -408,7 +401,6 @@ class IntervalRecord(ContractModel):
     args_ordered: bool
     """True when the signature classes differ, so the order of ``args`` is meaningful."""
     anchor: Anchor
-    used_by_rule: bool | None
     confidence: float | None
     source_ref: SourceRef
     sources: SourceMap | None = absent_if_none()

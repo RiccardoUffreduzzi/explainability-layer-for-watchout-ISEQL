@@ -71,7 +71,7 @@ def absent_if_none(**kwargs: Any) -> Any:
     The draft distinguishes two kinds of empty field:
 
     - a *required* field that WatchOut cannot provide is written as ``null`` and
-      has an entry in the record's ``unavailable`` map (for example ``rule.bindings``);
+      has an entry in the record's ``unavailable`` map (for example ``confidence`` of a visual interval);
     - an *optional* field that does not apply is left out (for example ``unit`` on a
       strictness parameter, or ``sources`` when every field has the same source).
 

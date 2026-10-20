@@ -228,7 +228,6 @@
       "M1.st",
       "M2.et"
     ],
-    "bindings": null,
     "constraints": [
       {
         "constraint_id": "c_set1",
@@ -466,13 +465,7 @@
           ]
         }
       }
-    ],
-    "unavailable": {
-      "bindings": {
-        "reason": "lineage_not_persisted",
-        "detail": "WatchOut's SQL projects ClassID and times, not RelationID (iseql/compiler.py)"
-      }
-    }
+    ]
   },
   "entities": [],
   "intervals": [
@@ -489,7 +482,6 @@
         "end_s": 5.0,
         "read_as": "frames"
       },
-      "used_by_rule": null,
       "confidence": 1.0,
       "source_ref": {
         "stage": "audio",
@@ -503,12 +495,6 @@
           "store": "backend/xai/resources/pipeline_constants.yaml",
           "record_id": "constant_audio_confidence",
           "mode": "read"
-        }
-      },
-      "unavailable": {
-        "used_by_rule": {
-          "reason": "lineage_not_persisted",
-          "detail": "WatchOut's SQL projects ClassID and times, not RelationID (iseql/compiler.py)"
         }
       }
     },
@@ -525,7 +511,6 @@
         "end_s": 7.5,
         "read_as": "frames"
       },
-      "used_by_rule": null,
       "confidence": 1.0,
       "source_ref": {
         "stage": "audio",
@@ -539,12 +524,6 @@
           "store": "backend/xai/resources/pipeline_constants.yaml",
           "record_id": "constant_audio_confidence",
           "mode": "read"
-        }
-      },
-      "unavailable": {
-        "used_by_rule": {
-          "reason": "lineage_not_persisted",
-          "detail": "WatchOut's SQL projects ClassID and times, not RelationID (iseql/compiler.py)"
         }
       }
     },
@@ -561,7 +540,6 @@
         "end_s": 10.0,
         "read_as": "frames"
       },
-      "used_by_rule": null,
       "confidence": 1.0,
       "source_ref": {
         "stage": "audio",
@@ -575,12 +553,6 @@
           "store": "backend/xai/resources/pipeline_constants.yaml",
           "record_id": "constant_audio_confidence",
           "mode": "read"
-        }
-      },
-      "unavailable": {
-        "used_by_rule": {
-          "reason": "lineage_not_persisted",
-          "detail": "WatchOut's SQL projects ClassID and times, not RelationID (iseql/compiler.py)"
         }
       }
     }
@@ -754,14 +726,6 @@
       }
     ],
     "missing_fields": [
-      {
-        "path": "rule.bindings",
-        "reason": "lineage_not_persisted"
-      },
-      {
-        "path": "intervals[*].used_by_rule",
-        "reason": "lineage_not_persisted"
-      },
       {
         "path": "glossary[kind=audio_class].definition",
         "reason": "glossary_definition_not_in_system"

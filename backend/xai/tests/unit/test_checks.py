@@ -40,24 +40,30 @@ def test_a_null_without_a_reason_is_found(example: dict[str, Any]) -> None:
 
 def test_a_reason_for_a_field_with_a_value_is_found(example: dict[str, Any]) -> None:
     data = copy.deepcopy(example)
-    data["event"].setdefault("unavailable", {})["label"] = {"reason": "lineage_not_persisted", "detail": "x"}
+    data["event"].setdefault("unavailable", {})["label"] = {"reason": "fps_not_recorded", "detail": "x"}
 
     assert _completeness(data) == ["event.unavailable.label"]
 
 
 def test_a_reason_for_a_missing_field_is_found(example: dict[str, Any]) -> None:
     data = copy.deepcopy(example)
-    data["unavailable"]["no_such_field"] = {"reason": "lineage_not_persisted", "detail": "x"}
+    data["unavailable"]["no_such_field"] = {"reason": "fps_not_recorded", "detail": "x"}
 
     assert _completeness(data) == ["unavailable.no_such_field"]
 
 
 def test_a_reason_does_not_cover_another_list_item(example: dict[str, Any]) -> None:
     data = copy.deepcopy(example)
-    data["intervals"].append(copy.deepcopy(data["intervals"][0]))
-    del data["intervals"][-1]["unavailable"]["used_by_rule"]
+    name, item = next(
+        (n, i) for n in ("intervals", "entities", "glossary") for i in data[n] if i.get("unavailable")
+    )
+    field = next(iter(item["unavailable"]))
+    data[name].append(copy.deepcopy(item))
+    del data[name][-1]["unavailable"][field]
+    if not data[name][-1]["unavailable"]:
+        del data[name][-1]["unavailable"]
 
-    assert _completeness(data) == [f"intervals[{len(data['intervals']) - 1}].used_by_rule"]
+    assert _completeness(data) == [f"{name}[{len(data[name]) - 1}].{field}"]
 
 
 def test_the_root_of_the_rule_has_no_parent_by_design(example: dict[str, Any]) -> None:
