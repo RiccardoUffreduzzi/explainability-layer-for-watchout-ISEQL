@@ -9,6 +9,7 @@ import pytest
 
 from xai.cli import pipeline as pipeline_cli
 from xai.contract.reasons import InputError
+from xai.contract.source_of_truth import load_source_of_truth, verify_contract_hash
 from xai.k1_harvester.output import AnalysisFolder
 from xai.k1_harvester.result import HarvestFailure
 from xai.pipeline.runner import ReportPipeline
@@ -45,6 +46,21 @@ def test_a_draft_per_row_and_the_index_last(pipeline: ReportPipeline, tmp_path: 
     assert index["summary"]["drafts"] == len(drafts) == len(rows) >= 1
     newest_draft = max((run.folder.path / d).stat().st_mtime_ns for d in drafts)
     assert run.folder.index_path.stat().st_mtime_ns >= newest_draft
+
+
+def test_k2_writes_a_source_of_truth_for_each_draft(pipeline: ReportPipeline, tmp_path: Path) -> None:
+    run = pipeline.run(S21, tmp_path)
+
+    index = json.loads(run.folder.index_path.read_text(encoding="utf-8"))
+    drafts = sorted(r["draft"] for e in index["events"] for r in e["rows"] if r["status"] == "draft")
+    k2_dir = run.folder.path / "k2"
+    written = sorted(p.relative_to(k2_dir).as_posix() for p in k2_dir.glob("*/*.json"))
+    assert written == drafts
+    for draft in drafts:
+        document = load_source_of_truth((k2_dir / draft).read_text(encoding="utf-8"))
+        assert verify_contract_hash(document)
+        assert f"{document.event.label}/{document.event.event_id}.json" == draft
+    assert not list(k2_dir.rglob("*.tmp"))
 
 
 def test_the_batch_draft_is_the_single_request_draft(pipeline: ReportPipeline, tmp_path: Path) -> None:

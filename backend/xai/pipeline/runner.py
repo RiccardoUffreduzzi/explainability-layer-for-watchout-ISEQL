@@ -15,6 +15,7 @@ from xai.contract.model import Condition, ContractDraft
 from xai.k1_harvester.batch import AnalysisHarvester, AnalysisOutcome
 from xai.k1_harvester.output import AnalysisFolder, FolderLocked
 from xai.k1_harvester.request import ParamsMode
+from xai.k2.stage import K2Stage
 
 log = logging.getLogger("xai.pipeline")
 
@@ -27,7 +28,7 @@ class ReportStage(Protocol):
     def process(self, draft: ContractDraft, draft_path: Path) -> None: ...
 
 
-REPORT_STAGES: tuple[ReportStage, ...] = ()
+REPORT_STAGES: tuple[ReportStage, ...] = (K2Stage(),)
 """The stages after K1, in the order they run on each draft."""
 
 RunStatus = Literal["done", "skipped", "locked"]
