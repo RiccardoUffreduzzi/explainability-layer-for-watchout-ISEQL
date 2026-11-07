@@ -1,17 +1,21 @@
 """The ``glossary`` section: an entry for every term of the draft.
 
 Visual predicates take their definition from ``AppConfig.relation_vocab``
-(the text given to the VLM); audio classes, operators and events from the
-file ``glossary.yaml``, which also holds every report phrase. A term the file does
+(the text given to the VLM); audio classes, operators, events and comparisons
+(identity, attribute_comparison and duration nodes) from the file ``glossary.yaml``,
+which also holds every report phrase. A term the file does
 not have keeps its name as phrase, with a ``not_available`` source.
 """
 
 from collections.abc import Mapping, Sequence
 
-from xai.contract.ids import term_id
+from xai.contract.ids import comparison_term, term_id
 from xai.contract.model import (
+    AttributeComparisonNode,
+    DurationNode,
     EventRecord,
     GlossaryEntry,
+    IdentityNode,
     IntervalRecord,
     ParameterReading,
     RuleRecord,
@@ -35,6 +39,7 @@ class GlossaryHarvester:
     ) -> list[GlossaryEntry]:
         predicates: list[str] = []
         operators: dict[str, TimeUnit] = {}
+        comparisons: list[str] = []
         for node in rule.constraints:
             if isinstance(node, SelectionNode):
                 predicates.extend(p for b in node.payload.branches for p in b.predicates)
@@ -43,6 +48,8 @@ class GlossaryHarvester:
                     node.payload.name,
                     node.payload.params[0].compare_domain if node.payload.params else "seconds",
                 )
+            elif isinstance(node, (IdentityNode, AttributeComparisonNode, DurationNode)):
+                comparisons.append(comparison_term(node.kind, node.payload.op))
         predicates.extend(i.predicate for i in intervals)
         entries = []
         for term in dict.fromkeys(predicates):
@@ -51,6 +58,7 @@ class GlossaryHarvester:
             else:
                 entries.append(self._predicate(term, ctx.vocabulary.descriptions))
         entries.extend(self._operator(name, unit) for name, unit in operators.items())
+        entries.extend(self._comparison(name) for name in dict.fromkeys(comparisons))
         entries.append(self._event(event.label))
         return sorted(entries, key=lambda e: e.term_id)
 
@@ -124,6 +132,21 @@ class GlossaryHarvester:
             unavailable=None
             if text and text.definition
             else {"definition": self._missing("glossary.yaml has no definition of this operator")},
+        )
+
+    def _comparison(self, name: str) -> GlossaryEntry:
+        text = self.glossary.comparisons.get(name)
+        return GlossaryEntry(
+            term_id=term_id("comparison", name),
+            kind="comparison",
+            term=name,
+            definition=text.definition if text else None,
+            plain_template=text.plain_template if text else name,
+            source=self._source("comparisons", name, text is not None),
+            source_detail=text.citation if text else None,
+            unavailable=None
+            if text and text.definition
+            else {"definition": self._missing("glossary.yaml has no definition of this comparison")},
         )
 
     def _event(self, label: str) -> GlossaryEntry:

@@ -20,7 +20,7 @@ RESOURCES_DIR = Path(__file__).resolve().parents[1] / "resources"
 GLOSSARY_PATH = RESOURCES_DIR / "glossary.yaml"
 CONSTANTS_PATH = RESOURCES_DIR / "pipeline_constants.yaml"
 
-_GLOSSARY_SECTIONS = ("predicates", "audio_classes", "operators", "events")
+_GLOSSARY_SECTIONS = ("predicates", "audio_classes", "operators", "events", "comparisons")
 
 
 def load_glossary(path: Path = GLOSSARY_PATH) -> Glossary:
@@ -35,6 +35,7 @@ def load_glossary(path: Path = GLOSSARY_PATH) -> Glossary:
         audio_classes=sections["audio_classes"],
         operators=sections["operators"],
         events=sections["events"],
+        comparisons=sections["comparisons"],
     )
 
 

@@ -36,7 +36,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.check:
         current = SCHEMA_PATH.read_text(encoding="utf-8") if SCHEMA_PATH.exists() else ""
         if current != expected:
-            print(f"{SCHEMA_PATH} is out of date: run python -m xai.contract.source_of_truth_schema", file=sys.stderr)
+            print(
+                f"{SCHEMA_PATH} is out of date: run python -m xai.contract.source_of_truth_schema",
+                file=sys.stderr,
+            )
             return 1
         return 0
     SCHEMA_PATH.write_text(expected, encoding="utf-8")

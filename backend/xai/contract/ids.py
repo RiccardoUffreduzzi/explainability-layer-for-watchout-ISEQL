@@ -19,6 +19,21 @@ ENTITY_ID_PATTERN = r"^ent_[0-9]+$"
 CONSTRAINT_ID_PATTERN = r"^c_[A-Za-z0-9_]+$"
 TERM_ID_PATTERN = r"^g_[A-Za-z0-9_]+$"
 
+_COMPARISON_OPERATORS = {
+    "=": "eq",
+    "≠": "ne",
+    "!=": "ne",
+    "<": "lt",
+    "<=": "le",
+    "≤": "le",
+    "⩽": "le",
+    ">": "gt",
+    ">=": "ge",
+    "≥": "ge",
+    "⩾": "ge",
+}
+"""Operators of WatchOut's cross-conditions (iseql/parser.py), by the name used in the glossary."""
+
 _FIELD_SEPARATOR = "|"
 _EVENT_HASH_LENGTH = 12
 _NAME = re.compile(r"[A-Za-z0-9_]+")
@@ -82,6 +97,15 @@ def set_operation_id(position: int) -> str:
 def term_id(kind: str, term: str) -> str:
     # g_<kind>_<term>, e.g. ``g_operator_Bef``.
     return f"g_{_name(kind, 'kind')}_{_name(term, 'term')}"
+
+
+def comparison_term(kind: str, op: str) -> str:
+    # <node kind>_<operator>, the glossary term of a condition between variables,
+    # e.g. ``identity_ne`` for M1.arg1 ≠ M2.arg1, ``duration_ge`` for (M1.et − M1.st) >= 3.
+    name = _COMPARISON_OPERATORS.get(op)
+    if name is None:
+        raise ValueError(f"unknown comparison operator: {op!r}")
+    return f"{_name(kind, 'kind')}_{name}"
 
 
 # auxilliary functions to validate the arguments

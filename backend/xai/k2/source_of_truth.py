@@ -19,7 +19,9 @@ from xai.k2.modality_check import modality_check
 def build_source_of_truth(draft: ContractDraft) -> SourceOfTruth:
     """Nothing of the draft is changed: K2's fields are only added."""
     data: dict[str, Any] = draft_to_data(draft)
-    data["knowledge_limits"] = [{"code": code.value, "sentence": SENTENCES[code]} for code in detect_limits(draft)]
+    data["knowledge_limits"] = [
+        {"code": code.value, "sentence": SENTENCES[code]} for code in detect_limits(draft)
+    ]
     outcome = modality_check(draft)
     if outcome is not None:
         data["event"]["reinforcement"] = outcome.value

@@ -30,7 +30,7 @@ class GlossaryText:
 
 @dataclass(frozen=True)
 class Glossary:
-    """``glossary.yaml``: report phrases, operators, audio classes and events."""
+    """``glossary.yaml``: report phrases, operators, audio classes, events and comparisons."""
 
     version: str
     sha12: str
@@ -39,6 +39,8 @@ class Glossary:
     audio_classes: Mapping[str, GlossaryText]
     operators: Mapping[str, GlossaryText]
     events: Mapping[str, GlossaryText]
+    comparisons: Mapping[str, GlossaryText]
+    """Conditions between variables, by ``comparison_term`` (``identity_ne``, ``duration_ge`` …)."""
     store: str = GLOSSARY_STORE
 
     @property

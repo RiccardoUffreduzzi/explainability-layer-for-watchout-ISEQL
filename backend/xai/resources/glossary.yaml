@@ -8,9 +8,14 @@
 #   report phrase and readings of the parameters. {r} and {s} are the two operands,
 #   {unit} is the parameter's compare_domain.
 # - events: description of the event's author (docs/iseql_event_queries.md).
+# - comparisons: conditions between variables (identity, attribute_comparison and
+#   duration nodes), named <node kind>_<operator>: eq (=), ne (≠), lt (<), le (<=),
+#   gt (>), ge (>=); xai.contract.ids.comparison_term gives the name of a node.
+#   {left} and {right} are the two sides; a duration has {x} (what lasts), {value}
+#   and {unit}.
 #
 # Placeholders {arg1}, {arg2} are the arguments of a predicate in signature order.
-version: 0.1.0
+version: 0.2.0
 
 predicates:
   running:
@@ -139,3 +144,57 @@ events:
     definition: A person runs and then enters/exits a vehicle (visual), or engine sounds followed by tire squeal (audio).
     plain_template: a vehicle escape
     citation: docs/iseql_event_queries.md
+
+comparisons:
+  identity_eq:
+    definition: "left = right: the two arguments are the same entity, with the same identifier in WatchOut."
+    plain_template: "{left} and {right} are the same"
+    citation: iseql/parser.py, cross-conditions
+  identity_ne:
+    definition: "left ≠ right: the two arguments are different entities, with different identifiers in WatchOut."
+    plain_template: "{left} and {right} are different"
+    citation: iseql/parser.py, cross-conditions
+  attribute_comparison_eq:
+    definition: "left = right, between two attributes of the detections."
+    plain_template: "{left} is equal to {right}"
+    citation: iseql/parser.py, cross-conditions
+  attribute_comparison_ne:
+    definition: "left ≠ right, between two attributes of the detections."
+    plain_template: "{left} is different from {right}"
+    citation: iseql/parser.py, cross-conditions
+  attribute_comparison_lt:
+    definition: "left < right, between two attributes of the detections."
+    plain_template: "{left} is less than {right}"
+    citation: iseql/parser.py, cross-conditions
+  attribute_comparison_le:
+    definition: "left ≤ right, between two attributes of the detections."
+    plain_template: "{left} is at most {right}"
+    citation: iseql/parser.py, cross-conditions
+  attribute_comparison_gt:
+    definition: "left > right, between two attributes of the detections."
+    plain_template: "{left} is greater than {right}"
+    citation: iseql/parser.py, cross-conditions
+  attribute_comparison_ge:
+    definition: "left ≥ right, between two attributes of the detections."
+    plain_template: "{left} is at least {right}"
+    citation: iseql/parser.py, cross-conditions
+  duration_eq:
+    definition: "(end − start) = value: the time from start to end equals the value, in the unit of the rule."
+    plain_template: "{x} lasts exactly {value} {unit}"
+    citation: iseql/parser.py and iseql/compiler.py, duration constraints
+  duration_lt:
+    definition: "(end − start) < value: the time from start to end is shorter than the value."
+    plain_template: "{x} lasts less than {value} {unit}"
+    citation: iseql/parser.py and iseql/compiler.py, duration constraints
+  duration_le:
+    definition: "(end − start) ≤ value: the time from start to end is at most the value."
+    plain_template: "{x} lasts at most {value} {unit}"
+    citation: iseql/parser.py and iseql/compiler.py, duration constraints
+  duration_gt:
+    definition: "(end − start) > value: the time from start to end is longer than the value."
+    plain_template: "{x} lasts more than {value} {unit}"
+    citation: iseql/parser.py and iseql/compiler.py, duration constraints
+  duration_ge:
+    definition: "(end − start) ≥ value: the time from start to end is at least the value."
+    plain_template: "{x} lasts at least {value} {unit}"
+    citation: iseql/parser.py and iseql/compiler.py, duration constraints

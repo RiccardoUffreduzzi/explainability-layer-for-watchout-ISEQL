@@ -38,7 +38,7 @@ from xai.contract.primitives import (
 )
 from xai.contract.reasons import CheckName, NoteCode, Reason
 
-ContractVersion = Literal["0.1.0-k1"]
+ContractVersion = Literal["0.2.0-k1"]
 CONTRACT_VERSION: Final[str] = get_args(ContractVersion)[0]
 """Version of the draft format; the JSON schema is bound to it (``$id`` and ``const``)."""
 
@@ -417,7 +417,7 @@ class ParameterReading(ContractModel):
 
 class GlossaryEntry(ContractModel):
     term_id: TermId
-    kind: Literal["predicate", "audio_class", "operator", "event_model"]
+    kind: Literal["predicate", "audio_class", "operator", "event_model", "comparison"]
     term: NonEmptyStr
     definition: str | None
     plain_template: NonEmptyStr

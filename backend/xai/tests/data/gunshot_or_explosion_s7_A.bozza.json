@@ -1,7 +1,7 @@
 {
   "$comment": "Caso golden: disgiunzione con classi diverse per alternativa; la colonna si chiama M1_person ma l'entità 4 è un veicolo, e l'argomento prende la classe dell'entità. Prodotta da K1 sul database di test (tests/support.py, build_fixture_db) con i parametri di default della regola. Intervalli, partecipanti e riga sono reali (DB di ablation, scena 7); la regola è quella del seed. Il DB di ablation non ha la riga Analyses: SamplingRate=24, AudioWindow/AudioHop e provider sono ipotizzati. I testi della bozza sono in inglese.",
   "contract_meta": {
-    "contract_version": "0.1.0-k1",
+    "contract_version": "0.2.0-k1",
     "analysis_id": "gemini_3_6_flash_qwen2_audio_s7",
     "source_snapshot": {
       "backend_version": "WATCHOUT ISEQL 0.1.0",
@@ -88,7 +88,7 @@
         }
       }
     },
-    "glossary_version": "glossary.yaml@0.1.0#73fdaf8c187c+relation_vocab@2026-08-30 16:51:22",
+    "glossary_version": "glossary.yaml@0.2.0#4be81213d2be+relation_vocab@2026-08-30 16:51:22",
     "params_origin": "rule_defaults",
     "sources": {
       "glossary_version": {

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:watchout-xai:contract-draft:0.1.0-k1",
+  "$id": "urn:watchout-xai:contract-draft:0.2.0-k1",
   "$defs": {
     "Anchor": {
       "additionalProperties": false,
@@ -311,7 +311,7 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "0.1.0-k1",
+          "const": "0.2.0-k1",
           "type": "string"
         },
         "analysis_id": {
@@ -621,7 +621,8 @@
             "predicate",
             "audio_class",
             "operator",
-            "event_model"
+            "event_model",
+            "comparison"
           ],
           "type": "string"
         },

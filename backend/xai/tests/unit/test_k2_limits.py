@@ -1,7 +1,8 @@
 """K2's limits of knowledge, on the example drafts of ``tests/data``."""
 
 from xai.contract import ContractDraft
-from xai.k2.limits import LimitCode, detect_limits
+from xai.contract.source_of_truth import LimitCode
+from xai.k2.limits import detect_limits
 from xai.tests.support import EXAMPLES_DIR, from_json_data, load_example
 
 

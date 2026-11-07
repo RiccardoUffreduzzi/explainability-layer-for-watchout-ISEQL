@@ -25,7 +25,9 @@ def _has_identity_nodes(draft: ContractDraft) -> bool:
 
 def _reid_evidence_missing(draft: ContractDraft) -> bool:
     # TODO: confirm this needs identity nodes too (document 05 lists both fields in one row).
-    return _has_identity_nodes(draft) and any(e.reid_evidence.status == "not_available" for e in draft.entities)
+    return _has_identity_nodes(draft) and any(
+        e.reid_evidence.status == "not_available" for e in draft.entities
+    )
 
 
 def _audio_origin(draft: ContractDraft) -> bool:

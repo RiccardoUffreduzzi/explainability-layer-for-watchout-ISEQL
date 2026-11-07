@@ -9,6 +9,7 @@ from xai.contract.serialization import load_draft
 from xai.k1_harvester.checks.completeness import check_completeness
 from xai.k1_harvester.checks.referential_closure import check_referential_closure
 from xai.k1_harvester.checks.report import missing_fields
+from xai.tests.support import EXAMPLES_DIR, load_example
 
 
 def _closure(data: dict[str, Any]) -> list[str]:
@@ -98,6 +99,14 @@ def test_a_term_without_its_glossary_entry_is_found(example: dict[str, Any]) -> 
     data["glossary"] = [g for g in data["glossary"] if g["kind"] != "event_model"]
 
     assert _closure(data) == ["event.label"]
+
+
+def test_a_comparison_without_its_glossary_entry_is_found() -> None:
+    data = load_example(EXAMPLES_DIR / "handoff_s21_A.bozza.json")
+    data["glossary"] = [g for g in data["glossary"] if g["term_id"] != "g_comparison_identity_eq"]
+    position = next(i for i, c in enumerate(data["rule"]["constraints"]) if c["constraint_id"] == "c_s1_cc2")
+
+    assert _closure(data) == [f"rule.constraints[{position}].payload.op"]
 
 
 def test_duplicate_ids_are_found(example: dict[str, Any]) -> None:

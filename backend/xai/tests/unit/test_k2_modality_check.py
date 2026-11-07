@@ -80,7 +80,13 @@ def test_not_comparable_when_a_frame_is_missing() -> None:
     data = _data(_MULTIMODAL)
     for detection in data["event"]["modality_detections"]:
         if detection["modality"] == "audio":
-            detection["interval"] = {"start_frame": None, "end_frame": None, "start_s": 0.0, "end_s": 7.5, "read_as": "seconds"}
+            detection["interval"] = {
+                "start_frame": None,
+                "end_frame": None,
+                "start_s": 0.0,
+                "end_s": 7.5,
+                "read_as": "seconds",
+            }
         else:
             detection["interval"].update(start_frame=200, end_frame=240, start_s=200 / 24, end_s=240 / 24)
 
@@ -91,7 +97,8 @@ def test_overlap_in_whole_frames() -> None:
     assert overlaps(_frames(0, 180), _frames(144, 240)) is True
     assert overlaps(_frames(0, 180), _frames(120, 120)) is True  # a one-frame span inside
     assert overlaps(_frames(0, 100), _frames(101, 200)) is False
-    assert overlaps(_frames(0, 100), _frames(100, 200)) is True  # sharing one frame counts (ISEQL+ Before, gap 0)
+    # Sharing one frame counts (ISEQL+ Before, gap 0).
+    assert overlaps(_frames(0, 100), _frames(100, 200)) is True
 
 
 def test_no_comparison_when_a_frame_is_missing() -> None:

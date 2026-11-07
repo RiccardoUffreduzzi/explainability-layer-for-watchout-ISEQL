@@ -8,9 +8,12 @@ and every term of the draft has a glossary entry.
 from collections import Counter
 from collections.abc import Iterable
 
-from xai.contract.ids import projection_id
+from xai.contract.ids import comparison_term, projection_id
 from xai.contract.model import (
+    AttributeComparisonNode,
     ContractDraft,
+    DurationNode,
+    IdentityNode,
     ProjectionNode,
     SelectionNode,
     SetOperationNode,
@@ -95,6 +98,10 @@ def check_referential_closure(draft: ContractDraft) -> list[Violation]:
                     fail(f"rule.constraints[{i}].payload", f"predicate {p} has no glossary entry")
         elif isinstance(node, TemporalOperatorNode) and ("operator", node.payload.name) not in terms:
             fail(f"rule.constraints[{i}].payload.name", f"operator {node.payload.name} has no glossary entry")
+        elif isinstance(node, (IdentityNode, AttributeComparisonNode, DurationNode)):
+            name = comparison_term(node.kind, node.payload.op)
+            if ("comparison", name) not in terms:
+                fail(f"rule.constraints[{i}].payload.op", f"comparison {name} has no glossary entry")
     for i, interval in enumerate(draft.intervals):
         if interval.predicate not in predicate_terms:
             fail(f"intervals[{i}].predicate", f"predicate {interval.predicate} has no glossary entry")

@@ -9,6 +9,7 @@ import pytest
 
 from xai.contract import ContractDraft, draft_to_data
 from xai.contract.source_of_truth import (
+    LimitCode,
     SourceOfTruth,
     compute_contract_hash,
     dump_source_of_truth,
@@ -20,7 +21,6 @@ from xai.contract.source_of_truth_schema import SCHEMA_PATH, schema_text, source
 from xai.k2.limit_catalogue import SENTENCES
 from xai.k2.source_of_truth import build_source_of_truth
 from xai.k2.stage import K2Stage, k2_path
-from xai.contract.source_of_truth import LimitCode
 from xai.tests.support import EXAMPLES_DIR, from_json_data, load_example
 
 EXAMPLES = sorted(Path(EXAMPLES_DIR).glob("*.bozza.json"))
@@ -67,7 +67,9 @@ def test_a_change_breaks_the_hash() -> None:
 def test_two_runs_give_the_same_text() -> None:
     draft = _draft(EXAMPLES[0])
 
-    assert dump_source_of_truth(build_source_of_truth(draft)) == dump_source_of_truth(build_source_of_truth(draft))
+    first = dump_source_of_truth(build_source_of_truth(draft))
+    second = dump_source_of_truth(build_source_of_truth(draft))
+    assert first == second
 
 
 def test_it_survives_a_round_trip() -> None:
