@@ -2,13 +2,20 @@
 
 from xai.contract import ContractDraft
 from xai.contract.source_of_truth import LimitCode
-from xai.k2.limits import detect_limits
+from xai.k2.limits import DetectedLimit, detect_limits
 from xai.tests.support import EXAMPLES_DIR, from_json_data, load_example
 
 
+def _detected(name: str) -> list[DetectedLimit]:
+    return detect_limits(from_json_data(ContractDraft, load_example(EXAMPLES_DIR / name)))
+
+
 def _limits(name: str) -> list[str]:
-    draft = from_json_data(ContractDraft, load_example(EXAMPLES_DIR / name))
-    return [code.value for code in detect_limits(draft)]
+    return [limit.code.value for limit in _detected(name)]
+
+
+def _refs(name: str) -> dict[str, list[str]]:
+    return {limit.code.value: list(limit.refs) for limit in _detected(name)}
 
 
 def test_a_visual_draft_with_identity_nodes() -> None:
@@ -53,3 +60,26 @@ def test_the_limits_come_in_catalogue_order_without_repeats() -> None:
 
         assert len(limits) == len(set(limits))
         assert limits == sorted(limits, key=catalogue.index)
+
+
+def test_the_reid_limits_point_at_the_identity_nodes() -> None:
+    refs = _refs("handoff_s21_A.bozza.json")
+
+    assert refs["reid_dependence"] == ["c_s1_cc1", "c_s1_cc2"]
+    assert refs["reid_evidence_unavailable"] == ["c_s1_cc1", "c_s1_cc2"]
+
+
+def test_the_glossary_limit_points_at_the_undefined_entries() -> None:
+    assert _refs("vehicle_collision_s15_C_audio.bozza.json")["glossary_entry_missing"] == [
+        "g_audio_class_glass_breaking",
+        "g_audio_class_horn",
+        "g_audio_class_impact",
+        "g_audio_class_skidding",
+    ]
+
+
+def test_the_other_limits_hold_for_the_whole_detection() -> None:
+    refs = _refs("fight_s5_A.bozza.json")
+    precise = {"reid_dependence", "reid_evidence_unavailable", "glossary_entry_missing"}
+
+    assert all(not causes for code, causes in refs.items() if code not in precise)

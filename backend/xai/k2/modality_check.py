@@ -6,7 +6,7 @@ K1 already collected there the detections of both modalities for the event.
 
 from xai.contract.model import ContractDraft
 from xai.contract.primitives import Anchor
-from xai.contract.source_of_truth import Reinforcement
+from xai.contract.source_of_truth import ReinforcementStatus
 
 
 def overlaps(a: Anchor, b: Anchor) -> bool | None:
@@ -25,34 +25,36 @@ def overlaps(a: Anchor, b: Anchor) -> bool | None:
     return start_a <= end_b and start_b <= end_a
 
 
-def modality_check(draft: ContractDraft) -> Reinforcement | None:
-    """The outcome of the check, or ``None`` when K2 says nothing about it.
+def modality_check(draft: ContractDraft) -> ReinforcementStatus | None:
+    """The outcome of the check, with the names of the guidelines.
 
-    Nothing is said when the detection is not multimodal, when the event has no rule in
-    one of the modalities, or when neither modality has a detection. Otherwise:
-
-    - only one modality has detections: ``visual_only`` or ``audio_only``;
+    - the detection is not multimodal: ``not_multimodal``;
+    - the event has no rule in one of the modalities: ``no_counterpart``;
+    - only one modality has detections: ``only_visual`` or ``only_audio``;
     - some video span overlaps some audio span: ``both_overlapping``;
     - no overlap, but a comparison was impossible (a frame is missing): ``not_comparable``;
-    - no overlap in any comparison: ``both_not_overlapping``.
+    - no overlap in any comparison: ``both_disjoint``.
+
+    ``None`` only when neither modality has a detection, which K1 does not produce: the
+    row being explained comes from these detections.
     """
     if draft.contract_meta.pipeline_config.detection_mode != "multimodal":
-        return None
+        return ReinforcementStatus.NOT_MULTIMODAL
     rules = draft.event.modality_rules
     if rules.visual is None or rules.audio is None:
-        return None
+        return ReinforcementStatus.NO_COUNTERPART
     detections = draft.event.modality_detections
     visual = [d.interval for d in detections if d.modality == "visual"]
     audio = [d.interval for d in detections if d.modality == "audio"]
     if not visual and not audio:
         return None
     if not audio:
-        return Reinforcement.VISUAL_ONLY
+        return ReinforcementStatus.ONLY_VISUAL
     if not visual:
-        return Reinforcement.AUDIO_ONLY
+        return ReinforcementStatus.ONLY_AUDIO
     comparisons = [overlaps(v, a) for v in visual for a in audio]
     if any(c is True for c in comparisons):
-        return Reinforcement.BOTH_OVERLAPPING
+        return ReinforcementStatus.BOTH_OVERLAPPING
     if any(c is None for c in comparisons):
-        return Reinforcement.NOT_COMPARABLE
-    return Reinforcement.BOTH_NOT_OVERLAPPING
+        return ReinforcementStatus.NOT_COMPARABLE
+    return ReinforcementStatus.BOTH_DISJOINT

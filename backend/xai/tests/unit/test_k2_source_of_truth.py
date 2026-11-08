@@ -10,6 +10,7 @@ import pytest
 from xai.contract import ContractDraft, draft_to_data
 from xai.contract.source_of_truth import (
     LimitCode,
+    ReinforcementStatus,
     SourceOfTruth,
     compute_contract_hash,
     dump_source_of_truth,
@@ -19,6 +20,7 @@ from xai.contract.source_of_truth import (
 )
 from xai.contract.source_of_truth_schema import SCHEMA_PATH, schema_text, source_of_truth_schema
 from xai.k2.limit_catalogue import SENTENCES
+from xai.k2.reinforcement_catalogue import REINFORCEMENT_SENTENCES
 from xai.k2.source_of_truth import build_source_of_truth
 from xai.k2.stage import K2Stage, k2_path
 from xai.tests.support import EXAMPLES_DIR, from_json_data, load_example
@@ -69,6 +71,7 @@ def test_two_runs_give_the_same_text() -> None:
 
     first = dump_source_of_truth(build_source_of_truth(draft))
     second = dump_source_of_truth(build_source_of_truth(draft))
+
     assert first == second
 
 
@@ -114,3 +117,30 @@ def test_the_stage_writes_in_its_own_folder_and_leaves_k1_alone(tmp_path: Path) 
     assert draft_path.read_bytes() == before
     assert sorted(p.name for p in draft_path.parent.parent.glob("*/*.json")) == ["ev_0123456789ab.json"]
     assert not list(written.parent.glob("*.tmp"))
+
+
+def test_refs_are_written_only_for_limits_with_a_precise_cause() -> None:
+    document = build_source_of_truth(_draft(EXAMPLES_DIR / "handoff_s21_A.bozza.json"))
+    limits = source_of_truth_to_data(document)["knowledge_limits"]
+
+    assert {limit["code"] for limit in limits if "refs" in limit} == {
+        "reid_dependence",
+        "reid_evidence_unavailable",
+    }
+
+
+def test_every_status_but_two_has_a_report_2_sentence() -> None:
+    silent = {ReinforcementStatus.NO_COUNTERPART, ReinforcementStatus.NOT_MULTIMODAL}
+
+    assert set(REINFORCEMENT_SENTENCES) == set(ReinforcementStatus) - silent
+
+
+def test_the_reinforcement_has_its_sentence_only_when_the_status_has_one() -> None:
+    multimodal = build_source_of_truth(_draft(EXAMPLES_DIR / "vehicle_collision_s15_C_audio.bozza.json"))
+    visual = build_source_of_truth(_draft(EXAMPLES_DIR / "handoff_s21_A.bozza.json"))
+
+    assert source_of_truth_to_data(multimodal)["event"]["reinforcement"] == {
+        "status": "both_overlapping",
+        "sentence": REINFORCEMENT_SENTENCES[ReinforcementStatus.BOTH_OVERLAPPING],
+    }
+    assert source_of_truth_to_data(visual)["event"]["reinforcement"] == {"status": "not_multimodal"}

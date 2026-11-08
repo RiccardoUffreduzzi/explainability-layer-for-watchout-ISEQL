@@ -3,8 +3,8 @@
 K1's models are not touched. Each K2 model extends the K1 one with new fields only, so
 the JSON of a source of truth is the JSON of the draft plus these keys:
 
-- ``knowledge_limits`` (top level);
-- ``event.reinforcement``, left out when the modality check says nothing;
+- ``knowledge_limits`` (top level), each with the IDs of its causes when it has precise ones;
+- ``event.reinforcement``: status of the modality check and its fixed sentence, if it has one;
 - ``contract_meta.source_of_truth_version`` and ``contract_meta.contract_hash``.
 
 ``contract_meta.contract_version`` keeps naming the version of the draft format.
@@ -16,13 +16,13 @@ from collections.abc import Mapping
 from enum import Enum
 from typing import Annotated, Any, Final, Literal, get_args
 
-from pydantic import StringConstraints
+from pydantic import Field, StringConstraints
 
 from xai.contract.canonical import canonical_json
-from xai.contract.model import ContractDraft, ContractMeta, EventRecord
+from xai.contract.model import ConstraintId, ContractDraft, ContractMeta, EventRecord, TermId
 from xai.contract.primitives import ContractModel, NonEmptyStr, absent_if_none
 
-SourceOfTruthVersion = Literal["0.1.0-k2"]
+SourceOfTruthVersion = Literal["0.2.0-k2"]
 SOURCE_OF_TRUTH_VERSION: Final[str] = get_args(SourceOfTruthVersion)[0]
 """Version of the K2 additions; their JSON schema is bound to it."""
 
@@ -43,20 +43,37 @@ class LimitCode(str, Enum):
     DATA_NOT_AVAILABLE = "data_not_available"
 
 
-class Reinforcement(str, Enum):
-    """Outcome of the modality check. Left out of the document when it does not apply."""
+class ReinforcementStatus(str, Enum):
+    """Outcome of the modality check, with the names of the guidelines.
+
+    ``not_comparable`` is K2's own: both modalities detected the event, no overlap was
+    found, and some comparison was impossible because a frame number is missing.
+    """
 
     BOTH_OVERLAPPING = "both_overlapping"
-    BOTH_NOT_OVERLAPPING = "both_not_overlapping"
-    VISUAL_ONLY = "visual_only"
-    AUDIO_ONLY = "audio_only"
+    BOTH_DISJOINT = "both_disjoint"
+    ONLY_VISUAL = "only_visual"
+    ONLY_AUDIO = "only_audio"
     NOT_COMPARABLE = "not_comparable"
+    NO_COUNTERPART = "no_counterpart"
+    NOT_MULTIMODAL = "not_multimodal"
+
+
+class Reinforcement(ContractModel):
+    status: ReinforcementStatus
+    sentence: NonEmptyStr | None = absent_if_none()
+    """The fixed sentence of the catalogue, for Report 2. Left out when the status has none."""
 
 
 class KnowledgeLimit(ContractModel):
     code: LimitCode
     sentence: NonEmptyStr
     """The fixed sentence of the catalogue, for Report 1."""
+    refs: Annotated[list[ConstraintId | TermId], Field(min_length=1)] | None = absent_if_none()
+    """What the limit comes from: rule nodes (``c_``) or glossary entries (``g_``), in draft order.
+
+    Left out when the limit holds for the whole detection.
+    """
 
 
 class EventRecordK2(EventRecord):

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:watchout-xai:source-of-truth:0.1.0-k2",
+  "$id": "urn:watchout-xai:source-of-truth:0.2.0-k2",
   "$defs": {
     "Anchor": {
       "additionalProperties": false,
@@ -311,7 +311,7 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "0.2.0-k1",
+          "const": "0.1.0-k1",
           "type": "string"
         },
         "analysis_id": {
@@ -342,7 +342,7 @@
           "$ref": "#/$defs/UnavailableMap"
         },
         "source_of_truth_version": {
-          "const": "0.1.0-k2",
+          "const": "0.2.0-k2",
           "type": "string"
         },
         "contract_hash": {
@@ -634,8 +634,7 @@
             "predicate",
             "audio_class",
             "operator",
-            "event_model",
-            "comparison"
+            "event_model"
           ],
           "type": "string"
         },
@@ -883,6 +882,20 @@
         "sentence": {
           "minLength": 1,
           "type": "string"
+        },
+        "refs": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ConstraintId"
+              },
+              {
+                "$ref": "#/$defs/TermId"
+              }
+            ]
+          },
+          "minItems": 1,
+          "type": "array"
         }
       },
       "required": [
@@ -1424,15 +1437,34 @@
       "type": "object"
     },
     "Reinforcement": {
-      "description": "Outcome of the modality check. Left out of the document when it does not apply.",
-      "enum": [
-        "both_overlapping",
-        "both_not_overlapping",
-        "visual_only",
-        "audio_only",
-        "not_comparable"
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/ReinforcementStatus"
+        },
+        "sentence": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
       ],
       "title": "Reinforcement",
+      "type": "object"
+    },
+    "ReinforcementStatus": {
+      "description": "Outcome of the modality check, with the names of the guidelines.\n\n``not_comparable`` is K2's own: both modalities detected the event, no overlap was\nfound, and some comparison was impossible because a frame number is missing.",
+      "enum": [
+        "both_overlapping",
+        "both_disjoint",
+        "only_visual",
+        "only_audio",
+        "not_comparable",
+        "no_counterpart",
+        "not_multimodal"
+      ],
+      "title": "ReinforcementStatus",
       "type": "string"
     },
     "RequestEcho": {
