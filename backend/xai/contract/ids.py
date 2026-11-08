@@ -1,7 +1,8 @@
-"""Deterministic identifiers of the contract draft.
+"""Deterministic identifiers of the contract draft and of the explanation plan.
 
 IDs are the only way the outline and the reports can cite a fact, so each one is
-built from the record it names and is stable across runs on the same data.
+built from the record it names and is stable across runs on the same data. The step
+of the plan that explains a rule node takes its ID from the ID of that node.
 """
 
 import hashlib
@@ -18,6 +19,7 @@ INTERVAL_ID_PATTERN = r"^iv_[va][0-9]+$"
 ENTITY_ID_PATTERN = r"^ent_[0-9]+$"
 CONSTRAINT_ID_PATTERN = r"^c_[A-Za-z0-9_]+$"
 TERM_ID_PATTERN = r"^g_[A-Za-z0-9_]+$"
+STEP_ID_PATTERN = r"^s_[A-Za-z0-9_]+$"
 
 _COMPARISON_OPERATORS = {
     "=": "eq",
@@ -37,6 +39,7 @@ _COMPARISON_OPERATORS = {
 _FIELD_SEPARATOR = "|"
 _EVENT_HASH_LENGTH = 12
 _NAME = re.compile(r"[A-Za-z0-9_]+")
+_CONSTRAINT_ID = re.compile(CONSTRAINT_ID_PATTERN)
 
 
 def canonical_row(row: Mapping[str, RowValue]) -> str:
@@ -106,6 +109,14 @@ def comparison_term(kind: str, op: str) -> str:
     if name is None:
         raise ValueError(f"unknown comparison operator: {op!r}")
     return f"{_name(kind, 'kind')}_{name}"
+
+
+# id of the explanation plan
+def step_id_of(constraint_id: str) -> str:
+    # s_ + the rule node without c_: the step that explains c_s1_op1 is s_s1_op1 (K4-A11).
+    if not _CONSTRAINT_ID.fullmatch(constraint_id):
+        raise ValueError(f"not a constraint ID: {constraint_id!r}")
+    return "s_" + constraint_id.removeprefix("c_")
 
 
 # auxilliary functions to validate the arguments

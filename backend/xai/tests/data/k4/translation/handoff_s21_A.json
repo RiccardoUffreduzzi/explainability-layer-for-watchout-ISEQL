@@ -1,0 +1,188 @@
+{
+  "$comment": "Expected translate() of tests/data/handoff_s21_A.bozza.json passed through K2: the steps of 02-use-case §8.1 without limits, reinforcement and provenance.",
+  "branches": [
+    {
+      "branch": "s1",
+      "steps": [
+        {
+          "step_id": "s_s1_sel1",
+          "type": "observation",
+          "construct": "c_s1_sel1",
+          "refs": [
+            "c_s1_sel1",
+            "iv_v59",
+            "ent_3",
+            "ent_4",
+            "g_predicate_carrying"
+          ],
+          "role": "because",
+          "depends_on": [],
+          "t_order": 1.0,
+          "t_order_basis": "interval",
+          "in_report2": true,
+          "term": "g_predicate_carrying",
+          "slots": {
+            "arg1": "ent_3",
+            "arg2": "ent_4"
+          }
+        },
+        {
+          "step_id": "s_s1_sel2",
+          "type": "observation",
+          "construct": "c_s1_sel2",
+          "refs": [
+            "c_s1_sel2",
+            "iv_v60",
+            "ent_5",
+            "ent_4",
+            "g_predicate_carrying"
+          ],
+          "role": "because",
+          "depends_on": [],
+          "t_order": 5.0,
+          "t_order_basis": "interval",
+          "in_report2": true,
+          "term": "g_predicate_carrying",
+          "slots": {
+            "arg1": "ent_5",
+            "arg2": "ent_4"
+          }
+        },
+        {
+          "step_id": "s_s1_cc1",
+          "type": "identity",
+          "construct": "c_s1_cc1",
+          "refs": [
+            "c_s1_cc1",
+            "ent_3",
+            "ent_5",
+            "g_comparison_identity_ne"
+          ],
+          "role": "because",
+          "depends_on": [
+            "s_s1_sel1",
+            "s_s1_sel2"
+          ],
+          "t_order": 5.0,
+          "t_order_basis": "interval",
+          "in_report2": false,
+          "term": "g_comparison_identity_ne",
+          "slots": {
+            "left": "ent_3",
+            "right": "ent_5"
+          }
+        },
+        {
+          "step_id": "s_s1_cc2",
+          "type": "identity",
+          "construct": "c_s1_cc2",
+          "refs": [
+            "c_s1_cc2",
+            "ent_4",
+            "g_comparison_identity_eq"
+          ],
+          "role": "because",
+          "depends_on": [
+            "s_s1_sel1",
+            "s_s1_sel2"
+          ],
+          "t_order": 5.0,
+          "t_order_basis": "interval",
+          "in_report2": false,
+          "term": "g_comparison_identity_eq",
+          "slots": {
+            "left": "ent_4",
+            "right": "ent_4"
+          }
+        },
+        {
+          "step_id": "s_s1_op1",
+          "type": "temporal",
+          "construct": "c_s1_op1",
+          "refs": [
+            "c_s1_op1",
+            "g_operator_Bef"
+          ],
+          "role": "because",
+          "depends_on": [
+            "s_s1_sel1",
+            "s_s1_sel2"
+          ],
+          "t_order": 5.0,
+          "t_order_basis": "interval",
+          "in_report2": false,
+          "term": "g_operator_Bef",
+          "slots": {
+            "r": "s_s1_sel1",
+            "s": "s_s1_sel2"
+          },
+          "readings": [
+            {
+              "param": "δ",
+              "condition": "δ = ∞",
+              "phrase": "at any time after"
+            }
+          ]
+        },
+        {
+          "step_id": "s_s1_proj",
+          "type": "conclusion",
+          "construct": "c_s1_proj",
+          "refs": [
+            "c_s1_proj",
+            "ev_beffcb6f2a6e",
+            "ent_3",
+            "ent_5",
+            "ent_4",
+            "g_event_model_handoff"
+          ],
+          "depends_on": [
+            "s_s1_cc1",
+            "s_s1_cc2",
+            "s_s1_op1"
+          ],
+          "t_order": 5.0,
+          "t_order_basis": "interval",
+          "in_report2": true,
+          "term": "g_event_model_handoff"
+        }
+      ],
+      "conclusion": "s_s1_proj",
+      "bindings": [
+        {
+          "branch": "s1",
+          "variable": "M1",
+          "status": "attributed",
+          "interval_ids": [
+            "iv_v59"
+          ],
+          "basis": [
+            "predicate",
+            "arg_classes",
+            "M1.arg1",
+            "M1.arg2",
+            "M1.st"
+          ]
+        },
+        {
+          "branch": "s1",
+          "variable": "M2",
+          "status": "attributed",
+          "interval_ids": [
+            "iv_v60"
+          ],
+          "basis": [
+            "predicate",
+            "arg_classes",
+            "M2.arg1",
+            "M2.et"
+          ]
+        }
+      ]
+    }
+  ],
+  "excluded": [],
+  "unbound_intervals": [],
+  "unmatched_readings": [],
+  "notes": []
+}

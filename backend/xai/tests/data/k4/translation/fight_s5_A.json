@@ -1,0 +1,99 @@
+{
+  "$comment": "Expected translate() of tests/data/fight_s5_A.bozza.json passed through K2: the steps of 02-use-case §8.2 without limits, reinforcement and provenance.",
+  "branches": [
+    {
+      "branch": "s1",
+      "steps": [
+        {
+          "step_id": "s_s1_sel1",
+          "type": "observation",
+          "construct": "c_s1_sel1",
+          "refs": [
+            "c_s1_sel1",
+            "iv_v6",
+            "ent_1",
+            "ent_2",
+            "g_predicate_physical_altercation"
+          ],
+          "role": "because",
+          "depends_on": [],
+          "t_order": 0.0,
+          "t_order_basis": "interval",
+          "in_report2": true,
+          "term": "g_predicate_physical_altercation",
+          "slots": {
+            "arg1": "ent_1",
+            "arg2": "ent_2"
+          }
+        },
+        {
+          "step_id": "s_s1_cc1",
+          "type": "condition",
+          "construct": "c_s1_cc1",
+          "refs": [
+            "c_s1_cc1",
+            "ent_1",
+            "ent_2",
+            "g_comparison_identity_ne"
+          ],
+          "role": "because",
+          "depends_on": [
+            "s_s1_sel1"
+          ],
+          "t_order": 0.0,
+          "t_order_basis": "interval",
+          "in_report2": false,
+          "term": "g_comparison_identity_ne",
+          "slots": {
+            "left": "ent_1",
+            "right": "ent_2"
+          }
+        },
+        {
+          "step_id": "s_s1_proj",
+          "type": "conclusion",
+          "construct": "c_s1_proj",
+          "refs": [
+            "c_s1_proj",
+            "ev_d966ffea748d",
+            "ent_1",
+            "ent_2",
+            "g_event_model_fight"
+          ],
+          "depends_on": [
+            "s_s1_cc1"
+          ],
+          "t_order": 0.0,
+          "t_order_basis": "interval",
+          "in_report2": true,
+          "term": "g_event_model_fight"
+        }
+      ],
+      "conclusion": "s_s1_proj",
+      "bindings": [
+        {
+          "branch": "s1",
+          "variable": "M1",
+          "status": "attributed",
+          "interval_ids": [
+            "iv_v6"
+          ],
+          "basis": [
+            "predicate",
+            "arg_classes",
+            "M1.arg1",
+            "M1.arg2",
+            "M1.st",
+            "M1.et"
+          ]
+        }
+      ]
+    }
+  ],
+  "excluded": [],
+  "unbound_intervals": [
+    "iv_v7"
+  ],
+  "unmatched_readings": [],
+  "notes": []
+}

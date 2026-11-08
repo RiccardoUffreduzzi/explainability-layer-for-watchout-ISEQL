@@ -61,6 +61,9 @@ def test_record_ids() -> None:
     assert ids.term_id("audio_class", "glass_breaking") == "g_audio_class_glass_breaking"
     assert ids.comparison_term("identity", "≠") == "identity_ne"
     assert ids.comparison_term("duration", ">=") == "duration_ge"
+    assert ids.step_id_of("c_s1_op1") == "s_s1_op1"
+    assert ids.step_id_of("c_s1_sel1") == "s_s1_sel1"
+    assert ids.step_id_of("c_right_proj") == "s_right_proj"
 
 
 @pytest.mark.parametrize(
@@ -73,6 +76,8 @@ def test_record_ids() -> None:
         lambda: ids.term_id("predicate", "carrying!"),
         lambda: ids.term_id("predicate", "Λ"),
         lambda: ids.comparison_term("identity", "~"),
+        lambda: ids.step_id_of("iv_v59"),
+        lambda: ids.step_id_of("c_s1 op1"),
     ],
 )
 def test_record_ids_reject_bad_parts(call: Any) -> None:

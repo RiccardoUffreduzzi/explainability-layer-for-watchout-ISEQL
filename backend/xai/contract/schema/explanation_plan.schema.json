@@ -1,0 +1,469 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:watchout-xai:explanation-plan:0.1.0-k4",
+  "$defs": {
+    "Binding": {
+      "additionalProperties": false,
+      "description": "How the intervals of a variable were found (K4-A2, K4-D1).",
+      "properties": {
+        "branch": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "variable": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/BindingStatus"
+        },
+        "interval_ids": {
+          "items": {
+            "$ref": "#/$defs/IntervalId"
+          },
+          "type": "array"
+        },
+        "basis": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "branch",
+        "variable",
+        "status",
+        "interval_ids",
+        "basis"
+      ],
+      "title": "Binding",
+      "type": "object"
+    },
+    "BindingStatus": {
+      "description": "Outcome of the association of a variable with the intervals of the contract (K4-A2).",
+      "enum": [
+        "attributed",
+        "ambiguous",
+        "not_found"
+      ],
+      "title": "BindingStatus",
+      "type": "string"
+    },
+    "ConstraintId": {
+      "description": "ID of a rule node: c_<branch>_proj|sel<n>|op<n>|cc<n>, or c_set<n>.",
+      "pattern": "^c_[A-Za-z0-9_]+$",
+      "type": "string"
+    },
+    "EventId": {
+      "description": "ID of the detection: ev_ + 12 hex digits of the request and the row.",
+      "pattern": "^ev_[0-9a-f]{12}$",
+      "type": "string"
+    },
+    "ExcludedConstruct": {
+      "additionalProperties": false,
+      "properties": {
+        "constraint_id": {
+          "$ref": "#/$defs/ConstraintId"
+        },
+        "reason": {
+          "$ref": "#/$defs/ExclusionReason"
+        }
+      },
+      "required": [
+        "constraint_id",
+        "reason"
+      ],
+      "title": "ExcludedConstruct",
+      "type": "object"
+    },
+    "ExclusionReason": {
+      "description": "Why a rule node has no step (K4-A8).",
+      "enum": [
+        "other_branch",
+        "set_operation"
+      ],
+      "title": "ExclusionReason",
+      "type": "string"
+    },
+    "IntervalId": {
+      "description": "ID of an interval: iv_v<VisualPerInterval id> or iv_a<AudioPerInterval id>.",
+      "pattern": "^iv_[va][0-9]+$",
+      "type": "string"
+    },
+    "LimitCode": {
+      "description": "The closed catalogue of knowledge limits, in the order they are reported.",
+      "enum": [
+        "visual_confidence_unavailable",
+        "perceptual_attribution_unavailable",
+        "temporal_resolution",
+        "reid_dependence",
+        "reid_evidence_unavailable",
+        "audio_without_participants",
+        "keyframe_selection_undocumented",
+        "glossary_entry_missing",
+        "data_not_available"
+      ],
+      "title": "LimitCode",
+      "type": "string"
+    },
+    "PlanMeta": {
+      "additionalProperties": false,
+      "properties": {
+        "plan_version": {
+          "const": "0.1.0-k4",
+          "type": "string"
+        },
+        "contract_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "source_of_truth_version": {
+          "const": "0.2.0-k2",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "0.2.0-k1",
+          "type": "string"
+        },
+        "event_id": {
+          "$ref": "#/$defs/EventId"
+        },
+        "model_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "branches": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "plan_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "plan_version",
+        "contract_hash",
+        "source_of_truth_version",
+        "contract_version",
+        "event_id",
+        "model_id",
+        "label",
+        "branches",
+        "plan_hash"
+      ],
+      "title": "PlanMeta",
+      "type": "object"
+    },
+    "PlanNote": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/PlanNoteCode"
+        },
+        "detail": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "detail"
+      ],
+      "title": "PlanNote",
+      "type": "object"
+    },
+    "PlanNoteCode": {
+      "description": "The closed catalogue of the notes of ``plan_report``.",
+      "enum": [
+        "rho_not_zero"
+      ],
+      "title": "PlanNoteCode",
+      "type": "string"
+    },
+    "PlanReport": {
+      "additionalProperties": false,
+      "description": "What the plan leaves out and why: it is not a list of errors.",
+      "properties": {
+        "excluded_constructs": {
+          "items": {
+            "$ref": "#/$defs/ExcludedConstruct"
+          },
+          "type": "array"
+        },
+        "unbound_intervals": {
+          "items": {
+            "$ref": "#/$defs/IntervalId"
+          },
+          "type": "array"
+        },
+        "unmatched_readings": {
+          "items": {
+            "$ref": "#/$defs/UnmatchedReading"
+          },
+          "type": "array"
+        },
+        "notes": {
+          "items": {
+            "$ref": "#/$defs/PlanNote"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "excluded_constructs",
+        "unbound_intervals",
+        "unmatched_readings",
+        "notes"
+      ],
+      "title": "PlanReport",
+      "type": "object"
+    },
+    "PlanStep": {
+      "additionalProperties": false,
+      "description": "One step of the explanation.",
+      "properties": {
+        "step_id": {
+          "$ref": "#/$defs/StepId"
+        },
+        "type": {
+          "$ref": "#/$defs/StepType"
+        },
+        "construct": {
+          "$ref": "#/$defs/ConstraintId"
+        },
+        "refs": {
+          "items": {
+            "$ref": "#/$defs/Ref"
+          },
+          "type": "array"
+        },
+        "role": {
+          "$ref": "#/$defs/StepRole"
+        },
+        "depends_on": {
+          "items": {
+            "$ref": "#/$defs/StepId"
+          },
+          "type": "array"
+        },
+        "t_order": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "t_order_basis": {
+          "$ref": "#/$defs/TOrderBasis"
+        },
+        "in_report2": {
+          "type": "boolean"
+        },
+        "term": {
+          "$ref": "#/$defs/TermId"
+        },
+        "slots": {
+          "additionalProperties": {
+            "$ref": "#/$defs/SlotValue"
+          },
+          "propertyNames": {
+            "minLength": 1
+          },
+          "type": "object"
+        },
+        "alternatives": {
+          "items": {
+            "$ref": "#/$defs/TermId"
+          },
+          "type": "array"
+        },
+        "readings": {
+          "items": {
+            "$ref": "#/$defs/Reading"
+          },
+          "type": "array"
+        },
+        "limit_code": {
+          "$ref": "#/$defs/LimitCode"
+        },
+        "fixed_text": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "step_id",
+        "type",
+        "refs",
+        "depends_on",
+        "t_order",
+        "t_order_basis",
+        "in_report2"
+      ],
+      "title": "PlanStep",
+      "type": "object"
+    },
+    "Reading": {
+      "additionalProperties": false,
+      "description": "The reading of a threshold of a temporal operator, copied from the glossary (K4-A13).",
+      "properties": {
+        "param": {
+          "enum": [
+            "δ",
+            "ε"
+          ],
+          "type": "string"
+        },
+        "condition": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "phrase": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "value_ref": {
+          "$ref": "#/$defs/Ref"
+        }
+      },
+      "required": [
+        "param",
+        "condition",
+        "phrase"
+      ],
+      "title": "Reading",
+      "type": "object"
+    },
+    "Ref": {
+      "description": "A fact of the source of truth: an ID of the contract or a JSON pointer (#/...).",
+      "pattern": "^(?:iv_[va][0-9]+|ent_[0-9]+|c_[A-Za-z0-9_]+|g_[A-Za-z0-9_]+|ev_[0-9a-f]{12}|kf_[A-Za-z0-9_]+|ac_[A-Za-z0-9_]+|#/.*)$",
+      "type": "string"
+    },
+    "SlotValue": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/StepId"
+        },
+        {
+          "$ref": "#/$defs/Ref"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "What fills a placeholder: a fact, another step, or null (generic wording)."
+    },
+    "StepId": {
+      "description": "ID of a step: s_ + the rule node without c_ (s_s1_op1), s_lim_<code>, ...",
+      "pattern": "^s_[A-Za-z0-9_]+$",
+      "type": "string"
+    },
+    "StepRole": {
+      "description": "Why the step is in the explanation. The conclusion has none (K4-A5).",
+      "enum": [
+        "because",
+        "context",
+        "limit"
+      ],
+      "title": "StepRole",
+      "type": "string"
+    },
+    "StepType": {
+      "description": "What a step explains, with the names of the guidelines (``provenance``: K4-D5).",
+      "enum": [
+        "observation",
+        "condition",
+        "temporal",
+        "identity",
+        "conclusion",
+        "context",
+        "limit",
+        "reinforcement",
+        "provenance"
+      ],
+      "title": "StepType",
+      "type": "string"
+    },
+    "TOrderBasis": {
+      "description": "Where ``t_order`` comes from (K4-A3): an interval today, a key frame with I7.",
+      "enum": [
+        "interval",
+        "keyframe",
+        "none"
+      ],
+      "title": "TOrderBasis",
+      "type": "string"
+    },
+    "TermId": {
+      "description": "ID of a glossary entry: g_<kind>_<term>.",
+      "pattern": "^g_[A-Za-z0-9_]+$",
+      "type": "string"
+    },
+    "UnmatchedReading": {
+      "additionalProperties": false,
+      "description": "A threshold whose reading is not in the glossary entry of its operator.",
+      "properties": {
+        "constraint_id": {
+          "$ref": "#/$defs/ConstraintId"
+        },
+        "param": {
+          "enum": [
+            "δ",
+            "ε"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "constraint_id",
+        "param"
+      ],
+      "title": "UnmatchedReading",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "The explanation plan of one detection.",
+  "properties": {
+    "plan_meta": {
+      "$ref": "#/$defs/PlanMeta"
+    },
+    "steps": {
+      "items": {
+        "$ref": "#/$defs/PlanStep"
+      },
+      "type": "array"
+    },
+    "bindings": {
+      "items": {
+        "$ref": "#/$defs/Binding"
+      },
+      "type": "array"
+    },
+    "plan_report": {
+      "$ref": "#/$defs/PlanReport"
+    }
+  },
+  "required": [
+    "plan_meta",
+    "steps",
+    "bindings",
+    "plan_report"
+  ],
+  "title": "ExplanationPlan",
+  "type": "object"
+}

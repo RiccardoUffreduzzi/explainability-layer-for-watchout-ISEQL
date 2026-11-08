@@ -1,0 +1,142 @@
+{
+  "$comment": "Expected translate() of tests/data/vehicle_collision_s15_C_audio.bozza.json passed through K2: the steps of 02-use-case §8.3 without limits, reinforcement and provenance.",
+  "branches": [
+    {
+      "branch": "s1",
+      "steps": [
+        {
+          "step_id": "s_s1_sel1",
+          "type": "observation",
+          "construct": "c_s1_sel1",
+          "refs": [
+            "c_s1_sel1",
+            "iv_a21",
+            "g_audio_class_horn"
+          ],
+          "role": "because",
+          "depends_on": [],
+          "t_order": 0.0,
+          "t_order_basis": "interval",
+          "in_report2": true,
+          "term": "g_audio_class_horn",
+          "alternatives": [
+            "g_audio_class_horn",
+            "g_audio_class_skidding"
+          ]
+        },
+        {
+          "step_id": "s_s1_sel2",
+          "type": "observation",
+          "construct": "c_s1_sel2",
+          "refs": [
+            "c_s1_sel2",
+            "iv_a22",
+            "g_audio_class_glass_breaking"
+          ],
+          "role": "because",
+          "depends_on": [],
+          "t_order": 2.5,
+          "t_order_basis": "interval",
+          "in_report2": true,
+          "term": "g_audio_class_glass_breaking",
+          "alternatives": [
+            "g_audio_class_impact",
+            "g_audio_class_glass_breaking"
+          ]
+        },
+        {
+          "step_id": "s_s1_op1",
+          "type": "temporal",
+          "construct": "c_s1_op1",
+          "refs": [
+            "c_s1_op1",
+            "g_operator_SP"
+          ],
+          "role": "because",
+          "depends_on": [
+            "s_s1_sel1",
+            "s_s1_sel2"
+          ],
+          "t_order": 2.5,
+          "t_order_basis": "interval",
+          "in_report2": false,
+          "term": "g_operator_SP",
+          "slots": {
+            "r": "s_s1_sel1",
+            "s": "s_s1_sel2"
+          },
+          "readings": [
+            {
+              "param": "δ",
+              "condition": "δ = ∞",
+              "phrase": "at any time while {r} is ongoing"
+            }
+          ]
+        },
+        {
+          "step_id": "s_s1_proj",
+          "type": "conclusion",
+          "construct": "c_s1_proj",
+          "refs": [
+            "c_s1_proj",
+            "ev_cb96ebb2235a",
+            "g_event_model_vehicle_collision"
+          ],
+          "depends_on": [
+            "s_s1_op1"
+          ],
+          "t_order": 2.5,
+          "t_order_basis": "interval",
+          "in_report2": true,
+          "term": "g_event_model_vehicle_collision"
+        }
+      ],
+      "conclusion": "s_s1_proj",
+      "bindings": [
+        {
+          "branch": "s1",
+          "variable": "M1",
+          "status": "attributed",
+          "interval_ids": [
+            "iv_a21"
+          ],
+          "basis": [
+            "predicate",
+            "M1.st"
+          ]
+        },
+        {
+          "branch": "s1",
+          "variable": "M2",
+          "status": "attributed",
+          "interval_ids": [
+            "iv_a22"
+          ],
+          "basis": [
+            "predicate",
+            "M2.et"
+          ]
+        }
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "constraint_id": "c_set1",
+      "reason": "set_operation"
+    },
+    {
+      "constraint_id": "c_s2_proj",
+      "reason": "other_branch"
+    },
+    {
+      "constraint_id": "c_s2_sel1",
+      "reason": "other_branch"
+    }
+  ],
+  "unbound_intervals": [
+    "iv_a23"
+  ],
+  "unmatched_readings": [],
+  "notes": []
+}

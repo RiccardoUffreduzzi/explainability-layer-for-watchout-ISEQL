@@ -1,7 +1,7 @@
-"""K1 knows no event by name: it reads every rule from ``EventSpec``.
+"""K1 and K4 know no event by name: K1 reads every rule from ``EventSpec``, K4 from the contract.
 
-String literals of the K1 core and of the adapters must not name a seed event;
-docstrings and comments may, as examples.
+String literals of the K1 core, of the adapters and of K4 must not name a seed event;
+docstrings and comments may, as examples (NFR-K4-03).
 """
 
 import ast
@@ -19,7 +19,7 @@ SEED_EVENTS = (
     "vehicle_collision",
     "vehicle_escape",
 )
-PACKAGES = ("k1_harvester", "adapters")
+PACKAGES = ("k1_harvester", "adapters", "k4_planner")
 
 
 def _code_strings(path: Path) -> list[str]:

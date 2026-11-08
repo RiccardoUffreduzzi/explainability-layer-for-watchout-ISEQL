@@ -3,10 +3,12 @@
 - ``xai.contract`` is the shared kernel: standard library and pydantic only.
 - Only ``xai.adapters.watchout`` imports ``sqlite3`` or WatchOut's packages.
 - The K1 core (``xai.k1_harvester``) does not import adapters, the CLI or the pipeline.
+- The K4 core (``xai.k4_planner``) imports only ``xai.contract``, itself, the standard library
+  and pydantic (NFR-K4-01); only its pipeline stage (``xai.k4_planner.stage``) may import more.
 - No WatchOut module imports ``xai``.
 
 Imports are read with ``ast``, so the rules hold for modules that are not imported by
-any test. Tests are exempt from the first three rules: conformance tests import WatchOut.
+any test. Tests are exempt from the first four rules: conformance tests import WatchOut.
 """
 
 import ast
@@ -20,6 +22,8 @@ import pytest
 from xai.tests.support import WATCHOUT_SRC_DIR, XAI_DIR
 
 THIRD_PARTY_ALLOWED_IN_CONTRACT = {"pydantic", "pydantic_core", "annotated_types", "typing_extensions"}
+K4_STAGE_MODULES = ("xai.k4_planner.stage",)
+"""The adapter of K4 to the pipeline, outside its core."""
 
 
 @dataclass(frozen=True)
@@ -108,6 +112,21 @@ def violations(module: Module, watchout: frozenset[str]) -> list[str]:
             found.append(
                 f"{module.name} imports {sorted(outer)}: the K1 core sees WatchOut only through its ports"
             )
+    if is_within(module.name, "xai.k4_planner") and not any(
+        is_within(module.name, s) for s in K4_STAGE_MODULES
+    ):
+        outside = {
+            i
+            for i in module.imports
+            if not is_within(i, "xai.contract")
+            and not is_within(i, "xai.k4_planner")
+            and top(i) not in sys.stdlib_module_names
+            and top(i) not in THIRD_PARTY_ALLOWED_IN_CONTRACT
+        }
+        if outside:
+            found.append(
+                f"{module.name} imports {sorted(outside)}: the K4 core reads only the contract (NFR-K4-01)"
+            )
     return found
 
 
@@ -141,6 +160,13 @@ def test_watchout_packages_are_found() -> None:
         ("xai.contract.model", {"yaml"}, "stdlib and pydantic only"),
         ("xai.contract.model", {"xai.k1_harvester.ports"}, "stdlib and pydantic only"),
         ("xai.k1_harvester.service", {"xai.adapters.watchout.reader"}, "only through its ports"),
+        ("xai.k4_planner.view", {"xai.k2.source_of_truth"}, "the K4 core reads only the contract"),
+        (
+            "xai.k4_planner.rules.selection",
+            {"xai.adapters.resource_files"},
+            "the K4 core reads only the contract",
+        ),
+        ("xai.k4_planner.translation", {"yaml"}, "the K4 core reads only the contract"),
     ],
 )
 def test_rules_catch_forbidden_imports(name: str, imports: set[str], expected: str) -> None:
@@ -156,6 +182,8 @@ def test_rules_catch_forbidden_imports(name: str, imports: set[str], expected: s
         ("xai.contract.model", {"typing", "pydantic", "xai.contract.ids"}),
         ("xai.k1_harvester.service", {"xai.contract", "xai.k1_harvester.ports"}),
         ("xai.tests.conformance.test_rules", {"sqlite3", "iseql.compiler"}),
+        ("xai.k4_planner.rules.operator", {"re", "pydantic", "xai.contract.plan", "xai.k4_planner.readings"}),
+        ("xai.k4_planner.stage", {"xai.pipeline.runner", "xai.contract.plan"}),
     ],
 )
 def test_rules_allow_permitted_imports(name: str, imports: set[str]) -> None:

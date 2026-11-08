@@ -1,0 +1,91 @@
+{
+  "$comment": "Expected translate() of tests/data/vehicle_collision_s15_C_visual.bozza.json passed through K2: the steps of 02-use-case §8.4 without limits, reinforcement and provenance.",
+  "branches": [
+    {
+      "branch": "s2",
+      "steps": [
+        {
+          "step_id": "s_s2_sel1",
+          "type": "observation",
+          "construct": "c_s2_sel1",
+          "refs": [
+            "c_s2_sel1",
+            "iv_v48",
+            "ent_12",
+            "g_predicate_vehicle_collision"
+          ],
+          "role": "because",
+          "depends_on": [],
+          "t_order": 6.0,
+          "t_order_basis": "interval",
+          "in_report2": true,
+          "term": "g_predicate_vehicle_collision",
+          "slots": {
+            "arg1": "ent_12"
+          }
+        },
+        {
+          "step_id": "s_s2_proj",
+          "type": "conclusion",
+          "construct": "c_s2_proj",
+          "refs": [
+            "c_s2_proj",
+            "ev_14cb6286bf2e",
+            "ent_12",
+            "g_event_model_vehicle_collision"
+          ],
+          "depends_on": [
+            "s_s2_sel1"
+          ],
+          "t_order": 6.0,
+          "t_order_basis": "interval",
+          "in_report2": true,
+          "term": "g_event_model_vehicle_collision"
+        }
+      ],
+      "conclusion": "s_s2_proj",
+      "bindings": [
+        {
+          "branch": "s2",
+          "variable": "M1",
+          "status": "attributed",
+          "interval_ids": [
+            "iv_v48"
+          ],
+          "basis": [
+            "predicate",
+            "arg_classes",
+            "M1.arg1",
+            "M1.st",
+            "M1.et"
+          ]
+        }
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "constraint_id": "c_set1",
+      "reason": "set_operation"
+    },
+    {
+      "constraint_id": "c_s1_proj",
+      "reason": "other_branch"
+    },
+    {
+      "constraint_id": "c_s1_op1",
+      "reason": "other_branch"
+    },
+    {
+      "constraint_id": "c_s1_sel1",
+      "reason": "other_branch"
+    },
+    {
+      "constraint_id": "c_s1_sel2",
+      "reason": "other_branch"
+    }
+  ],
+  "unbound_intervals": [],
+  "unmatched_readings": [],
+  "notes": []
+}
