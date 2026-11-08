@@ -55,9 +55,16 @@ def test_a_reason_for_a_missing_field_is_found(example: dict[str, Any]) -> None:
 
 def test_a_reason_does_not_cover_another_list_item(example: dict[str, Any]) -> None:
     data = copy.deepcopy(example)
-    name, item = next(
-        (n, i) for n in ("intervals", "entities", "glossary") for i in data[n] if i.get("unavailable")
+    found = next(
+        ((n, i) for n in ("intervals", "entities", "glossary") for i in data[n] if i.get("unavailable")), None
     )
+    if found is None:  # every item has all its values: give a glossary entry a reason
+        found = ("glossary", data["glossary"][0])
+        found[1]["definition"] = None
+        found[1]["unavailable"] = {
+            "definition": {"reason": "glossary_definition_not_in_system", "detail": "x"}
+        }
+    name, item = found
     field = next(iter(item["unavailable"]))
     data[name].append(copy.deepcopy(item))
     del data[name][-1]["unavailable"][field]

@@ -88,13 +88,13 @@
         }
       }
     },
-    "glossary_version": "glossary.yaml@0.2.0#4be81213d2be+relation_vocab@2026-08-30 16:51:22",
+    "glossary_version": "glossary.yaml@0.2.0#eeba25fa69c4+relation_vocab@2026-08-30 16:51:22+audio_taxonomy@2026-08-15 22:01:29",
     "params_origin": "rule_defaults",
     "sources": {
       "glossary_version": {
         "stage": "config",
         "store": "AppConfig",
-        "record_id": "relation_vocab.updated_at",
+        "record_id": "relation_vocab.updated_at, audio_taxonomy.updated_at",
         "mode": "read"
       },
       "params_origin": {
@@ -332,10 +332,22 @@
       "term_id": "g_event_model_gunshot_or_explosion",
       "kind": "event_model",
       "term": "gunshot_or_explosion",
-      "definition": "A gunshot or explosion.",
+      "definition": "π_{M1.arg1, M1.st, M1.et} (\n  σ_{(pred=\"gunshot_visible\" ∧ arg1=\"person\") ∨ (pred=\"explosion_visible\" ∧ arg1=\"vehicle\" ∨ arg1=\"object\")}(M1)\n)",
       "plain_template": "a gunshot or an explosion",
-      "source": "event_author",
-      "source_detail": "backend/xai/resources/glossary.yaml events.gunshot_or_explosion, from docs/iseql_event_queries.md"
+      "source": {
+        "stage": "iseql",
+        "store": "EventSpec",
+        "record_id": "gunshot_or_explosion/A#/iseql_text",
+        "mode": "read"
+      },
+      "sources": {
+        "plain_template": {
+          "stage": "code",
+          "store": "backend/xai/resources/glossary.yaml",
+          "record_id": "events.gunshot_or_explosion",
+          "mode": "read"
+        }
+      }
     },
     {
       "term_id": "g_predicate_explosion_visible",

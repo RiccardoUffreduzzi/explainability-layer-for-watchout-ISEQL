@@ -45,7 +45,16 @@ def test_an_audio_origin_draft() -> None:
 
 
 def test_undefined_glossary_terms_are_a_limit() -> None:
-    assert "glossary_entry_missing" in _limits("vehicle_collision_s15_C_visual.bozza.json")
+    data = load_example(EXAMPLES_DIR / "vehicle_collision_s15_C_visual.bozza.json")
+    data["glossary"][0]["definition"] = None
+    data["glossary"][0]["unavailable"] = {
+        "definition": {"reason": "glossary_definition_not_in_system", "detail": "x"}
+    }
+
+    codes = [limit.code for limit in detect_limits(from_json_data(ContractDraft, data))]
+
+    assert LimitCode.GLOSSARY_ENTRY_MISSING in codes
+    assert "glossary_entry_missing" not in _limits("vehicle_collision_s15_C_visual.bozza.json")
     assert "glossary_entry_missing" not in _limits("fight_s5_A.bozza.json")
 
 
@@ -70,7 +79,16 @@ def test_the_reid_limits_point_at_the_identity_nodes() -> None:
 
 
 def test_the_glossary_limit_points_at_the_undefined_entries() -> None:
-    assert _refs("vehicle_collision_s15_C_audio.bozza.json")["glossary_entry_missing"] == [
+    data = load_example(EXAMPLES_DIR / "vehicle_collision_s15_C_audio.bozza.json")
+    for entry in data["glossary"]:
+        if entry["kind"] == "audio_class":  # as if AppConfig.audio_taxonomy had no keywords
+            entry["definition"] = None
+            entry["unavailable"] = {
+                "definition": {"reason": "glossary_definition_not_in_system", "detail": "x"}
+            }
+    limits = detect_limits(from_json_data(ContractDraft, data))
+
+    assert {limit.code.value: list(limit.refs) for limit in limits}["glossary_entry_missing"] == [
         "g_audio_class_glass_breaking",
         "g_audio_class_horn",
         "g_audio_class_impact",

@@ -50,11 +50,18 @@ class MetaHarvester:
             analysis_id=analysis.analysis_id,
             source_snapshot=self._snapshot(ctx),
             pipeline_config=self._pipeline_config(ctx),
-            glossary_version=f"{self.glossary.label}+relation_vocab@{readings.vocabulary.relation_vocab_updated_at}",
+            glossary_version=(
+                f"{self.glossary.label}"
+                f"+relation_vocab@{readings.vocabulary.relation_vocab_updated_at}"
+                f"+audio_taxonomy@{readings.vocabulary.audio_taxonomy_updated_at}"
+            ),
             params_origin=ctx.params.origin,
             sources={
                 "glossary_version": SourceRef(
-                    stage=Stage.CONFIG, store="AppConfig", record_id="relation_vocab.updated_at", mode="read"
+                    stage=Stage.CONFIG,
+                    store="AppConfig",
+                    record_id="relation_vocab.updated_at, audio_taxonomy.updated_at",
+                    mode="read",
                 ),
                 "params_origin": ctx.params.origin_source(ctx.rule.ref),
             },

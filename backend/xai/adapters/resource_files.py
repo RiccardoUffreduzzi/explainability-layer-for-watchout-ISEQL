@@ -21,12 +21,18 @@ GLOSSARY_PATH = RESOURCES_DIR / "glossary.yaml"
 CONSTANTS_PATH = RESOURCES_DIR / "pipeline_constants.yaml"
 
 _GLOSSARY_SECTIONS = ("predicates", "audio_classes", "operators", "events", "comparisons")
+_DEFINED_BY_WATCHOUT = ("predicates", "audio_classes", "events")
+"""Sections whose definitions K1 reads from WatchOut: the file has only their report phrases."""
 
 
 def load_glossary(path: Path = GLOSSARY_PATH) -> Glossary:
     raw = path.read_bytes()
     data = _mapping(yaml.safe_load(raw), str(path))
     sections = {name: _entries(data.get(name) or {}, f"{path.name}:{name}") for name in _GLOSSARY_SECTIONS}
+    for name in _DEFINED_BY_WATCHOUT:
+        defined = sorted(term for term, text in sections[name].items() if text.definition is not None)
+        if defined:
+            raise ValueError(f"{path.name}:{name}: definitions are read from WatchOut, remove: {defined}")
     text = raw.replace(b"\r\n", b"\n")
     return Glossary(
         version=str(_required(data, "version", path.name)),
@@ -77,12 +83,10 @@ def _entries(section: Any, where: str) -> dict[str, GlossaryText]:
             for r in entry.get("parameter_readings") or []
         )
         definition = entry.get("definition")
-        citation = entry.get("citation")
         entries[str(term)] = GlossaryText(
             plain_template=str(_required(entry, "plain_template", f"{where}.{term}")),
             definition=None if definition is None else str(definition),
             parameter_readings=readings,
-            citation=None if citation is None else str(citation),
         )
     return entries
 

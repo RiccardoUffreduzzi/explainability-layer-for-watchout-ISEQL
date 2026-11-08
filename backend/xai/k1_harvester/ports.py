@@ -135,7 +135,10 @@ class Vocabulary:
     descriptions: Mapping[str, str]
     """Relation -> description shown to the VLM."""
     audio_classes: tuple[str, ...]
+    audio_keywords: Mapping[str, tuple[str, ...]]
+    """Audio class -> the words WatchOut maps to it when it reads the audio model's answer."""
     relation_vocab_updated_at: str | None
+    audio_taxonomy_updated_at: str | None
 
 
 @dataclass(frozen=True)

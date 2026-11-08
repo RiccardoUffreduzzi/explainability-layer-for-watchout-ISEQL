@@ -88,13 +88,13 @@
         }
       }
     },
-    "glossary_version": "glossary.yaml@0.2.0#4be81213d2be+relation_vocab@2026-08-30 16:51:22",
+    "glossary_version": "glossary.yaml@0.2.0#eeba25fa69c4+relation_vocab@2026-08-30 16:51:22+audio_taxonomy@2026-08-15 22:01:29",
     "params_origin": "rule_defaults",
     "sources": {
       "glossary_version": {
         "stage": "config",
         "store": "AppConfig",
-        "record_id": "relation_vocab.updated_at",
+        "record_id": "relation_vocab.updated_at, audio_taxonomy.updated_at",
         "mode": "read"
       },
       "params_origin": {
@@ -366,24 +366,35 @@
       "term_id": "g_comparison_duration_ge",
       "kind": "comparison",
       "term": "duration_ge",
-      "definition": "(end − start) ≥ value: the time from start to end is at least the value.",
+      "definition": "(end − start) ≥ value",
       "plain_template": "{x} lasts at least {value} {unit}",
       "source": {
         "stage": "code",
         "store": "backend/xai/resources/glossary.yaml",
         "record_id": "comparisons.duration_ge",
         "mode": "read"
-      },
-      "source_detail": "iseql/parser.py and iseql/compiler.py, duration constraints"
+      }
     },
     {
       "term_id": "g_event_model_suspicious_near_vehicle",
       "kind": "event_model",
       "term": "suspicious_near_vehicle",
-      "definition": "A person remains suspiciously close to or inspecting a parked vehicle for at least 3 seconds.",
+      "definition": "π_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{(M1.et − M1.st) ≥ 3} (\n    σ_{pred=\"suspicious_near_vehicle\" ∧ arg1=\"person\" ∧ arg2=\"vehicle\"}(M1)\n  ))",
       "plain_template": "a person lingering suspiciously near a vehicle",
-      "source": "event_author",
-      "source_detail": "backend/xai/resources/glossary.yaml events.suspicious_near_vehicle, from docs/iseql_event_queries.md"
+      "source": {
+        "stage": "iseql",
+        "store": "EventSpec",
+        "record_id": "suspicious_near_vehicle/A#/iseql_text",
+        "mode": "read"
+      },
+      "sources": {
+        "plain_template": {
+          "stage": "code",
+          "store": "backend/xai/resources/glossary.yaml",
+          "record_id": "events.suspicious_near_vehicle",
+          "mode": "read"
+        }
+      }
     },
     {
       "term_id": "g_predicate_suspicious_near_vehicle",

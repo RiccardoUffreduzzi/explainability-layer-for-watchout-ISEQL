@@ -311,7 +311,7 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "0.1.0-k1",
+          "const": "0.2.0-k1",
           "type": "string"
         },
         "analysis_id": {
@@ -634,7 +634,8 @@
             "predicate",
             "audio_class",
             "operator",
-            "event_model"
+            "event_model",
+            "comparison"
           ],
           "type": "string"
         },
@@ -663,18 +664,7 @@
           "type": "array"
         },
         "source": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/SourceRef"
-            },
-            {
-              "const": "event_author",
-              "type": "string"
-            }
-          ]
-        },
-        "source_detail": {
-          "type": "string"
+          "$ref": "#/$defs/SourceRef"
         },
         "sources": {
           "$ref": "#/$defs/SourceMap"

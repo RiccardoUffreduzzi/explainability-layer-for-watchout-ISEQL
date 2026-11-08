@@ -422,9 +422,8 @@ class GlossaryEntry(ContractModel):
     definition: str | None
     plain_template: NonEmptyStr
     parameter_readings: list[ParameterReading] | None = absent_if_none()
-    source: SourceRef | Literal["event_author"]
-    """Provenance of the definition: a WatchOut record or the event's author."""
-    source_detail: str | None = absent_if_none()
+    source: SourceRef
+    """Provenance of the definition: a WatchOut record or ``glossary.yaml``."""
     sources: SourceMap | None = absent_if_none()
     unavailable: UnavailableMap | None = absent_if_none()
 

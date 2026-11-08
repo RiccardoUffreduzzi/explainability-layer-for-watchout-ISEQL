@@ -88,13 +88,13 @@
         }
       }
     },
-    "glossary_version": "glossary.yaml@0.2.0#4be81213d2be+relation_vocab@2026-08-30 16:51:22",
+    "glossary_version": "glossary.yaml@0.2.0#eeba25fa69c4+relation_vocab@2026-08-30 16:51:22+audio_taxonomy@2026-08-15 22:01:29",
     "params_origin": "saved_by_gui",
     "sources": {
       "glossary_version": {
         "stage": "config",
         "store": "AppConfig",
-        "record_id": "relation_vocab.updated_at",
+        "record_id": "relation_vocab.updated_at, audio_taxonomy.updated_at",
         "mode": "read"
       },
       "params_origin": {
@@ -549,18 +549,20 @@
       "term_id": "g_audio_class_glass_breaking",
       "kind": "audio_class",
       "term": "glass_breaking",
-      "definition": null,
+      "definition": "WatchOut assigns this class when the audio model answers with one of: glass, glass_breaking, shatter, shattering.",
       "plain_template": "glass breaking is heard",
       "source": {
-        "stage": "code",
-        "store": "backend/xai/resources/glossary.yaml",
-        "record_id": "audio_classes.glass_breaking",
+        "stage": "config",
+        "store": "AppConfig",
+        "record_id": "audio_taxonomy.keywords.glass_breaking",
         "mode": "read"
       },
-      "unavailable": {
-        "definition": {
-          "reason": "glossary_definition_not_in_system",
-          "detail": "AppConfig.audio_taxonomy only has keywords and glossary.yaml has no definition yet (to copy from WACV Table 3)"
+      "sources": {
+        "plain_template": {
+          "stage": "code",
+          "store": "backend/xai/resources/glossary.yaml",
+          "record_id": "audio_classes.glass_breaking",
+          "mode": "read"
         }
       }
     },
@@ -568,18 +570,20 @@
       "term_id": "g_audio_class_horn",
       "kind": "audio_class",
       "term": "horn",
-      "definition": null,
+      "definition": "WatchOut assigns this class when the audio model answers with one of: horn, honk, honking.",
       "plain_template": "a horn is heard",
       "source": {
-        "stage": "code",
-        "store": "backend/xai/resources/glossary.yaml",
-        "record_id": "audio_classes.horn",
+        "stage": "config",
+        "store": "AppConfig",
+        "record_id": "audio_taxonomy.keywords.horn",
         "mode": "read"
       },
-      "unavailable": {
-        "definition": {
-          "reason": "glossary_definition_not_in_system",
-          "detail": "AppConfig.audio_taxonomy only has keywords and glossary.yaml has no definition yet (to copy from WACV Table 3)"
+      "sources": {
+        "plain_template": {
+          "stage": "code",
+          "store": "backend/xai/resources/glossary.yaml",
+          "record_id": "audio_classes.horn",
+          "mode": "read"
         }
       }
     },
@@ -587,18 +591,20 @@
       "term_id": "g_audio_class_impact",
       "kind": "audio_class",
       "term": "impact",
-      "definition": null,
+      "definition": "WatchOut assigns this class when the audio model answers with one of: impact, thump, thud, bang, slam, smash, crash, punch, hit.",
       "plain_template": "an impact is heard",
       "source": {
-        "stage": "code",
-        "store": "backend/xai/resources/glossary.yaml",
-        "record_id": "audio_classes.impact",
+        "stage": "config",
+        "store": "AppConfig",
+        "record_id": "audio_taxonomy.keywords.impact",
         "mode": "read"
       },
-      "unavailable": {
-        "definition": {
-          "reason": "glossary_definition_not_in_system",
-          "detail": "AppConfig.audio_taxonomy only has keywords and glossary.yaml has no definition yet (to copy from WACV Table 3)"
+      "sources": {
+        "plain_template": {
+          "stage": "code",
+          "store": "backend/xai/resources/glossary.yaml",
+          "record_id": "audio_classes.impact",
+          "mode": "read"
         }
       }
     },
@@ -606,18 +612,20 @@
       "term_id": "g_audio_class_skidding",
       "kind": "audio_class",
       "term": "skidding",
-      "definition": null,
+      "definition": "WatchOut assigns this class when the audio model answers with one of: skidding, skid.",
       "plain_template": "tyres skidding are heard",
       "source": {
-        "stage": "code",
-        "store": "backend/xai/resources/glossary.yaml",
-        "record_id": "audio_classes.skidding",
+        "stage": "config",
+        "store": "AppConfig",
+        "record_id": "audio_taxonomy.keywords.skidding",
         "mode": "read"
       },
-      "unavailable": {
-        "definition": {
-          "reason": "glossary_definition_not_in_system",
-          "detail": "AppConfig.audio_taxonomy only has keywords and glossary.yaml has no definition yet (to copy from WACV Table 3)"
+      "sources": {
+        "plain_template": {
+          "stage": "code",
+          "store": "backend/xai/resources/glossary.yaml",
+          "record_id": "audio_classes.skidding",
+          "mode": "read"
         }
       }
     },
@@ -625,10 +633,22 @@
       "term_id": "g_event_model_vehicle_collision",
       "kind": "event_model",
       "term": "vehicle_collision",
-      "definition": "A vehicle with visible collision damage, or the sound of a collision.",
+      "definition": "π_{M1.st, M1.et, M2.st, M2.et} (\n  σ_{(pred=\"horn\") ∨ (pred=\"skidding\")}(M1)\n  SP(δ:∞; ζ:<=, ρ:0)\n  σ_{(pred=\"impact\") ∨ (pred=\"glass_breaking\")}(M2)\n)\n∪\nπ_{M1.arg1, M1.st, M1.et} (\n  σ_{pred=\"vehicle_collision\" ∧ arg1=\"vehicle\"}(M1)\n)",
       "plain_template": "a vehicle collision",
-      "source": "event_author",
-      "source_detail": "backend/xai/resources/glossary.yaml events.vehicle_collision, from docs/iseql_event_queries.md"
+      "source": {
+        "stage": "iseql",
+        "store": "EventSpec",
+        "record_id": "vehicle_collision/C#/iseql_text",
+        "mode": "read"
+      },
+      "sources": {
+        "plain_template": {
+          "stage": "code",
+          "store": "backend/xai/resources/glossary.yaml",
+          "record_id": "events.vehicle_collision",
+          "mode": "read"
+        }
+      }
     },
     {
       "term_id": "g_operator_SP",
@@ -651,8 +671,7 @@
         "store": "backend/xai/resources/glossary.yaml",
         "record_id": "operators.SP",
         "mode": "read"
-      },
-      "source_detail": "iseql/helpers.py iseql_sp, with ρ = 0"
+      }
     },
     {
       "term_id": "g_predicate_vehicle_collision",
@@ -719,10 +738,6 @@
       {
         "path": "intervals[*].confidence",
         "reason": "visual_confidence_not_recorded"
-      },
-      {
-        "path": "glossary[kind=audio_class].definition",
-        "reason": "glossary_definition_not_in_system"
       },
       {
         "path": "actions",

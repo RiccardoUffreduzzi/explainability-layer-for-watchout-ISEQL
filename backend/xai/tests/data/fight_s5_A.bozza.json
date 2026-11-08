@@ -88,13 +88,13 @@
         }
       }
     },
-    "glossary_version": "glossary.yaml@0.2.0#4be81213d2be+relation_vocab@2026-08-30 16:51:22",
+    "glossary_version": "glossary.yaml@0.2.0#eeba25fa69c4+relation_vocab@2026-08-30 16:51:22+audio_taxonomy@2026-08-15 22:01:29",
     "params_origin": "rule_defaults",
     "sources": {
       "glossary_version": {
         "stage": "config",
         "store": "AppConfig",
-        "record_id": "relation_vocab.updated_at",
+        "record_id": "relation_vocab.updated_at, audio_taxonomy.updated_at",
         "mode": "read"
       },
       "params_origin": {
@@ -407,24 +407,35 @@
       "term_id": "g_comparison_identity_ne",
       "kind": "comparison",
       "term": "identity_ne",
-      "definition": "left ≠ right: the two arguments are different entities, with different identifiers in WatchOut.",
+      "definition": "left ≠ right",
       "plain_template": "{left} and {right} are different",
       "source": {
         "stage": "code",
         "store": "backend/xai/resources/glossary.yaml",
         "record_id": "comparisons.identity_ne",
         "mode": "read"
-      },
-      "source_detail": "iseql/parser.py, cross-conditions"
+      }
     },
     {
       "term_id": "g_event_model_fight",
       "kind": "event_model",
       "term": "fight",
-      "definition": "Two or more people physically altercating.",
+      "definition": "π_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{M1.arg1≠M1.arg2} (\n    σ_{pred=\"physical_altercation\" ∧ arg1=\"person\" ∧ arg2=\"person\"}(M1)\n  ))",
       "plain_template": "a fight",
-      "source": "event_author",
-      "source_detail": "backend/xai/resources/glossary.yaml events.fight, from docs/iseql_event_queries.md"
+      "source": {
+        "stage": "iseql",
+        "store": "EventSpec",
+        "record_id": "fight/A#/iseql_text",
+        "mode": "read"
+      },
+      "sources": {
+        "plain_template": {
+          "stage": "code",
+          "store": "backend/xai/resources/glossary.yaml",
+          "record_id": "events.fight",
+          "mode": "read"
+        }
+      }
     },
     {
       "term_id": "g_predicate_physical_altercation",

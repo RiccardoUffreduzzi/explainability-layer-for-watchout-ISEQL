@@ -151,7 +151,11 @@ class SqliteWatchOutReader:
             },
             descriptions={str(k): str(v) for k, v in (relations.get("relation_descriptions") or {}).items()},
             audio_classes=tuple(str(c) for c in audio.get("classes") or []),
+            audio_keywords={
+                str(k): tuple(str(w) for w in words) for k, words in (audio.get("keywords") or {}).items()
+            },
             relation_vocab_updated_at=queries.appconfig_updated_at(self.conn, "relation_vocab"),
+            audio_taxonomy_updated_at=queries.appconfig_updated_at(self.conn, "audio_taxonomy"),
         )
 
     #  ISEQL+ engine

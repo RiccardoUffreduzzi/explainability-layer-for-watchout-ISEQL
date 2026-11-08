@@ -651,18 +651,7 @@
           "type": "array"
         },
         "source": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/SourceRef"
-            },
-            {
-              "const": "event_author",
-              "type": "string"
-            }
-          ]
-        },
-        "source_detail": {
-          "type": "string"
+          "$ref": "#/$defs/SourceRef"
         },
         "sources": {
           "$ref": "#/$defs/SourceMap"

@@ -1,10 +1,11 @@
 """The ``glossary`` section: an entry for every term of the draft.
 
-Visual predicates take their definition from ``AppConfig.relation_vocab``
-(the text given to the VLM); audio classes, operators, events and comparisons
-(identity, attribute_comparison and duration nodes) from the file ``glossary.yaml``,
-which also holds every report phrase. A term the file does
-not have keeps its name as phrase, with a ``not_available`` source.
+Definitions come from WatchOut where it has them: visual predicates from
+``AppConfig.relation_vocab`` (the text given to the VLM), audio classes from the
+keywords of ``AppConfig.audio_taxonomy``, the event from its rule saved in ``EventSpec``.
+Operators and comparisons (identity, attribute_comparison and duration nodes) are
+formulas of ``glossary.yaml``, which also holds every report phrase. A term the file
+does not have keeps its name as phrase, with a ``not_available`` source.
 """
 
 from collections.abc import Mapping, Sequence
@@ -54,12 +55,12 @@ class GlossaryHarvester:
         entries = []
         for term in dict.fromkeys(predicates):
             if is_audio(term, ctx.vocabulary):
-                entries.append(self._audio_class(term))
+                entries.append(self._audio_class(term, ctx.vocabulary.audio_keywords))
             else:
                 entries.append(self._predicate(term, ctx.vocabulary.descriptions))
         entries.extend(self._operator(name, unit) for name, unit in operators.items())
         entries.extend(self._comparison(name) for name in dict.fromkeys(comparisons))
-        entries.append(self._event(event.label))
+        entries.append(self._event(event.label, rule, ctx))
         return sorted(entries, key=lambda e: e.term_id)
 
     def _source(self, section: str, term: str, found: bool) -> SourceRef:
@@ -97,25 +98,30 @@ class GlossaryHarvester:
             },
         )
 
-    def _audio_class(self, term: str) -> GlossaryEntry:
+    def _audio_class(self, term: str, keywords: Mapping[str, Sequence[str]]) -> GlossaryEntry:
         text = self.glossary.audio_classes.get(term)
-        definition = text.definition if text else None
+        words = keywords.get(term)
+        definition = (
+            f"WatchOut assigns this class when the audio model answers with one of: {', '.join(words)}."
+            if words
+            else None
+        )
         return GlossaryEntry(
             term_id=term_id("audio_class", term),
             kind="audio_class",
             term=term,
             definition=definition,
             plain_template=text.plain_template if text else term,
-            source=self._source("audio_classes", term, text is not None),
-            source_detail=text.citation if text else None,
+            source=SourceRef(
+                stage=Stage.CONFIG,
+                store="AppConfig",
+                record_id=f"audio_taxonomy.keywords.{term}",
+                mode="read" if definition else "not_available",
+            ),
+            sources={"plain_template": self._source("audio_classes", term, text is not None)},
             unavailable=None
             if definition
-            else {
-                "definition": self._missing(
-                    "AppConfig.audio_taxonomy only has keywords and glossary.yaml has no definition yet "
-                    "(to copy from WACV Table 3)"
-                )
-            },
+            else {"definition": self._missing("AppConfig.audio_taxonomy has no keywords for this class")},
         )
 
     def _operator(self, name: str, unit: TimeUnit) -> GlossaryEntry:
@@ -128,7 +134,6 @@ class GlossaryHarvester:
             plain_template=text.plain_template if text else name,
             parameter_readings=_readings(text, unit),
             source=self._source("operators", name, text is not None),
-            source_detail=text.citation if text else None,
             unavailable=None
             if text and text.definition
             else {"definition": self._missing("glossary.yaml has no definition of this operator")},
@@ -143,36 +148,25 @@ class GlossaryHarvester:
             definition=text.definition if text else None,
             plain_template=text.plain_template if text else name,
             source=self._source("comparisons", name, text is not None),
-            source_detail=text.citation if text else None,
             unavailable=None
             if text and text.definition
             else {"definition": self._missing("glossary.yaml has no definition of this comparison")},
         )
 
-    def _event(self, label: str) -> GlossaryEntry:
+    def _event(self, label: str, rule: RuleRecord, ctx: HarvestContext) -> GlossaryEntry:
+        # The event is defined by its rule: the text saved in EventSpec, or the rendered
+        # structure when the model has no iseql_text (rule.expression_saved says the same).
         text = self.glossary.events.get(label)
-        if text is None:
-            return GlossaryEntry(
-                term_id=term_id("event_model", label),
-                kind="event_model",
-                term=label,
-                definition=None,
-                plain_template=label,
-                source=self._source("events", label, False),
-                unavailable={"definition": self._missing("glossary.yaml has no entry for this event")},
-            )
+        saved = ctx.rule.model.get("iseql_text")
+        has_saved = isinstance(saved, str) and bool(saved.strip())
         return GlossaryEntry(
             term_id=term_id("event_model", label),
             kind="event_model",
             term=label,
-            definition=text.definition,
-            plain_template=text.plain_template,
-            source="event_author",
-            source_detail=f"{self.glossary.store} events.{label}"
-            + (f", from {text.citation}" if text.citation else ""),
-            unavailable=None
-            if text.definition
-            else {"definition": self._missing("glossary.yaml has no definition of this event")},
+            definition=rule.expression_saved,
+            plain_template=text.plain_template if text else label,
+            source=ctx.rule.source("/iseql_text") if has_saved else rule.structure_ref,
+            sources={"plain_template": self._source("events", label, text is not None)},
         )
 
 

@@ -24,8 +24,6 @@ class GlossaryText:
     plain_template: str
     definition: str | None = None
     parameter_readings: tuple[ParameterReadingText, ...] = ()
-    citation: str | None = None
-    """Where the text comes from, e.g. a table of the WACV paper or a WatchOut file."""
 
 
 @dataclass(frozen=True)
