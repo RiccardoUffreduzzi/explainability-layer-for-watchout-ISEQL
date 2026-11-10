@@ -1,8 +1,4 @@
-"""Data that K1 receives as values: glossary and pipeline constants.
-
-They are files of ``xai/resources``, not WatchOut data, so they are not ports:
-``xai.adapters.resource_files`` loads them and the CLI passes them to the core.
-"""
+"""Data that K1 receives as values: glossary and pipeline constants"""
 
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -32,13 +28,13 @@ class Glossary:
 
     version: str
     sha12: str
-    """First 12 hex digits of the sha256 of the file."""
+    """First 12 hex digits of the sha256 of the file"""
     predicates: Mapping[str, GlossaryText]
     audio_classes: Mapping[str, GlossaryText]
     operators: Mapping[str, GlossaryText]
     events: Mapping[str, GlossaryText]
     comparisons: Mapping[str, GlossaryText]
-    """Conditions between variables, by ``comparison_term`` (``identity_ne``, ``duration_ge`` …)."""
+    """Conditions between variables, by ``comparison_term``"""
     store: str = GLOSSARY_STORE
 
     @property

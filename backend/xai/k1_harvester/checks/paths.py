@@ -1,8 +1,6 @@
 """Paths of fields in the JSON data of a draft.
 
-A path is a tuple of keys and list positions. ``render`` writes it with the
-positions (``rule.constraints[3].parent``), ``pattern`` with ``[*]``
-(``rule.constraints[*].parent``), the form ``missing_fields`` uses.
+A path is a tuple of keys and list positions.
 """
 
 from collections.abc import Iterator, Sequence

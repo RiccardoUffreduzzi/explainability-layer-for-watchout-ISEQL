@@ -1,4 +1,4 @@
-"""One reader per ISEQL+ construct (Strategy): a new construct is a new reader.
+"""One reader per ISEQL construct.
 
 ``RuleHarvester`` asks every reader for the nodes of the rule, then for the nodes of
 each branch; the order of ``DEFAULT_READERS`` is the order of the nodes in the draft.

@@ -1,8 +1,8 @@
-"""The source of truth indexed by ID: the only module of K4 that knows K2's format (K4-A10).
+"""The source of truth indexed by ID.
 
-The view decides nothing. It builds its indices once (``SourceOfTruthView.of``), so every
+Has access to the k2 logic and it builds its indices once (``SourceOfTruthView.of``), so every
 lookup is a dictionary access, and it exposes the reinforcement and the limits as K2
-writes them. If the format of K2 changes, this is the module that changes.
+writes them.
 """
 
 from collections.abc import Mapping

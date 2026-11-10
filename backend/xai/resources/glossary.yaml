@@ -1,7 +1,6 @@
 # Glossary of the terms
 #
 # This file holds only what WatchOut does not have: the report phrases and the formulas.
-# Definitions that WatchOut has are read from its database, not copied here.
 #
 # - predicates: only the report phrase; the definition is read from the text given to the VLM.
 # - audio_classes: only the report phrase; the definition is read from the keywords of

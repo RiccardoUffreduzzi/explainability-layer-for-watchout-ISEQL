@@ -1,9 +1,9 @@
 """``identity`` and ``attribute_comparison`` -> a step on the two sides of the comparison.
 
 An identity between two or more variables is an ``identity`` step; on one variable
-(``M1.arg1 ≠ M1.arg2``, two different people) it is a ``condition``, as in the Fight example
-of the guidelines (K4-A6). An attribute comparison is always a ``condition``. The glossary
-entry is ``g_comparison_<kind>_<op>``, named by the same function K1 uses (K4-D4).
+(``M1.arg1 ≠ M1.arg2``, two different people) it is a ``condition``. 
+An attribute comparison is always a ``condition``. The glossary
+entry is ``g_comparison_<kind>_<op>``
 """
 
 from xai.contract.ids import comparison_term, step_id_of, term_id
@@ -51,7 +51,7 @@ def _step(
 def _side(side: str, place: str, constraint_id: str, ctx: RuleContext) -> str | None:
     """A side of an attribute comparison as a slot.
 
-    An argument is its entity, or null when the entity is not known, as in an identity; any
+    An argument is its entity, null when the entity is not known; any
     other side (``M1.st``) has no ID and is cited by its place in the node.
     """
     if argument_position(side) is not None:

@@ -2,7 +2,7 @@
 
 The core reaches WatchOut only through ``WatchOutReader`` and time only through ``Clock``.
 ``WatchOutReader`` bundles three ports: ``WatchOutRecords`` (database rows), ``IseqlEngine``
-(WatchOut's engine run on a rule) and ``CodeFacts`` (values that live only in WatchOut's code).
+and ``CodeFacts`` (values that live only in WatchOut's code).
 """
 
 from collections.abc import Mapping, Sequence
@@ -384,7 +384,7 @@ class ParamsMissing(Exception):
 
 
 class DetectionNotPossible(Exception):
-    """WatchOut itself couldn't run this detection (e.g. seconds without an fps)."""
+    """WatchOut itself couldn't run this detection"""
 
 
 class EngineError(RuntimeError):
@@ -421,7 +421,7 @@ class WatchOutRecords(Protocol):
 
 
 class IseqlEngine(Protocol):
-    """WatchOut's ISEQL+ engine applied to a rule: rows, layout, operators, rendering."""
+    """ISEQL engine applied to a rule: rows, layout, operators, rendering."""
 
     def detect(self, rule: RuleSnapshot, analysis: AnalysisSnapshot, params: ParamsSnapshot) -> Detection: ...
 

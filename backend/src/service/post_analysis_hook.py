@@ -1,7 +1,4 @@
 """End-of-analysis hook: start the command configured in ``post_analysis.command``.
-
-WatchOut starts the command for the reports as a separate process when an
-analysis is done.
 """
 from __future__ import annotations
 
@@ -19,10 +16,7 @@ SRC_DIR = BACKEND_DIR / "src"
 
 
 def notify_analysis_done(analysis_id: str, cfg) -> None:
-    """Start the configured post-analysis command
-
-    ``{python}`` in the command is this interpreter, ``{analysis_id}`` the analysis.
-    """
+    #Start the configured post-analysis command
     try:
         command = (cfg.get("post_analysis") or {}).get("command") or []
         if not command:

@@ -1,4 +1,4 @@
-"""``projection`` -> the conclusion of a branch: what was flagged (K4-A5: it has no role)."""
+"""``projection`` -> the conclusion of a branch with what was flagged"""
 
 from xai.contract.ids import step_id_of, term_id
 from xai.contract.model import ConstraintNode, ProjectionNode

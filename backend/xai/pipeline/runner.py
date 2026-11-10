@@ -1,8 +1,7 @@
 """``ReportPipeline``: what WatchOut starts when an analysis is done.
 
 It holds the analysis's lock, skips an analysis that already has ``index.json``
-(unless ``force``), runs K1 on every row of every event and then hands each draft to
-the later stages (K2, K4, K5/K6, K7) in order.
+(unless ``force``).
 """
 
 import logging

@@ -13,7 +13,7 @@ from xai.contract.reasons import Reason
 
 
 def round_ms(seconds: float) -> float:
-    """Seconds rounded to the millisecond like WatchOut's ``_format_time``."""
+    """Seconds rounded to the millisecond"""
     return round(seconds * 1000) / 1000
 
 
@@ -46,7 +46,7 @@ class TimeBase:
         return TimedAnchor(anchor, {})
 
     def from_seconds(self, start_s: float, end_s: float, field: str) -> TimedAnchor:
-        """Seconds read from the engine; frames converted (``round(s * fps)``, before rounding s)."""
+        """Seconds read from the engine; frames converted"""
         if self.fps is None:
             anchor = Anchor(
                 start_frame=None,

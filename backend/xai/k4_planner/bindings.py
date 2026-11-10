@@ -1,20 +1,15 @@
 """Which interval of the contract each variable of a branch stands for .
 
-The contract has no lineage: its intervals are the pertinent ones, not the ones the engine
-used. The resolver narrows the candidates of each selection with two criteria, one after
+The resolver narrows the candidates of each selection with two criteria, one after
 the other, and says which ones it applied (``basis``):
 
-1. *predicate and classes* (the guidelines): intervals of the node's modality whose predicate
+1. predicate and classes: intervals of the node's modality whose predicate
    is in a branch of the selection and, for visual nodes, whose argument classes that branch
    admits;
-2. *projected values*: the values the engine wrote in the row for this variable,
-   that is the projected arguments ``Mk.argN`` (``event.arguments``) and, when the branch
+2. projected values: the values the engine wrote in the row for this variable,
+   the projected arguments ``Mk.argN`` (``event.arguments``) and, when the branch
    projection has a single ``.st`` or ``.et`` field of this variable, the frame of the row's
    start or end (``event.interval``).
-
-One candidate left is ``attributed``, several ``ambiguous``, none ``not_found``. The
-resolver never uses operators, durations or conditions between variables: that would
-evaluate the rule a second time.
 """
 
 import re
@@ -42,22 +37,22 @@ class VariableBinding:
 
     branch: str
     variable: str
-    """The variable of the selection, e.g. ``M1``."""
+    """The variable of the selection"""
     selection: str
-    """``constraint_id`` of the selection node."""
+    """``constraint_id`` of the selection node"""
     status: BindingStatus
     candidates: tuple[str, ...]
-    """Interval IDs, in contract order."""
+    """Interval IDs, in contract order"""
     basis: tuple[str, ...]
-    """The criteria applied, in order."""
+    """The criteria applied, in order"""
 
     @property
     def interval_id(self) -> str | None:
-        """The only candidate, when the variable is attributed."""
+        """The only candidate, when the variable is attributed"""
         return self.candidates[0] if self.status is BindingStatus.ATTRIBUTED else None
 
     def to_binding(self) -> Binding:
-        """The record of ``bindings`` in the plan."""
+        """The record of ``bindings`` in the plan"""
         return Binding(
             branch=self.branch,
             variable=self.variable,
@@ -68,7 +63,7 @@ class VariableBinding:
 
 
 def resolve_bindings(view: SourceOfTruthView, branch: str) -> tuple[VariableBinding, ...]:
-    """One binding per selection of the branch, in rule order."""
+    """One binding per selection of the branch, in rule order"""
     endpoints = _endpoint_variables(view, branch)
     return tuple(
         _resolve(view, branch, node, endpoints)
@@ -78,7 +73,7 @@ def resolve_bindings(view: SourceOfTruthView, branch: str) -> tuple[VariableBind
 
 
 def by_predicate_and_classes(view: SourceOfTruthView, node: SelectionNode) -> tuple[str, ...]:
-    """Criterion 1 alone: the candidates of the guidelines, in contract order."""
+    """the candidates of the guidelines, in contract order"""
     source = INTERVAL_SOURCE[node.modality]
     with_classes = node.modality == "visual"
     return tuple(
@@ -90,7 +85,7 @@ def by_predicate_and_classes(view: SourceOfTruthView, node: SelectionNode) -> tu
 
 
 def projected_roles(view: SourceOfTruthView, variable: str) -> tuple[tuple[str, int, str], ...]:
-    """``(role, position, entity_id)`` of each projected argument of a variable, in row order."""
+    """``(role, position, entity_id)`` of each projected argument of a variable, in row order"""
     found = []
     for argument in view.event.arguments:
         match = _ROLE.fullmatch(argument.role)
@@ -129,7 +124,7 @@ def _resolve(
 def _admits(
     view: SourceOfTruthView, option: SelectionBranch, interval: IntervalRecord, with_classes: bool
 ) -> bool:
-    """Whether one branch of the selection admits the interval: its predicate and, if asked, its classes."""
+    """Whether one branch of the selection admits the interval: its predicate and, if asked, its classes"""
     if interval.predicate not in option.predicates:
         return False
     if not with_classes:
@@ -151,7 +146,7 @@ def _has_argument(interval: IntervalRecord, position: int, entity_id: str) -> bo
 def _endpoint_variables(view: SourceOfTruthView, branch: str) -> dict[str, str]:
     """``st``/``et`` -> the variable of the branch projection's single field of that kind.
 
-    With no such field, or with more than one, the criterion of that end is not used.
+    With no such field or more than one the criterion is not used.
     """
     found: dict[str, str] = {}
     for end in (_START, _END):

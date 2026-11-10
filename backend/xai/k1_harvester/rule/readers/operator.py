@@ -1,8 +1,6 @@
 """``temporal_operator`` nodes: the operator between consecutive intervals of a branch.
 
-The name is not stored in the model: WatchOut deduces it from the template geometry
-or reads an ``operator_overrides`` entry. The reader asks the engine
-(``WatchOutReader.resolve_operators``) and reports each parameter as written and as
+The reader asks the engine (``WatchOutReader.resolve_operators``) and reports each parameter as written and as
 passed to the SQL.
 """
 

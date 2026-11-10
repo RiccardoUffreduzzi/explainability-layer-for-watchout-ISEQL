@@ -60,7 +60,7 @@ def confidence_source(
     """Source of ``confidence`` when it is the value WatchOut's code writes for the provider.
 
     The value stays as read; the source says that it comes from the code and not from
-    the audio model. K2 decides what that means for the explanation.
+    the audio model.
     """
     fixed = constants.constant_audio_confidence
     if provider not in fixed.providers or row.confidence != fixed.value:

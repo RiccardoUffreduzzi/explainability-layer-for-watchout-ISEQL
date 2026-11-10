@@ -1,16 +1,11 @@
 """The rule of a source of truth translated into steps.
 
 ``translate`` turns the explained branches of a source of truth into steps, one per rule
-node, with their dependencies, ``t_order`` and ``in_report2`` already set, and says what it
-left out. It makes no limit, reinforcement or provenance step and does not order the
-steps for reading: the planner adds and orders them, starting from a ``Translation``.
+node, with their dependencies, and says what it left out so 
+the planner adds and orders them, starting from a ``Translation``.
 
-For each branch the steps are made in three rounds, because the dependencies and the
-``t_order`` of a step come from steps already made: the observations, then the other nodes
-in rule order, then the conclusion on the steps no other step depends on (K4-A1). Every
-list is walked in contract order, so the same source of truth always gives the same
-``Translation``. There is no check at run time (K4-D6): a node without a rule would be a
-programming error, found by the tests.
+For each branch the steps are made in three rounds: the observations, then the other nodes
+in rule order, then the conclusion on the steps no other step depends on.
 """
 
 import json
@@ -31,16 +26,16 @@ from xai.k4_planner.view import SourceOfTruthView
 class BranchSteps:
     branch: str
     steps: tuple[PlanStep, ...]
-    """The observations, then the other nodes in rule order, then the conclusion."""
+    """The observations, then the other nodes in rule order, then the conclusion"""
     conclusion: str
-    """``step_id`` of the conclusion."""
+    """``step_id`` of the conclusion"""
     bindings: tuple[Binding, ...]
 
 
 @dataclass(frozen=True)
 class Translation:
     branches: tuple[BranchSteps, ...]
-    """The explained branches, in rule order."""
+    """The explained branches, in rule order"""
     excluded: tuple[ExcludedConstruct, ...]
     unbound_intervals: tuple[str, ...]
     unmatched_readings: tuple[UnmatchedReading, ...]

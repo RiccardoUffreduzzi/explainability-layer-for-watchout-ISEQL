@@ -22,7 +22,7 @@ EXIT_INPUT = 2
 EXIT_CHECKS = 3
 
 DEFAULT_OUT = Path(__file__).resolve().parents[1] / "output"
-"""``backend/xai/output``: a folder of ``xai``, never one of WatchOut's."""
+"""``backend/xai/output``"""
 
 LOG_FORMAT = "%(asctime)s %(levelname)s %(name)s: %(message)s"
 
@@ -62,10 +62,7 @@ def open_stage(args: argparse.Namespace, clock: Clock | None = None) -> Iterator
 
 @contextmanager
 def logging_to(log_file: Path | None = None) -> Iterator[None]:
-    """Send the ``xai`` logger to standard error and, when given, to ``log_file``.
-
-    The handlers are removed and closed on exit, so the log file is not left open.
-    """
+    """Send the ``xai`` logger to standard error and, when given, to ``log_file``."""
     logger = logging.getLogger("xai")
     handlers: list[logging.Handler] = [logging.StreamHandler(sys.stderr)]
     if log_file is not None:

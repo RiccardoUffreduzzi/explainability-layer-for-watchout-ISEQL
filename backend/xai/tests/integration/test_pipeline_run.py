@@ -8,15 +8,19 @@ from pathlib import Path
 import pytest
 
 from xai.cli import pipeline as pipeline_cli
+from xai.contract.plan import load_plan
 from xai.contract.reasons import InputError
 from xai.contract.source_of_truth import load_source_of_truth, verify_contract_hash
 from xai.k1_harvester.output import AnalysisFolder
 from xai.k1_harvester.result import HarvestFailure
+from xai.pipeline.paths import K2_FOLDER, K4_FOLDER
 from xai.pipeline.runner import ReportPipeline
 from xai.tests.harness import make_batch, open_reader
 from xai.tests.support import EXAMPLES_DIR, load_example, scene
 
 S21 = scene(21)
+S15 = scene(15)
+"""Condition A (one branch) and condition C (a branch per modality, with the reinforcement)."""
 
 
 @pytest.fixture
@@ -61,6 +65,26 @@ def test_k2_writes_a_source_of_truth_for_each_draft(pipeline: ReportPipeline, tm
         assert verify_contract_hash(document)
         assert f"{document.event.label}/{document.event.event_id}.json" == draft
     assert not list(k2_dir.rglob("*.tmp"))
+
+
+@pytest.mark.parametrize("analysis_id", [S21, S15], ids=["condition_A", "condition_C"])
+def test_k4_writes_a_plan_for_each_source_of_truth(
+    pipeline: ReportPipeline, tmp_path: Path, analysis_id: str
+) -> None:
+    # The pipeline only logs a stage that fails: a missing plan is the only sign (UC-K4-11).
+    run = pipeline.run(analysis_id, tmp_path)
+
+    k2_dir = run.folder.path / K2_FOLDER
+    k4_dir = run.folder.path / K4_FOLDER
+    sources = sorted(p.relative_to(k2_dir).as_posix() for p in k2_dir.glob("*/*.json"))
+    written = sorted(p.relative_to(k4_dir).as_posix() for p in k4_dir.glob("*/*.json"))
+    assert written == sources != []
+    for name in written:
+        plan = load_plan((k4_dir / name).read_text(encoding="utf-8"))
+        source = load_source_of_truth((k2_dir / name).read_text(encoding="utf-8"))
+        assert plan.plan_meta.contract_hash == source.contract_meta.contract_hash
+        assert f"{plan.plan_meta.label}/{plan.plan_meta.event_id}.json" == name
+    assert not list(k4_dir.rglob("*.tmp"))
 
 
 def test_the_batch_draft_is_the_single_request_draft(pipeline: ReportPipeline, tmp_path: Path) -> None:

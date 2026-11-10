@@ -1,4 +1,4 @@
-"""The translation rules, one per kind of rule node, and their registry (§4 of the use cases)."""
+"""The translation rules, one per kind of rule node, and their registry"""
 
 from collections.abc import Mapping
 from typing import Final
@@ -18,6 +18,6 @@ RULES: Final[Mapping[str, TranslationRule]] = {
     "duration": DurationRule(),
     "projection": ProjectionRule(),
 }
-"""``kind`` -> its rule. ``set_operation`` has none: ``choose_branches`` excludes it (K4-A8)."""
+"""``kind`` -> its rule. ``set_operation`` has none: ``choose_branches`` excludes it"""
 
 __all__ = ["RULES", "RuleContext", "RuleResult", "TranslationRule"]

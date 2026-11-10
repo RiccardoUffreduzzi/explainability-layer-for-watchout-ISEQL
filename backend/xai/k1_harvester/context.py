@@ -32,11 +32,11 @@ from xai.k1_harvester.rule.form_detector import ModelFormDetector
 from xai.k1_harvester.timebase import TimeBase, TimedAnchor
 
 MODALITY_CONDITIONS: dict[Modality, Condition] = {"visual": "A", "audio": "B"}
-"""Condition of the rule that detects an event in one modality (Evento_A, Evento_B)."""
+"""Condition of the rule that detects an event in one modality (Evento_A, Evento_B)"""
 
 
 class AnalysisReadings:
-    """Readings of one analysis with one set of parameters, cached."""
+    """Readings of one analysis with one set of parameters, cached"""
 
     def __init__(
         self,
@@ -66,7 +66,7 @@ class AnalysisReadings:
         return self._rules[key]
 
     def layout(self, rule: RuleSnapshot) -> tuple[ModelForm, RuleLayout]:
-        """Form of the rule and its structure as the compiler executes it."""
+        """Form of the rule and its structure as the compiler executes it"""
         if rule.ref not in self._layouts:
             form = self._forms.detect(rule)
             self._layouts[rule.ref] = (form, self.reader.rule_layout(rule, form))
@@ -78,7 +78,7 @@ class AnalysisReadings:
         return self._detections[rule.ref]
 
     def operators(self, rule: RuleSnapshot, form: ModelForm, branch: Branch) -> tuple[ResolvedOperator, ...]:
-        """The operators of a branch with the analysis parameters, the same for every row."""
+        """The operators of a branch with the analysis parameters, the same for every row"""
         key = (rule.ref, branch.name)
         if key not in self._operators:
             self._operators[key] = self.reader.resolve_operators(

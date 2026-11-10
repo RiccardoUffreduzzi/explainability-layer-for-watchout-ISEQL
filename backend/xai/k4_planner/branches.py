@@ -1,9 +1,8 @@
-"""Which branches of the rule a plan explains, and which nodes it leaves out (UC-K4-03, K4-A8).
+"""Which branches of the rule a plan explains
 
-A rule of condition A or B has one branch, and that is the one explained. A rule of
+A rule of condition A or B has one branch which is explained. A rule of
 condition C has a branch per modality joined by a set operation: the plan explains the
-branches K1 names in ``event.origin_basis`` (the ones that produced this row), in rule
-order. The other branches' nodes, and the set operation itself, have no step.
+branches K1 names in ``event.origin_basis`` in rule order.
 """
 
 from dataclasses import dataclass

@@ -29,7 +29,7 @@ class RuleOutcome:
     event_type: str
     rule_ref: str
     rows_returned: int | None
-    """None when the detection did not run."""
+    """None when the detection did not run"""
     results: tuple[HarvestResult, ...] = ()
     failure: HarvestFailure | None = None
     engine_error: str | None = None
@@ -45,7 +45,7 @@ class AnalysisOutcome:
     rules: tuple[RuleOutcome, ...]
 
     def drafts(self) -> Iterator[tuple[RuleOutcome, HarvestResult]]:
-        """The rows with a draft, in output order (event, then row)."""
+        """The rows with a draft, in output order (event, then row)"""
         for rule in self.rules:
             for result in rule.results:
                 if result.draft is not None:
@@ -59,7 +59,7 @@ class AnalysisHarvester:
     def harvest(
         self, analysis_id: str, condition: Condition | None = None, params: ParamsMode = "defaults"
     ) -> AnalysisOutcome:
-        """The drafts of every row; ``params = defaults`` at the end of an analysis."""
+        """The drafts of every row; ``params = defaults`` at the end of an analysis"""
         readings = self.stage.readings(analysis_id, params)
         condition = self.stage.condition(readings, condition)
         extracted_at = self.stage.clock.now()

@@ -1,8 +1,6 @@
 """Values of detection rows: comparison, event extent and entities.
 
-The engine returns rows as JSON objects (pandas turns an integer column with NULLs into floats),
-so values are forced to be compared
-as numbers.
+The engine returns rows as JSON objects, so values are forced to be compared as numbers.
 """
 
 from collections.abc import Mapping
@@ -38,7 +36,7 @@ def row_matches(requested: Mapping[str, object], row: DetectedRow) -> bool:
 
     The request names every column the engine returned, and may add the frame
     columns the GUI derives; each value equals the engine's value or the GUI's
-    (seconds formatted as ``HH:MM:SS.mmm``), so a row copied from the GUI is found.
+    so a row copied from the GUI is found.
     """
     keys = set(requested)
     if not set(row.values) <= keys <= set(row.gui_values):

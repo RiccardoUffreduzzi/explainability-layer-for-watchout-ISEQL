@@ -2,8 +2,7 @@
 
 ``OriginResolver`` finds where the located row comes from; ``EventLocator`` calls it,
 because the rule and evidence sections need the row's branch too.
-``ModalityHarvester`` writes the section. K1 reads Evento_A and Evento_B; the
-comparison between the modalities (reinforcement) is K2's.
+``ModalityHarvester`` writes the section.
 """
 
 from collections.abc import Sequence

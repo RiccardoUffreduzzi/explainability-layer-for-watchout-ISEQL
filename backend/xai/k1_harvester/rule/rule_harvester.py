@@ -1,7 +1,6 @@
 """The ``rule`` section: text, structure and nodes of the executed rule.
 
-The nodes are those of the saved model as the compiler executes them; ``parent``
-is containment only and K4 decides the order of the explanation.
+The nodes are those of the saved model as the compiler executes them
 """
 
 import difflib

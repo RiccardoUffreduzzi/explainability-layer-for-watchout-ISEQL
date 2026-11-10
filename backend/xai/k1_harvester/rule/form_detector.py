@@ -1,4 +1,4 @@
-"""Which of the stored forms a rule has2"""
+"""Which of the stored forms a rule has"""
 
 from xai.contract.reasons import InputError
 from xai.k1_harvester.ports import ModelForm, RuleSnapshot

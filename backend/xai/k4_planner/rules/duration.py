@@ -1,4 +1,4 @@
-"""``duration`` -> a condition on how long the observation of a variable lasted."""
+"""``duration`` -> a condition on how long the observation of a variable lasted"""
 
 from xai.contract.ids import comparison_term, step_id_of, term_id
 from xai.contract.model import ConstraintNode, DurationNode

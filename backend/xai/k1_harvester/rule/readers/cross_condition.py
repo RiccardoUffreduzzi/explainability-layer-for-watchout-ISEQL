@@ -1,4 +1,4 @@
-"""Conditions between variables: ``identity``, ``attribute_comparison`` and ``duration``."""
+"""Conditions between variables: ``identity``, ``attribute_comparison`` and ``duration``"""
 
 import re
 
@@ -15,7 +15,7 @@ from xai.k1_harvester.ports import BranchCondition
 from xai.k1_harvester.rule.scope import RuleScope
 
 IDENTITY_OPERATORS = ("=", "≠", "!=")
-"""Equal or different entity: an identity condition."""
+"""Equal or different entity: an identity condition"""
 
 _ARGUMENT = re.compile(r"^arg\d+$")
 
