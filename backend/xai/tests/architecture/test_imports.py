@@ -5,6 +5,8 @@
 - The K1 core (``xai.k1_harvester``) does not import adapters, the CLI or the pipeline.
 - The K4 core (``xai.k4_planner``) imports only ``xai.contract``, itself, the standard library
   and pydantic (NFR-K4-01); only its pipeline stage (``xai.k4_planner.stage``) may import more.
+- The paths of the pipeline (``xai.pipeline.paths``) use the standard library only, so that any
+  stage can import them without importing another stage.
 - No WatchOut module imports ``xai``.
 
 Imports are read with ``ast``, so the rules hold for modules that are not imported by
@@ -127,6 +129,10 @@ def violations(module: Module, watchout: frozenset[str]) -> list[str]:
             found.append(
                 f"{module.name} imports {sorted(outside)}: the K4 core reads only the contract (NFR-K4-01)"
             )
+    if module.name == "xai.pipeline.paths":
+        outside = {i for i in module.imports if top(i) not in sys.stdlib_module_names}
+        if outside:
+            found.append(f"{module.name} imports {sorted(outside)}: the paths use the standard library only")
     return found
 
 
@@ -167,6 +173,9 @@ def test_watchout_packages_are_found() -> None:
             "the K4 core reads only the contract",
         ),
         ("xai.k4_planner.translation", {"yaml"}, "the K4 core reads only the contract"),
+        ("xai.k4_planner.planner", {"xai.pipeline.paths"}, "the K4 core reads only the contract"),
+        ("xai.k4_planner.limits", {"xai.k2.stage"}, "the K4 core reads only the contract"),
+        ("xai.pipeline.paths", {"xai.k2.stage"}, "the paths use the standard library only"),
     ],
 )
 def test_rules_catch_forbidden_imports(name: str, imports: set[str], expected: str) -> None:
@@ -184,6 +193,8 @@ def test_rules_catch_forbidden_imports(name: str, imports: set[str], expected: s
         ("xai.tests.conformance.test_rules", {"sqlite3", "iseql.compiler"}),
         ("xai.k4_planner.rules.operator", {"re", "pydantic", "xai.contract.plan", "xai.k4_planner.readings"}),
         ("xai.k4_planner.stage", {"xai.pipeline.runner", "xai.contract.plan"}),
+        ("xai.k4_planner.stage", {"xai.pipeline.paths", "xai.k4_planner.planner"}),
+        ("xai.pipeline.paths", {"pathlib"}),
     ],
 )
 def test_rules_allow_permitted_imports(name: str, imports: set[str]) -> None:

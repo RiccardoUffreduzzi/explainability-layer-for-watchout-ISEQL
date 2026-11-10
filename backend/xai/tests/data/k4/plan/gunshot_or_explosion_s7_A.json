@@ -1,0 +1,230 @@
+{
+  "bindings": [
+    {
+      "basis": [
+        "predicate",
+        "arg_classes",
+        "M1.arg1",
+        "M1.st",
+        "M1.et"
+      ],
+      "branch": "s1",
+      "interval_ids": [
+        "iv_v11"
+      ],
+      "status": "attributed",
+      "variable": "M1"
+    }
+  ],
+  "plan_meta": {
+    "branches": [
+      "s1"
+    ],
+    "contract_hash": "548146128b9aa0f9cc226aae325f78bddddb2df456e5e6761f64b24d2830f60c",
+    "contract_version": "0.2.0-k1",
+    "event_id": "ev_b04365241841",
+    "label": "gunshot_or_explosion",
+    "model_id": "gunshot_or_explosion/A",
+    "plan_hash": "0fdb23202f39dfac5b869fbbc518c1ab8bc34e67b901c93d88c18c2c11feca4d",
+    "plan_version": "0.1.0-k4",
+    "source_of_truth_version": "0.2.0-k2"
+  },
+  "plan_report": {
+    "excluded_constructs": [],
+    "notes": [],
+    "unbound_intervals": [],
+    "unmatched_readings": []
+  },
+  "steps": [
+    {
+      "alternatives": [
+        "g_predicate_gunshot_visible",
+        "g_predicate_explosion_visible"
+      ],
+      "construct": "c_s1_sel1",
+      "depends_on": [],
+      "in_report2": true,
+      "refs": [
+        "c_s1_sel1",
+        "iv_v11",
+        "ent_4",
+        "g_predicate_explosion_visible"
+      ],
+      "role": "because",
+      "slots": {
+        "arg1": "ent_4"
+      },
+      "step_id": "s_s1_sel1",
+      "t_order": 5.0,
+      "t_order_basis": "interval",
+      "term": "g_predicate_explosion_visible",
+      "type": "observation"
+    },
+    {
+      "construct": "c_s1_proj",
+      "depends_on": [
+        "s_s1_sel1"
+      ],
+      "in_report2": true,
+      "refs": [
+        "c_s1_proj",
+        "ev_b04365241841",
+        "ent_4",
+        "g_event_model_gunshot_or_explosion"
+      ],
+      "step_id": "s_s1_proj",
+      "t_order": 5.0,
+      "t_order_basis": "interval",
+      "term": "g_event_model_gunshot_or_explosion",
+      "type": "conclusion"
+    },
+    {
+      "depends_on": [
+        "s_s1_proj"
+      ],
+      "fixed_text": "The system does not record a confidence value for visual detections.",
+      "in_report2": false,
+      "limit_code": "visual_confidence_unavailable",
+      "refs": [
+        "#/knowledge_limits/0"
+      ],
+      "role": "limit",
+      "step_id": "s_lim_visual_confidence_unavailable",
+      "t_order": 5.0,
+      "t_order_basis": "interval",
+      "type": "limit"
+    },
+    {
+      "depends_on": [
+        "s_s1_proj"
+      ],
+      "fixed_text": "The system does not record what in the images led to each visual detection.",
+      "in_report2": false,
+      "limit_code": "perceptual_attribution_unavailable",
+      "refs": [
+        "#/knowledge_limits/1"
+      ],
+      "role": "limit",
+      "step_id": "s_lim_perceptual_attribution_unavailable",
+      "t_order": 5.0,
+      "t_order_basis": "interval",
+      "type": "limit"
+    },
+    {
+      "depends_on": [
+        "s_s1_proj"
+      ],
+      "fixed_text": "Times are approximate: they depend on the sampling rate of the video analysis.",
+      "in_report2": false,
+      "limit_code": "temporal_resolution",
+      "refs": [
+        "#/knowledge_limits/2"
+      ],
+      "role": "limit",
+      "step_id": "s_lim_temporal_resolution",
+      "t_order": 5.0,
+      "t_order_basis": "interval",
+      "type": "limit"
+    },
+    {
+      "depends_on": [
+        "s_s1_proj"
+      ],
+      "fixed_text": "Some information is not saved by the system and is reported as not available.",
+      "in_report2": false,
+      "limit_code": "data_not_available",
+      "refs": [
+        "#/knowledge_limits/3"
+      ],
+      "role": "limit",
+      "step_id": "s_lim_data_not_available",
+      "t_order": 5.0,
+      "t_order_basis": "interval",
+      "type": "limit"
+    },
+    {
+      "depends_on": [],
+      "in_report2": false,
+      "refs": [
+        "#/contract_meta/pipeline_config/sampling"
+      ],
+      "role": "context",
+      "step_id": "s_prov_sampling",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "provenance"
+    },
+    {
+      "depends_on": [],
+      "in_report2": false,
+      "refs": [
+        "#/contract_meta/pipeline_config/merge_tolerance_s"
+      ],
+      "role": "context",
+      "step_id": "s_prov_merge_tolerance",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "provenance"
+    },
+    {
+      "depends_on": [],
+      "in_report2": false,
+      "refs": [
+        "#/contract_meta/pipeline_config/determinism"
+      ],
+      "role": "context",
+      "step_id": "s_prov_determinism",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "provenance"
+    },
+    {
+      "depends_on": [],
+      "in_report2": false,
+      "refs": [
+        "#/contract_meta/pipeline_config/detection_mode"
+      ],
+      "role": "context",
+      "step_id": "s_prov_detection_mode",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "provenance"
+    },
+    {
+      "depends_on": [],
+      "in_report2": false,
+      "refs": [
+        "#/contract_meta/params_origin"
+      ],
+      "role": "context",
+      "step_id": "s_prov_params_origin",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "provenance"
+    },
+    {
+      "depends_on": [],
+      "in_report2": false,
+      "refs": [
+        "iv_v11"
+      ],
+      "role": "context",
+      "step_id": "s_prov_bindings",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "provenance"
+    },
+    {
+      "depends_on": [],
+      "in_report2": false,
+      "refs": [
+        "#/contract_meta/contract_hash"
+      ],
+      "role": "context",
+      "step_id": "s_prov_contract_hash",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "provenance"
+    }
+  ]
+}

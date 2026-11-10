@@ -129,6 +129,15 @@ class SourceOfTruthView:
         parts = ("rule", "constraints", self.node_index(constraint_id), *path)
         return "#" + "".join("/" + _escape(str(part)) for part in parts)
 
+    def source_pointer(self, *path: str | int) -> str:
+        """JSON pointer to a part of the source of truth outside the rule nodes.
+
+        ``source_pointer("knowledge_limits", 2)`` is ``#/knowledge_limits/2``. It is how the plan
+        points at ``contract_meta``, ``event`` or ``knowledge_limits``, so that no other module
+        writes a pointer by hand.
+        """
+        return "#" + "".join("/" + _escape(str(part)) for part in path)
+
 
 def _escape(token: str) -> str:
     """A reference token of a JSON pointer (RFC 6901)."""

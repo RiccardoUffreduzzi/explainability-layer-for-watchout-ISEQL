@@ -1,0 +1,252 @@
+{
+  "bindings": [
+    {
+      "basis": [
+        "predicate",
+        "arg_classes",
+        "M1.arg1",
+        "M1.arg2",
+        "M1.st",
+        "M1.et"
+      ],
+      "branch": "s1",
+      "interval_ids": [
+        "iv_v54"
+      ],
+      "status": "attributed",
+      "variable": "M1"
+    }
+  ],
+  "plan_meta": {
+    "branches": [
+      "s1"
+    ],
+    "contract_hash": "4745ca1d7129df4714f70b1d513d278ef31fbed6627173a0bf8c182d0b33e796",
+    "contract_version": "0.2.0-k1",
+    "event_id": "ev_69409d7b3e1a",
+    "label": "suspicious_near_vehicle",
+    "model_id": "suspicious_near_vehicle/A",
+    "plan_hash": "6934504acf37f6a5973beb9bb6c7acf37c7bdaec09b08adf635b1645377f4dc0",
+    "plan_version": "0.1.0-k4",
+    "source_of_truth_version": "0.2.0-k2"
+  },
+  "plan_report": {
+    "excluded_constructs": [],
+    "notes": [],
+    "unbound_intervals": [],
+    "unmatched_readings": []
+  },
+  "steps": [
+    {
+      "construct": "c_s1_sel1",
+      "depends_on": [],
+      "in_report2": true,
+      "refs": [
+        "c_s1_sel1",
+        "iv_v54",
+        "ent_6",
+        "ent_1",
+        "g_predicate_suspicious_near_vehicle"
+      ],
+      "role": "because",
+      "slots": {
+        "arg1": "ent_6",
+        "arg2": "ent_1"
+      },
+      "step_id": "s_s1_sel1",
+      "t_order": 2.0,
+      "t_order_basis": "interval",
+      "term": "g_predicate_suspicious_near_vehicle",
+      "type": "observation"
+    },
+    {
+      "construct": "c_s1_cc1",
+      "depends_on": [
+        "s_s1_sel1"
+      ],
+      "in_report2": false,
+      "refs": [
+        "c_s1_cc1",
+        "g_comparison_duration_ge"
+      ],
+      "role": "because",
+      "slots": {
+        "unit": "#/rule/constraints/1/payload/unit",
+        "value": "#/rule/constraints/1/payload/value",
+        "x": "s_s1_sel1"
+      },
+      "step_id": "s_s1_cc1",
+      "t_order": 2.0,
+      "t_order_basis": "interval",
+      "term": "g_comparison_duration_ge",
+      "type": "condition"
+    },
+    {
+      "construct": "c_s1_proj",
+      "depends_on": [
+        "s_s1_cc1"
+      ],
+      "in_report2": true,
+      "refs": [
+        "c_s1_proj",
+        "ev_69409d7b3e1a",
+        "ent_6",
+        "ent_1",
+        "g_event_model_suspicious_near_vehicle"
+      ],
+      "step_id": "s_s1_proj",
+      "t_order": 2.0,
+      "t_order_basis": "interval",
+      "term": "g_event_model_suspicious_near_vehicle",
+      "type": "conclusion"
+    },
+    {
+      "depends_on": [
+        "s_s1_proj"
+      ],
+      "fixed_text": "The system does not record a confidence value for visual detections.",
+      "in_report2": false,
+      "limit_code": "visual_confidence_unavailable",
+      "refs": [
+        "#/knowledge_limits/0"
+      ],
+      "role": "limit",
+      "step_id": "s_lim_visual_confidence_unavailable",
+      "t_order": 2.0,
+      "t_order_basis": "interval",
+      "type": "limit"
+    },
+    {
+      "depends_on": [
+        "s_s1_proj"
+      ],
+      "fixed_text": "The system does not record what in the images led to each visual detection.",
+      "in_report2": false,
+      "limit_code": "perceptual_attribution_unavailable",
+      "refs": [
+        "#/knowledge_limits/1"
+      ],
+      "role": "limit",
+      "step_id": "s_lim_perceptual_attribution_unavailable",
+      "t_order": 2.0,
+      "t_order_basis": "interval",
+      "type": "limit"
+    },
+    {
+      "depends_on": [
+        "s_s1_proj"
+      ],
+      "fixed_text": "Times are approximate: they depend on the sampling rate of the video analysis.",
+      "in_report2": false,
+      "limit_code": "temporal_resolution",
+      "refs": [
+        "#/knowledge_limits/2"
+      ],
+      "role": "limit",
+      "step_id": "s_lim_temporal_resolution",
+      "t_order": 2.0,
+      "t_order_basis": "interval",
+      "type": "limit"
+    },
+    {
+      "depends_on": [
+        "s_s1_proj"
+      ],
+      "fixed_text": "Some information is not saved by the system and is reported as not available.",
+      "in_report2": false,
+      "limit_code": "data_not_available",
+      "refs": [
+        "#/knowledge_limits/3"
+      ],
+      "role": "limit",
+      "step_id": "s_lim_data_not_available",
+      "t_order": 2.0,
+      "t_order_basis": "interval",
+      "type": "limit"
+    },
+    {
+      "depends_on": [],
+      "in_report2": false,
+      "refs": [
+        "#/contract_meta/pipeline_config/sampling"
+      ],
+      "role": "context",
+      "step_id": "s_prov_sampling",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "provenance"
+    },
+    {
+      "depends_on": [],
+      "in_report2": false,
+      "refs": [
+        "#/contract_meta/pipeline_config/merge_tolerance_s"
+      ],
+      "role": "context",
+      "step_id": "s_prov_merge_tolerance",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "provenance"
+    },
+    {
+      "depends_on": [],
+      "in_report2": false,
+      "refs": [
+        "#/contract_meta/pipeline_config/determinism"
+      ],
+      "role": "context",
+      "step_id": "s_prov_determinism",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "provenance"
+    },
+    {
+      "depends_on": [],
+      "in_report2": false,
+      "refs": [
+        "#/contract_meta/pipeline_config/detection_mode"
+      ],
+      "role": "context",
+      "step_id": "s_prov_detection_mode",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "provenance"
+    },
+    {
+      "depends_on": [],
+      "in_report2": false,
+      "refs": [
+        "#/contract_meta/params_origin"
+      ],
+      "role": "context",
+      "step_id": "s_prov_params_origin",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "provenance"
+    },
+    {
+      "depends_on": [],
+      "in_report2": false,
+      "refs": [
+        "iv_v54"
+      ],
+      "role": "context",
+      "step_id": "s_prov_bindings",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "provenance"
+    },
+    {
+      "depends_on": [],
+      "in_report2": false,
+      "refs": [
+        "#/contract_meta/contract_hash"
+      ],
+      "role": "context",
+      "step_id": "s_prov_contract_hash",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "provenance"
+    }
+  ]
+}

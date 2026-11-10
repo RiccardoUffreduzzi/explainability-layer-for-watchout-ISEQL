@@ -1,0 +1,328 @@
+{
+  "bindings": [
+    {
+      "basis": [
+        "predicate",
+        "M1.st"
+      ],
+      "branch": "s1",
+      "interval_ids": [
+        "iv_a21"
+      ],
+      "status": "attributed",
+      "variable": "M1"
+    },
+    {
+      "basis": [
+        "predicate",
+        "M2.et"
+      ],
+      "branch": "s1",
+      "interval_ids": [
+        "iv_a22"
+      ],
+      "status": "attributed",
+      "variable": "M2"
+    }
+  ],
+  "plan_meta": {
+    "branches": [
+      "s1"
+    ],
+    "contract_hash": "afa641d29c24180da53591c7826d573127d85ac05a0a4e81d41b13cf6c54158c",
+    "contract_version": "0.2.0-k1",
+    "event_id": "ev_cb96ebb2235a",
+    "label": "vehicle_collision",
+    "model_id": "vehicle_collision/C",
+    "plan_hash": "07d73cd563edc1d4d66328bc54d7343b0be9934b5e59325c24d37dbcf92fa7f1",
+    "plan_version": "0.1.0-k4",
+    "source_of_truth_version": "0.2.0-k2"
+  },
+  "plan_report": {
+    "excluded_constructs": [
+      {
+        "constraint_id": "c_set1",
+        "reason": "set_operation"
+      },
+      {
+        "constraint_id": "c_s2_proj",
+        "reason": "other_branch"
+      },
+      {
+        "constraint_id": "c_s2_sel1",
+        "reason": "other_branch"
+      }
+    ],
+    "notes": [],
+    "unbound_intervals": [
+      "iv_a23"
+    ],
+    "unmatched_readings": []
+  },
+  "steps": [
+    {
+      "alternatives": [
+        "g_audio_class_horn",
+        "g_audio_class_skidding"
+      ],
+      "construct": "c_s1_sel1",
+      "depends_on": [],
+      "in_report2": true,
+      "refs": [
+        "c_s1_sel1",
+        "iv_a21",
+        "g_audio_class_horn"
+      ],
+      "role": "because",
+      "step_id": "s_s1_sel1",
+      "t_order": 0.0,
+      "t_order_basis": "interval",
+      "term": "g_audio_class_horn",
+      "type": "observation"
+    },
+    {
+      "alternatives": [
+        "g_audio_class_impact",
+        "g_audio_class_glass_breaking"
+      ],
+      "construct": "c_s1_sel2",
+      "depends_on": [],
+      "in_report2": true,
+      "refs": [
+        "c_s1_sel2",
+        "iv_a22",
+        "g_audio_class_glass_breaking"
+      ],
+      "role": "because",
+      "step_id": "s_s1_sel2",
+      "t_order": 2.5,
+      "t_order_basis": "interval",
+      "term": "g_audio_class_glass_breaking",
+      "type": "observation"
+    },
+    {
+      "construct": "c_s1_op1",
+      "depends_on": [
+        "s_s1_sel1",
+        "s_s1_sel2"
+      ],
+      "in_report2": false,
+      "readings": [
+        {
+          "condition": "δ = ∞",
+          "param": "δ",
+          "phrase": "at any time while {r} is ongoing"
+        }
+      ],
+      "refs": [
+        "c_s1_op1",
+        "g_operator_SP"
+      ],
+      "role": "because",
+      "slots": {
+        "r": "s_s1_sel1",
+        "s": "s_s1_sel2"
+      },
+      "step_id": "s_s1_op1",
+      "t_order": 2.5,
+      "t_order_basis": "interval",
+      "term": "g_operator_SP",
+      "type": "temporal"
+    },
+    {
+      "construct": "c_s1_proj",
+      "depends_on": [
+        "s_s1_op1"
+      ],
+      "in_report2": true,
+      "refs": [
+        "c_s1_proj",
+        "ev_cb96ebb2235a",
+        "g_event_model_vehicle_collision"
+      ],
+      "step_id": "s_s1_proj",
+      "t_order": 2.5,
+      "t_order_basis": "interval",
+      "term": "g_event_model_vehicle_collision",
+      "type": "conclusion"
+    },
+    {
+      "depends_on": [
+        "s_s1_proj"
+      ],
+      "fixed_text": "Times are approximate: they depend on the sampling rate of the video analysis.",
+      "in_report2": false,
+      "limit_code": "temporal_resolution",
+      "refs": [
+        "#/knowledge_limits/0"
+      ],
+      "role": "limit",
+      "step_id": "s_lim_temporal_resolution",
+      "t_order": 2.5,
+      "t_order_basis": "interval",
+      "type": "limit"
+    },
+    {
+      "depends_on": [
+        "s_s1_proj"
+      ],
+      "fixed_text": "An audio detection does not say who or what produced the sound.",
+      "in_report2": false,
+      "limit_code": "audio_without_participants",
+      "refs": [
+        "#/knowledge_limits/1"
+      ],
+      "role": "limit",
+      "step_id": "s_lim_audio_without_participants",
+      "t_order": 2.5,
+      "t_order_basis": "interval",
+      "type": "limit"
+    },
+    {
+      "depends_on": [
+        "s_s1_proj"
+      ],
+      "fixed_text": "Some information is not saved by the system and is reported as not available.",
+      "in_report2": false,
+      "limit_code": "data_not_available",
+      "refs": [
+        "#/knowledge_limits/2"
+      ],
+      "role": "limit",
+      "step_id": "s_lim_data_not_available",
+      "t_order": 2.5,
+      "t_order_basis": "interval",
+      "type": "limit"
+    },
+    {
+      "depends_on": [
+        "s_s1_proj"
+      ],
+      "fixed_text": "The event was detected by both video and audio, in the same time interval.",
+      "in_report2": true,
+      "refs": [
+        "ev_cb96ebb2235a",
+        "#/event/modality_detections/0",
+        "#/event/modality_detections/1",
+        "#/event/modality_detections/2",
+        "#/event/modality_detections/3"
+      ],
+      "role": "context",
+      "step_id": "s_reinforcement",
+      "t_order": 2.5,
+      "t_order_basis": "interval",
+      "type": "reinforcement"
+    },
+    {
+      "depends_on": [],
+      "in_report2": false,
+      "refs": [
+        "#/contract_meta/pipeline_config/sampling"
+      ],
+      "role": "context",
+      "step_id": "s_prov_sampling",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "provenance"
+    },
+    {
+      "depends_on": [],
+      "in_report2": false,
+      "refs": [
+        "#/contract_meta/pipeline_config/merge_tolerance_s"
+      ],
+      "role": "context",
+      "step_id": "s_prov_merge_tolerance",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "provenance"
+    },
+    {
+      "depends_on": [],
+      "in_report2": false,
+      "refs": [
+        "#/contract_meta/pipeline_config/determinism"
+      ],
+      "role": "context",
+      "step_id": "s_prov_determinism",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "provenance"
+    },
+    {
+      "depends_on": [],
+      "in_report2": false,
+      "refs": [
+        "#/contract_meta/pipeline_config/detection_mode"
+      ],
+      "role": "context",
+      "step_id": "s_prov_detection_mode",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "provenance"
+    },
+    {
+      "depends_on": [],
+      "in_report2": false,
+      "refs": [
+        "#/contract_meta/params_origin"
+      ],
+      "role": "context",
+      "step_id": "s_prov_params_origin",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "provenance"
+    },
+    {
+      "depends_on": [],
+      "in_report2": false,
+      "refs": [
+        "#/event/reinforcement"
+      ],
+      "role": "context",
+      "step_id": "s_prov_modality_association",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "provenance"
+    },
+    {
+      "depends_on": [],
+      "in_report2": false,
+      "refs": [
+        "iv_a21",
+        "iv_a22"
+      ],
+      "role": "context",
+      "step_id": "s_prov_bindings",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "provenance"
+    },
+    {
+      "depends_on": [],
+      "in_report2": false,
+      "refs": [
+        "iv_a21",
+        "iv_a22",
+        "iv_a23"
+      ],
+      "role": "context",
+      "step_id": "s_prov_confidences",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "provenance"
+    },
+    {
+      "depends_on": [],
+      "in_report2": false,
+      "refs": [
+        "#/contract_meta/contract_hash"
+      ],
+      "role": "context",
+      "step_id": "s_prov_contract_hash",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "provenance"
+    }
+  ]
+}
