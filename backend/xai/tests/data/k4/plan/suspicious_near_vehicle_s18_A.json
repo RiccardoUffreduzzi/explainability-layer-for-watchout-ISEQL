@@ -21,12 +21,12 @@
     "branches": [
       "s1"
     ],
-    "contract_hash": "4745ca1d7129df4714f70b1d513d278ef31fbed6627173a0bf8c182d0b33e796",
-    "contract_version": "0.2.0-k1",
+    "contract_hash": "f7b64ad766955387adece4a840e34286b31ec6f4f9fc14a505b013856ad08c7f",
+    "contract_version": "0.3.0-k1",
     "event_id": "ev_69409d7b3e1a",
     "label": "suspicious_near_vehicle",
     "model_id": "suspicious_near_vehicle/A",
-    "plan_hash": "6934504acf37f6a5973beb9bb6c7acf37c7bdaec09b08adf635b1645377f4dc0",
+    "plan_hash": "a4d75808a224039ec4eb492b3c718c6c1961716485fbc071314db8b30f5c73c7",
     "plan_version": "0.1.0-k4",
     "source_of_truth_version": "0.2.0-k2"
   },
@@ -156,7 +156,8 @@
       "in_report2": false,
       "limit_code": "data_not_available",
       "refs": [
-        "#/knowledge_limits/3"
+        "#/knowledge_limits/3",
+        "#/harvest_report/missing_fields"
       ],
       "role": "limit",
       "step_id": "s_lim_data_not_available",

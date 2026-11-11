@@ -10,6 +10,7 @@ import pytest
 from pydantic import ValidationError
 
 from xai.contract.canonical import canonical_json
+from xai.contract.model import CONTRACT_VERSION
 from xai.contract.plan import (
     IN_REPORT2,
     PLAN_VERSION,
@@ -32,7 +33,7 @@ def _minimal_plan() -> Plan:
             "plan_version": PLAN_VERSION,
             "contract_hash": "0" * 64,
             "source_of_truth_version": "0.2.0-k2",
-            "contract_version": "0.2.0-k1",
+            "contract_version": CONTRACT_VERSION,
             "event_id": "ev_d966ffea748d",
             "model_id": "fight",
             "label": "fight",

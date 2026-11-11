@@ -40,6 +40,18 @@ def operator_example(request: pytest.FixtureRequest) -> dict[str, Any]:
     return load_example(path)
 
 
+DESCRIBED_EXAMPLE_PATHS = [
+    p for p in EXAMPLE_PATHS if any(e["vlm_description"] is not None for e in load_example(p)["entities"])
+]
+
+
+@pytest.fixture(params=DESCRIBED_EXAMPLE_PATHS, ids=[p.name for p in DESCRIBED_EXAMPLE_PATHS])
+def described_example(request: pytest.FixtureRequest) -> dict[str, Any]:
+    """The example drafts with at least one entity the VLM described."""
+    path: Path = request.param
+    return load_example(path)
+
+
 @pytest.fixture(scope="session")
 def watchout_db(tmp_path_factory: pytest.TempPathFactory) -> Path:
     """The test database (seed + 30 real scenes), built once; open it read-only."""

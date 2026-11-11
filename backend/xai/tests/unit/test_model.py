@@ -12,6 +12,7 @@ from xai.contract.model import (
     OperatorParam,
     RowMatch,
     TemporalOperatorNode,
+    VlmDescription,
 )
 from xai.contract.reasons import CheckName
 from xai.tests.support import EXAMPLE_PATHS, from_json_data
@@ -145,6 +146,57 @@ def test_alias_class_is_written_back_as_class(example: dict[str, Any]) -> None:
         assert "class_" not in argument
 
 
+def _described(data: dict[str, Any]) -> dict[str, Any]:
+    """The first entity of the draft that has a description."""
+    entity: dict[str, Any] = next(e for e in data["entities"] if e["vlm_description"] is not None)
+    return entity
+
+
+def test_a_description_is_one_frame_read_from_the_vlm_table(described_example: dict[str, Any]) -> None:
+    draft = from_json_data(ContractDraft, described_example)
+
+    described = [e.vlm_description for e in draft.entities if e.vlm_description is not None]
+    assert described
+    for description in described:
+        assert isinstance(description, VlmDescription)
+        assert description.anchor.read_as == "frames"
+        assert description.anchor.start_frame == description.anchor.end_frame
+        assert (description.source_ref.stage.value, description.source_ref.store) == ("vlm", "VisualPerFrame")
+
+
+def test_the_description_key_cannot_be_left_out(described_example: dict[str, Any]) -> None:
+    data = copy.deepcopy(described_example)
+    del _described(data)["vlm_description"]
+
+    with pytest.raises(ValidationError, match="vlm_description"):
+        from_json_data(ContractDraft, data)
+
+
+def test_a_description_may_be_null(described_example: dict[str, Any]) -> None:
+    # The model accepts the null; that it has a reason is the completeness check of K1.
+    data = copy.deepcopy(described_example)
+    _described(data)["vlm_description"] = None
+
+    draft = from_json_data(ContractDraft, data)
+
+    assert any(e.vlm_description is None for e in draft.entities)
+
+
+@pytest.mark.parametrize(
+    "change",
+    [{"text": ""}, {"summary": "a man"}, {"in_evidence": "true"}, {"source_ref": None}],
+    ids=["empty text", "unknown key", "flag as text", "no source"],
+)
+def test_a_description_is_complete_and_strict(
+    described_example: dict[str, Any], change: dict[str, object]
+) -> None:
+    data = copy.deepcopy(described_example)
+    _described(data)["vlm_description"].update(change)
+
+    with pytest.raises(ValidationError, match="vlm_description"):
+        from_json_data(ContractDraft, data)
+
+
 def _param(**changes: object) -> dict[str, object]:
     base: dict[str, object] = {
         "name": "δ",
@@ -195,10 +247,12 @@ def test_numbers_are_not_read_from_text(example: dict[str, Any]) -> None:
         from_json_data(ContractDraft, data)
 
 
-def test_contract_version_is_the_current_one(example: dict[str, Any]) -> None:
+@pytest.mark.parametrize("version", ["0.2.0", "0.2.0-k1"], ids=["no suffix", "the previous format"])
+def test_contract_version_is_the_current_one(example: dict[str, Any], version: str) -> None:
     data = copy.deepcopy(example)
-    data["contract_meta"]["contract_version"] = "0.2.0"
+    data["contract_meta"]["contract_version"] = version
 
+    assert CONTRACT_VERSION == "0.3.0-k1"
     assert from_json_data(ContractDraft, example).contract_meta.contract_version == CONTRACT_VERSION
     with pytest.raises(ValidationError, match="contract_version"):
         from_json_data(ContractDraft, data)

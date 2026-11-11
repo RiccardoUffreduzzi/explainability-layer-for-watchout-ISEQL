@@ -87,3 +87,21 @@ def audio_intervals(conn: sqlite3.Connection, analysis_id: str, classes: Sequenc
         f"WHERE AnalysisID = ? AND AudioClass IN ({marks}) ORDER BY AudioIntervalID",
         (analysis_id, *classes),
     ).fetchall()
+
+
+def frame_descriptions(
+    conn: sqlite3.Connection, analysis_id: str, class_ids: Sequence[int]
+) -> list[sqlite3.Row]:
+    """``VisualPerFrame`` rows of the subjects that have a text; none when the table is missing.
+
+    WatchOut writes an empty ``Description`` when the VLM gave none: those rows describe nothing.
+    """
+    if not class_ids or "Description" not in table_columns(conn, "VisualPerFrame"):
+        return []
+    marks = ", ".join("?" for _ in class_ids)
+    return conn.execute(
+        "SELECT Frame, ClassID, Block, Description FROM VisualPerFrame "
+        f"WHERE AnalysisID = ? AND ClassID IN ({marks}) AND TRIM(Description) <> '' "
+        "ORDER BY ClassID, Frame, Block",
+        (analysis_id, *class_ids),
+    ).fetchall()

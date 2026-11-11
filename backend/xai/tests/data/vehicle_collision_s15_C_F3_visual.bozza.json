@@ -1,7 +1,7 @@
 {
   "$comment": "Caso golden: regola legacy con set_side (F3) dei database di ablation. WatchOut allinea i due lati per posizione e dà alle colonne i nomi del lato sinistro (audio), quindi nella riga visiva il veicolo 12 sta nella colonna st, l'inizio in et e la fine in __p1: K1 riconosce il lato dalla riga (colonne di riempimento nulle, inizio e fine presenti) e legge le colonne per posizione. Prodotta da K1 sul database di test con le regole del DB di ablation e i parametri salvati in DeltasJson (tests/support.py, use_ablation_rules): i default della GUI per queste regole danno 'inf' a ζ e ρ e WatchOut non può eseguirle. Intervalli, partecipanti e riga sono reali (DB di ablation, scena 15); SamplingRate=24, AudioWindow/AudioHop e provider sono ipotizzati. I testi della bozza sono in inglese.",
   "contract_meta": {
-    "contract_version": "0.2.0-k1",
+    "contract_version": "0.3.0-k1",
     "analysis_id": "gemini_3_6_flash_qwen2_audio_s15",
     "source_snapshot": {
       "backend_version": "WATCHOUT ISEQL 0.1.0",
@@ -88,7 +88,7 @@
         }
       }
     },
-    "glossary_version": "glossary.yaml@0.2.0#eeba25fa69c4+relation_vocab@2026-08-30 16:51:22+audio_taxonomy@2026-08-15 22:01:29",
+    "glossary_version": "glossary.yaml@0.2.0#91ca24285312+relation_vocab@2026-08-30 16:51:22+audio_taxonomy@2026-08-15 22:01:29",
     "params_origin": "saved_by_gui",
     "sources": {
       "glossary_version": {
@@ -483,6 +483,23 @@
         "status": "not_available",
         "gallery_match_id": null,
         "similarity": null
+      },
+      "vlm_description": {
+        "text": "dark sedan stopped in parking lot aisle with open door",
+        "anchor": {
+          "start_frame": 144,
+          "end_frame": 144,
+          "start_s": 6.0,
+          "end_s": 6.0,
+          "read_as": "frames"
+        },
+        "in_evidence": true,
+        "source_ref": {
+          "stage": "vlm",
+          "store": "VisualPerFrame",
+          "record_id": "gemini_3_6_flash_qwen2_audio_s15:144:12:2",
+          "mode": "read"
+        }
       },
       "source_ref": {
         "stage": "reid",

@@ -74,6 +74,55 @@ def test_a_reason_does_not_cover_another_list_item(example: dict[str, Any]) -> N
     assert _completeness(data) == [f"{name}[{len(data[name]) - 1}].{field}"]
 
 
+def _described(data: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+    """Position and data of the first entity that has a description."""
+    return next((i, e) for i, e in enumerate(data["entities"]) if e["vlm_description"] is not None)
+
+
+def test_a_null_description_without_a_reason_is_found(described_example: dict[str, Any]) -> None:
+    data = copy.deepcopy(described_example)
+    position, entity = _described(data)
+    entity["vlm_description"] = None
+
+    assert _completeness(data) == [f"entities[{position}].vlm_description"]
+
+
+def test_a_null_description_with_its_reason_passes(described_example: dict[str, Any]) -> None:
+    data = copy.deepcopy(described_example)
+    _, entity = _described(data)
+    entity["vlm_description"] = None
+    entity["unavailable"]["vlm_description"] = {"reason": "entity_not_described", "detail": "x"}
+
+    assert _completeness(data) == []
+    assert ("entities[*].vlm_description", Reason.ENTITY_NOT_DESCRIBED) in [
+        (m.path, m.reason) for m in missing_fields(data)
+    ]
+
+
+def test_a_reason_for_a_description_that_is_there_is_found(described_example: dict[str, Any]) -> None:
+    data = copy.deepcopy(described_example)
+    position, entity = _described(data)
+    entity["unavailable"]["vlm_description"] = {"reason": "entity_not_described", "detail": "x"}
+
+    assert _completeness(data) == [f"entities[{position}].unavailable.vlm_description"]
+
+
+def test_the_seconds_of_a_description_need_their_reason(described_example: dict[str, Any]) -> None:
+    data = copy.deepcopy(described_example)
+    position, entity = _described(data)
+    entity["vlm_description"]["anchor"].update(start_s=None, end_s=None)
+    path = f"entities[{position}].vlm_description.anchor"
+
+    assert _completeness(data) == [f"{path}.start_s", f"{path}.end_s"]
+
+    reason = {"reason": "fps_not_recorded", "detail": "x"}
+    entity["unavailable"].update(
+        {"vlm_description.anchor.start_s": reason, "vlm_description.anchor.end_s": reason}
+    )
+
+    assert _completeness(data) == []
+
+
 def test_the_root_of_the_rule_has_no_parent_by_design(example: dict[str, Any]) -> None:
     roots = [c for c in example["rule"]["constraints"] if c["parent"] is None]
 

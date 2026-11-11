@@ -31,6 +31,7 @@ from xai.k1_harvester.ports import (
     DetectedRow,
     Detection,
     EngineError,
+    FrameDescriptionRow,
     ModelForm,
     ParamsSnapshot,
     ParamValue,
@@ -208,6 +209,17 @@ class SqliteWatchOutReader:
                 confidence=None if r["Confidence"] is None else float(r["Confidence"]),
             )
             for r in queries.audio_intervals(self.conn, analysis_id, sorted(classes))
+        ]
+
+    def frame_descriptions(self, analysis_id: str, class_ids: Sequence[int]) -> list[FrameDescriptionRow]:
+        return [
+            FrameDescriptionRow(
+                frame=int(r["Frame"]),
+                class_id=int(r["ClassID"]),
+                block=int(r["Block"]),
+                description=str(r["Description"]),
+            )
+            for r in queries.frame_descriptions(self.conn, analysis_id, sorted(set(class_ids)))
         ]
 
     # values that only exist in code

@@ -1,7 +1,7 @@
 {
   "$comment": "Caso golden: argomenti della stessa classe (args_ordered = false) e righe simmetriche (1, 2) e (2, 1). Prodotta da K1 sul database di test (tests/support.py, build_fixture_db) con i parametri di default della regola. Intervalli, partecipanti e riga sono reali (DB di ablation, scena 5); la regola è quella del seed. Il DB di ablation non ha la riga Analyses: SamplingRate=24, AudioWindow/AudioHop e provider sono ipotizzati. I testi della bozza sono in inglese.",
   "contract_meta": {
-    "contract_version": "0.2.0-k1",
+    "contract_version": "0.3.0-k1",
     "analysis_id": "gemini_3_6_flash_qwen2_audio_s5",
     "source_snapshot": {
       "backend_version": "WATCHOUT ISEQL 0.1.0",
@@ -88,7 +88,7 @@
         }
       }
     },
-    "glossary_version": "glossary.yaml@0.2.0#eeba25fa69c4+relation_vocab@2026-08-30 16:51:22+audio_taxonomy@2026-08-15 22:01:29",
+    "glossary_version": "glossary.yaml@0.2.0#91ca24285312+relation_vocab@2026-08-30 16:51:22+audio_taxonomy@2026-08-15 22:01:29",
     "params_origin": "rule_defaults",
     "sources": {
       "glossary_version": {
@@ -289,6 +289,23 @@
         "gallery_match_id": null,
         "similarity": null
       },
+      "vlm_description": {
+        "text": "man in grey hooded sweatshirt and khaki pants",
+        "anchor": {
+          "start_frame": 0,
+          "end_frame": 0,
+          "start_s": 0.0,
+          "end_s": 0.0,
+          "read_as": "frames"
+        },
+        "in_evidence": true,
+        "source_ref": {
+          "stage": "vlm",
+          "store": "VisualPerFrame",
+          "record_id": "gemini_3_6_flash_qwen2_audio_s5:0:1:3",
+          "mode": "read"
+        }
+      },
       "source_ref": {
         "stage": "reid",
         "store": "VisualParticipant",
@@ -309,6 +326,23 @@
         "status": "not_available",
         "gallery_match_id": null,
         "similarity": null
+      },
+      "vlm_description": {
+        "text": "man in dark jacket and blue jeans",
+        "anchor": {
+          "start_frame": 0,
+          "end_frame": 0,
+          "start_s": 0.0,
+          "end_s": 0.0,
+          "read_as": "frames"
+        },
+        "in_evidence": true,
+        "source_ref": {
+          "stage": "vlm",
+          "store": "VisualPerFrame",
+          "record_id": "gemini_3_6_flash_qwen2_audio_s5:0:2:4",
+          "mode": "read"
+        }
       },
       "source_ref": {
         "stage": "reid",

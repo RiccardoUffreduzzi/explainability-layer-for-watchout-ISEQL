@@ -364,6 +364,16 @@ class ParticipantRow:
 
 
 @dataclass(frozen=True)
+class FrameDescriptionRow:
+    """One ``VisualPerFrame`` row: how the VLM described a subject in a frame and a cell."""
+
+    frame: int
+    class_id: int
+    block: int
+    description: str
+
+
+@dataclass(frozen=True)
 class AudioIntervalRow:
     interval_id: int
     start_frame: int
@@ -418,6 +428,13 @@ class WatchOutRecords(Protocol):
     def participants(self, relation_ids: Sequence[int]) -> list[ParticipantRow]: ...
 
     def audio_intervals(self, analysis_id: str, classes: set[str]) -> list[AudioIntervalRow]: ...
+
+    def frame_descriptions(self, analysis_id: str, class_ids: Sequence[int]) -> list[FrameDescriptionRow]:
+        """``VisualPerFrame`` rows of those subjects that have a text, by ClassID, Frame, Block.
+
+        Empty when the database has no such table.
+        """
+        ...
 
 
 class IseqlEngine(Protocol):

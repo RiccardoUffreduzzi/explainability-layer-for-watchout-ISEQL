@@ -38,7 +38,7 @@ from xai.contract.primitives import (
 )
 from xai.contract.reasons import CheckName, NoteCode, Reason
 
-ContractVersion = Literal["0.2.0-k1"]
+ContractVersion = Literal["0.3.0-k1"]
 CONTRACT_VERSION: Final[str] = get_args(ContractVersion)[0]
 """Version of the draft format; the JSON schema is bound to it (``$id`` and ``const``)."""
 
@@ -384,10 +384,24 @@ class ReidEvidence(ContractModel):
     similarity: float | None
 
 
+class VlmDescription(ContractModel):
+    """How the VLM described the entity in one sampled frame"""
+
+    text: NonEmptyStr
+    anchor: Anchor
+    """The frame the text was read from (start = end)."""
+    in_evidence: bool
+    """True when the frame lies in a visual interval of the draft that has the entity among its args."""
+    source_ref: SourceRef
+    """Stage ``vlm``, store ``VisualPerFrame``, record_id ``<AnalysisID>:<Frame>:<ClassID>:<Block>``."""
+
+
 class Entity(ContractModel):
     entity_id: EntityId
     class_: NonEmptyStr = Field(alias="class")
     reid_evidence: ReidEvidence
+    vlm_description: VlmDescription | None
+    """Null when the analysis has no description of the entity; the reason is in ``unavailable``."""
     source_ref: SourceRef
     unavailable: UnavailableMap | None = absent_if_none()
 

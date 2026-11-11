@@ -66,6 +66,17 @@ def _snapshot(draft: Draft) -> dict[str, Any]:
     return snapshot
 
 
+def _described(draft: Draft) -> dict[str, Any]:
+    """The first entity of the draft that has a description."""
+    entity: dict[str, Any] = next(e for e in draft["entities"] if e["vlm_description"] is not None)
+    return entity
+
+
+def _description(draft: Draft) -> dict[str, Any]:
+    description: dict[str, Any] = _described(draft)["vlm_description"]
+    return description
+
+
 Mutation = Callable[[Draft], None]
 
 # name -> (change, whether the result is a valid draft)
@@ -102,6 +113,10 @@ CASES: dict[str, tuple[Mutation, bool]] = {
     ),
     # Version identity.
     "another contract version": (lambda d: d["contract_meta"].update(contract_version="0.2.0"), False),
+    "the previous contract version": (
+        lambda d: d["contract_meta"].update(contract_version="0.2.0-k1"),
+        False,
+    ),
     # Timestamps: RFC 3339 text with an offset.
     "timestamp without offset": (lambda d: _snapshot(d).update(extracted_at="2026-10-06T20:00:00"), False),
     "timestamp with an offset": (
@@ -135,6 +150,32 @@ OPERATOR_CASES: dict[str, tuple[Mutation, bool]] = {
     "threshold parameter without a unit": (lambda d: _threshold(d).pop("unit"), True),
     # Optional fields are left out, never null.
     "optional unit written as null": (lambda d: _strictness(d).update(unit=None), False),
+}
+
+# Cases on the VLM description of an entity: run on the examples that have one.
+DESCRIPTION_CASES: dict[str, tuple[Mutation, bool]] = {
+    # Required and nullable: the key is always there. A null needs a reason, which is K1's
+    # completeness check and not the format's.
+    "description left out": (lambda d: _described(d).pop("vlm_description"), False),
+    "description null": (lambda d: _described(d).update(vlm_description=None), True),
+    # The text is copied from WatchOut: never empty, never beside other keys.
+    "empty description text": (lambda d: _description(d).update(text=""), False),
+    "unknown key in a description": (lambda d: _description(d).update(summary="a man"), False),
+    "description without its source": (lambda d: _description(d).pop("source_ref"), False),
+    "description without its frame": (lambda d: _description(d).pop("anchor"), False),
+    "description frame without its number": (
+        lambda d: _description(d)["anchor"].update(start_frame=None),
+        False,
+    ),
+    "description seconds null": (lambda d: _description(d)["anchor"].update(start_s=None, end_s=None), True),
+    "in_evidence written as text": (lambda d: _description(d).update(in_evidence="true"), False),
+    "in_evidence left out": (lambda d: _description(d).pop("in_evidence"), False),
+    "entity not described": (
+        lambda d: _described(d)["unavailable"].update(
+            {"vlm_description": {"reason": "entity_not_described", "detail": "x"}}
+        ),
+        True,
+    ),
 }
 
 # Rules that compare two fields, or a calendar, are beyond JSON Schema: only the model checks them.
@@ -179,6 +220,17 @@ def test_schema_and_model_agree_on_operator_params(
 ) -> None:
     mutate, valid = OPERATOR_CASES[case]
     draft = copy.deepcopy(operator_example)
+    mutate(draft)
+
+    assert _verdicts(validator, draft) == (valid, valid)
+
+
+@pytest.mark.parametrize("case", list(DESCRIPTION_CASES))
+def test_schema_and_model_agree_on_descriptions(
+    validator: jsonschema.Draft202012Validator, described_example: Draft, case: str
+) -> None:
+    mutate, valid = DESCRIPTION_CASES[case]
+    draft = copy.deepcopy(described_example)
     mutate(draft)
 
     assert _verdicts(validator, draft) == (valid, valid)

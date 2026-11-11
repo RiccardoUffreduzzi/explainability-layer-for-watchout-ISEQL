@@ -21,12 +21,12 @@
     "branches": [
       "s1"
     ],
-    "contract_hash": "2b421fd6aa7357497b7868a7a943e8a495b0fd1012e57ea08c1e3483cab0b47a",
-    "contract_version": "0.2.0-k1",
+    "contract_hash": "a751de03dfacceb247aad7ae31096718a4978970708bc6e26908ec8e1f8e9a5c",
+    "contract_version": "0.3.0-k1",
     "event_id": "ev_d966ffea748d",
     "label": "fight",
     "model_id": "fight/A",
-    "plan_hash": "9632df9f12ac196da0961e5645205e5ff969a302065e7622afa5a9ce206eeced",
+    "plan_hash": "978d10ea6df4d34f988fdd7aec00894f3b4b7a66bdedacc0e0bbe29c28c05484",
     "plan_version": "0.1.0-k4",
     "source_of_truth_version": "0.2.0-k2"
   },
@@ -193,7 +193,8 @@
       "in_report2": false,
       "limit_code": "data_not_available",
       "refs": [
-        "#/knowledge_limits/5"
+        "#/knowledge_limits/5",
+        "#/harvest_report/missing_fields"
       ],
       "role": "limit",
       "step_id": "s_lim_data_not_available",

@@ -41,7 +41,7 @@ REPO_DIR = BACKEND_DIR.parent
 SEED_DB = REPO_DIR / "data" / "analysis.seed.db"
 """WatchOut's seed: the 16 rules and the configuration (``AppConfig``)."""
 FIXTURE_PATH = EXAMPLES_DIR / "watchout_fixture.json"
-"""Analyses and intervals of 30 real scenes (see its ``$comment``)."""
+"""Analyses, intervals and frame descriptions of 30 real scenes (see its ``$comment``)."""
 
 _ANALYSIS_COLUMNS = (
     "VLMProvider",
@@ -123,6 +123,11 @@ def _insert_intervals(conn: sqlite3.Connection, data: dict[str, Any]) -> None:
     conn.executemany(
         "INSERT INTO VisualParticipant (RelationID, ClassID, Class) VALUES (?, ?, ?)",
         data["participants"],
+    )
+    conn.executemany(
+        "INSERT INTO VisualPerFrame (AnalysisID, Frame, ClassID, Class, Block, Description) "
+        "VALUES (?, ?, ?, ?, ?, ?)",
+        data["frame_descriptions"],
     )
     conn.executemany(
         "INSERT INTO AudioPerInterval "

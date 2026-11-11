@@ -1,7 +1,7 @@
 """``identity`` and ``attribute_comparison`` -> a step on the two sides of the comparison.
 
 An identity between two or more variables is an ``identity`` step; on one variable
-(``M1.arg1 ≠ M1.arg2``, two different people) it is a ``condition``. 
+(``M1.arg1 ≠ M1.arg2``, two different people) it is a ``condition``.
 An attribute comparison is always a ``condition``. The glossary
 entry is ``g_comparison_<kind>_<op>``
 """

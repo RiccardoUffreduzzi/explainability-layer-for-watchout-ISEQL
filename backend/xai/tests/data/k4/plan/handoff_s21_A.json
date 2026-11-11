@@ -34,12 +34,12 @@
     "branches": [
       "s1"
     ],
-    "contract_hash": "87b40837ff83779c6fc662d6c3553dd7de7f46f336fb90ee0eb3de930a6f38a4",
-    "contract_version": "0.2.0-k1",
+    "contract_hash": "5755dc7ce40eead5c96c9d923792bf6f0960858fff7a792f373204608cdd028c",
+    "contract_version": "0.3.0-k1",
     "event_id": "ev_beffcb6f2a6e",
     "label": "handoff",
     "model_id": "handoff/A",
-    "plan_hash": "c804ce411cfe12cc7092f672763707cd455536495478b6a0877518e232df57af",
+    "plan_hash": "5b1ac68c843e2e10bdd379995e4bb12e1932c293a276b13ee2d1223d5f30f538",
     "plan_version": "0.1.0-k4",
     "source_of_truth_version": "0.2.0-k2"
   },
@@ -286,7 +286,8 @@
       "in_report2": false,
       "limit_code": "data_not_available",
       "refs": [
-        "#/knowledge_limits/5"
+        "#/knowledge_limits/5",
+        "#/harvest_report/missing_fields"
       ],
       "role": "limit",
       "step_id": "s_lim_data_not_available",

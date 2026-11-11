@@ -29,12 +29,12 @@
     "branches": [
       "s1"
     ],
-    "contract_hash": "afa641d29c24180da53591c7826d573127d85ac05a0a4e81d41b13cf6c54158c",
-    "contract_version": "0.2.0-k1",
+    "contract_hash": "611a30a23bea36fc07ff2e474b242907575dca24aa871bb69bd96459b81fd9c8",
+    "contract_version": "0.3.0-k1",
     "event_id": "ev_cb96ebb2235a",
     "label": "vehicle_collision",
     "model_id": "vehicle_collision/C",
-    "plan_hash": "07d73cd563edc1d4d66328bc54d7343b0be9934b5e59325c24d37dbcf92fa7f1",
+    "plan_hash": "1dc502a4aee28c87e7fdc9ec2dec1d2cb87dd1e5c2167eee41d11bcecc5d6501",
     "plan_version": "0.1.0-k4",
     "source_of_truth_version": "0.2.0-k2"
   },
@@ -186,7 +186,8 @@
       "in_report2": false,
       "limit_code": "data_not_available",
       "refs": [
-        "#/knowledge_limits/2"
+        "#/knowledge_limits/2",
+        "#/harvest_report/missing_fields"
       ],
       "role": "limit",
       "step_id": "s_lim_data_not_available",

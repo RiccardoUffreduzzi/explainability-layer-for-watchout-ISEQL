@@ -1,8 +1,8 @@
 """The parameter readings of a temporal operator, chosen on the engine's value.
 
 For each threshold ``δ`` or ``ε`` the reading of the glossary entry of the operator with
-condition ``<param> = ∞`` (``engine_value`` is ``inf``) or ``<param> = d`` 
-(a number rendered through ``value_ref``). 
+condition ``<param> = ∞`` (``engine_value`` is ``inf``) or ``<param> = d``
+(a number rendered through ``value_ref``).
 """
 
 import re

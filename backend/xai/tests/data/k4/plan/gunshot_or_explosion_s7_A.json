@@ -20,12 +20,12 @@
     "branches": [
       "s1"
     ],
-    "contract_hash": "548146128b9aa0f9cc226aae325f78bddddb2df456e5e6761f64b24d2830f60c",
-    "contract_version": "0.2.0-k1",
+    "contract_hash": "592e0eb7232f9674df714e7aea5e7207f0e1364bc3586dae8a8907375f8631a5",
+    "contract_version": "0.3.0-k1",
     "event_id": "ev_b04365241841",
     "label": "gunshot_or_explosion",
     "model_id": "gunshot_or_explosion/A",
-    "plan_hash": "0fdb23202f39dfac5b869fbbc518c1ab8bc34e67b901c93d88c18c2c11feca4d",
+    "plan_hash": "8348f4eebedebde139d19a5db6e03e6feddfd8481080c7ace5eb29889a6433fd",
     "plan_version": "0.1.0-k4",
     "source_of_truth_version": "0.2.0-k2"
   },
@@ -134,7 +134,8 @@
       "in_report2": false,
       "limit_code": "data_not_available",
       "refs": [
-        "#/knowledge_limits/3"
+        "#/knowledge_limits/3",
+        "#/harvest_report/missing_fields"
       ],
       "role": "limit",
       "step_id": "s_lim_data_not_available",

@@ -6,6 +6,8 @@ from pathlib import Path
 import pytest
 
 from xai.adapters.watchout.connection import open_read_only
+from xai.adapters.watchout.reader import SqliteWatchOutReader
+from xai.tests.support import scene
 
 WRITES = [
     "INSERT INTO Analyses (ID, VideoPath, VideoFilename, Condition, CreatedAt) "
@@ -14,6 +16,9 @@ WRITES = [
     "DELETE FROM EventSpec",
     "CREATE TABLE Extra (x INTEGER)",
     "INSERT INTO AppConfig (key, value_json) VALUES ('k', '{}')",
+    "INSERT INTO VisualPerFrame (AnalysisID, Frame, ClassID, Class, Block, Description) "
+    "VALUES ('x', 0, 1, 'person', 1, 'd')",
+    "UPDATE VisualPerFrame SET Description = 'd'",
 ]
 
 
@@ -44,6 +49,18 @@ def test_the_database_file_is_unchanged(watchout_db: Path) -> None:
     conn.close()
 
     assert watchout_db.read_bytes() == before
+
+
+def test_reading_the_descriptions_leaves_the_file_unchanged(watchout_db: Path) -> None:
+    before = watchout_db.read_bytes()
+    conn = open_read_only(watchout_db)
+    rows = SqliteWatchOutReader(conn).frame_descriptions(scene(21), [3, 4, 5])
+    conn.close()
+
+    assert rows
+    assert watchout_db.read_bytes() == before
+    sidecars = [watchout_db.with_name(watchout_db.name + suffix) for suffix in ("-wal", "-shm", "-journal")]
+    assert not [p for p in sidecars if p.exists()]
 
 
 def test_a_missing_database_is_not_created(tmp_path: Path) -> None:

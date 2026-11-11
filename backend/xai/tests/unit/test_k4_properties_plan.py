@@ -92,7 +92,9 @@ def test_a_limit_step_copies_the_sentence_and_the_refs_of_k2(
     for s in _of_type(plan, StepType.LIMIT):
         assert s.limit_code is not None
         assert s.fixed_text == by_code[s.limit_code].sentence
-        assert s.refs[1:] == list(by_code[s.limit_code].refs or ())
+        # After the pointer to the limit: the pointers to the data it speaks of, then K2's IDs.
+        pointers = [r for r in s.refs[1:] if r.startswith("#/")]
+        assert s.refs[1:] == [*pointers, *(by_code[s.limit_code].refs or ())]
 
 
 def test_the_reinforcement_step_exists_if_and_only_if_k2_wrote_a_sentence(

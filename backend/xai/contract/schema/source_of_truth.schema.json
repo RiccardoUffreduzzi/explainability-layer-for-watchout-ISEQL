@@ -311,7 +311,7 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "0.2.0-k1",
+          "const": "0.3.0-k1",
           "type": "string"
         },
         "analysis_id": {
@@ -523,6 +523,16 @@
         "reid_evidence": {
           "$ref": "#/$defs/ReidEvidence"
         },
+        "vlm_description": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VlmDescription"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "source_ref": {
           "$ref": "#/$defs/SourceRef"
         },
@@ -534,6 +544,7 @@
         "entity_id",
         "class",
         "reid_evidence",
+        "vlm_description",
         "source_ref"
       ],
       "title": "Entity",
@@ -1381,7 +1392,8 @@
         "origin_not_identifiable",
         "modality_rule_absent",
         "glossary_definition_not_in_system",
-        "conflicting_records"
+        "conflicting_records",
+        "entity_not_described"
       ],
       "title": "Reason",
       "type": "string"
@@ -2210,6 +2222,33 @@
         "detail"
       ],
       "title": "Violation",
+      "type": "object"
+    },
+    "VlmDescription": {
+      "additionalProperties": false,
+      "description": "How the VLM described the entity in one sampled frame, copied as WatchOut saved it.",
+      "properties": {
+        "text": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "anchor": {
+          "$ref": "#/$defs/Anchor"
+        },
+        "in_evidence": {
+          "type": "boolean"
+        },
+        "source_ref": {
+          "$ref": "#/$defs/SourceRef"
+        }
+      },
+      "required": [
+        "text",
+        "anchor",
+        "in_evidence",
+        "source_ref"
+      ],
+      "title": "VlmDescription",
       "type": "object"
     }
   },

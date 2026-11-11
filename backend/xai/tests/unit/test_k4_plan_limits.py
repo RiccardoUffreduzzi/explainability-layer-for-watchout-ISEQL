@@ -3,8 +3,8 @@
 import pytest
 
 from xai.contract.plan import StepRole, StepType
-from xai.contract.source_of_truth import source_of_truth_to_data
-from xai.k4_planner.limits import LimitLinker
+from xai.contract.source_of_truth import LimitCode, source_of_truth_to_data
+from xai.k4_planner.limits import LIMIT_DATA, LimitLinker
 from xai.tests.k4_plan_support import (
     AUDIO,
     both_branches,
@@ -42,8 +42,44 @@ def test_a_limit_step_copies_what_k2_wrote(name: str) -> None:
         assert made.fixed_text == limit.sentence
         assert made.refs[0] == f"#/knowledge_limits/{index}"
         assert resolve_pointer(data, made.refs[0])["code"] == limit.code.value
-        assert made.refs[1:] == list(limit.refs or ())
+        spoken_of = len(LIMIT_DATA.get(limit.code, ()))
+        assert made.refs[1 + spoken_of :] == list(limit.refs or ())
         assert made.depends_on
+
+
+def test_only_the_missing_data_limit_points_at_data_without_an_id() -> None:
+    assert dict(LIMIT_DATA) == {LimitCode.DATA_NOT_AVAILABLE: (("harvest_report", "missing_fields"),)}
+
+
+@pytest.mark.parametrize("name", GOLDEN_NAMES)
+def test_the_missing_data_limit_points_at_the_missing_fields(name: str) -> None:
+    view = view_of(name)
+    data = source_of_truth_to_data(view.document)
+
+    steps = LimitLinker(view).link(translation_of(name).branches)
+
+    [made] = [s for s in steps if s.limit_code is LimitCode.DATA_NOT_AVAILABLE]
+    assert made.refs[1:] == ["#/harvest_report/missing_fields"]
+    assert resolve_pointer(data, made.refs[1]) == data["harvest_report"]["missing_fields"] != []
+    for other in steps:
+        if other is not made:
+            assert "#/harvest_report/missing_fields" not in other.refs
+
+
+def test_the_handoff_step_cites_its_four_missing_fields() -> None:
+    plan = plan_of("handoff_s21_A")
+    data = source_of_truth_to_data(view_of("handoff_s21_A").document)
+
+    limit = step(plan, "s_lim_data_not_available")
+
+    assert limit.refs == ["#/knowledge_limits/5", "#/harvest_report/missing_fields"]
+    assert [(f["path"], f["reason"]) for f in resolve_pointer(data, limit.refs[1])] == [
+        ("event.modality_rules.audio", "modality_rule_absent"),
+        ("entities[*].reid_evidence", "reid_similarity_not_persisted"),
+        ("intervals[*].confidence", "visual_confidence_not_recorded"),
+        ("actions", "keyframes_not_persisted"),
+    ]
+    assert limit.depends_on == ["s_s1_proj"]  # the pointer adds no anchor
 
 
 def test_the_reid_limits_are_hooked_to_the_identity_nodes() -> None:

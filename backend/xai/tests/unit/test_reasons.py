@@ -16,6 +16,7 @@ def test_reason_catalog() -> None:
         "modality_rule_absent",
         "glossary_definition_not_in_system",
         "conflicting_records",
+        "entity_not_described",
     }
 
 

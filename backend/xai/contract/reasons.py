@@ -42,6 +42,9 @@ class Reason(str, Enum):
     CONFLICTING_RECORDS = "conflicting_records"
     """Two WatchOut sources give different values for the same field."""
 
+    ENTITY_NOT_DESCRIBED = "entity_not_described"
+    """``VisualPerFrame`` does not describe the entity in the analysis: its ID comes from the Re-ID memory."""
+
 
 class InputError(str, Enum):
     """Why K1 refuses a request before reading the draft (``HarvestFailure``, stage ``input``)."""

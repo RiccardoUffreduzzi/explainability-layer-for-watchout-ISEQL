@@ -1,7 +1,7 @@
 """The rule of a source of truth translated into steps.
 
 ``translate`` turns the explained branches of a source of truth into steps, one per rule
-node, with their dependencies, and says what it left out so 
+node, with their dependencies, and says what it left out so
 the planner adds and orders them, starting from a ``Translation``.
 
 For each branch the steps are made in three rounds: the observations, then the other nodes

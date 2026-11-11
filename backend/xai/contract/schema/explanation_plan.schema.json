@@ -124,7 +124,7 @@
           "type": "string"
         },
         "contract_version": {
-          "const": "0.2.0-k1",
+          "const": "0.3.0-k1",
           "type": "string"
         },
         "event_id": {

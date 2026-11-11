@@ -4,20 +4,25 @@ WatchOut does not store which intervals a rule used, so K1 reports the pertinent
 ones, without saying they were used: intervals of the predicates of the row's
 branch and, for the visual ones, with at least one entity of the row when the row
 has entities. The criterion goes to ``harvest_report`` as ``selection_basis``.
+
+Every entity also gets the description the VLM gave of it in one frame
+(``VisualPerFrame``), chosen by ``choose_description`` and copied as saved.
 """
 
 from collections.abc import Sequence
 from dataclasses import dataclass
 
 from xai.contract.ids import audio_interval_id, canonical_row, entity_id, visual_interval_id
-from xai.contract.model import Entity, EventRecord, IntervalRecord, Note, ReidEvidence
+from xai.contract.model import Entity, EventRecord, IntervalRecord, Note, ReidEvidence, VlmDescription
 from xai.contract.primitives import Source, SourceRef, Stage, Unavailable
 from xai.contract.reasons import NoteCode, Reason
 from xai.k1_harvester.context import HarvestContext
+from xai.k1_harvester.descriptions import Window, choose_description
 from xai.k1_harvester.gaps import REID, VISUAL_CONFIDENCE
-from xai.k1_harvester.ports import AudioIntervalRow, ParticipantRow, VisualIntervalRow
+from xai.k1_harvester.ports import AudioIntervalRow, FrameDescriptionRow, ParticipantRow, VisualIntervalRow
 from xai.k1_harvester.predicates import branch_predicates, is_audio
 from xai.k1_harvester.resource_data import PipelineConstants
+from xai.k1_harvester.timebase import TimeBase
 
 
 @dataclass(frozen=True)
@@ -72,6 +77,42 @@ def confidence_source(
     }
 
 
+def describe_entity(
+    analysis_id: str,
+    timebase: TimeBase,
+    class_id: int,
+    rows: Sequence[FrameDescriptionRow],
+    windows: Sequence[Window],
+    reference_frame: int | None,
+) -> tuple[VlmDescription | None, dict[str, Unavailable]]:
+    """``vlm_description`` of one entity and the reasons for what is null in it.
+
+    ``rows`` are the ``VisualPerFrame`` rows of the entity; the row is chosen by
+    ``choose_description`` and its text is copied unchanged.
+    """
+    chosen = choose_description(rows, windows, reference_frame)
+    if chosen is None:
+        reason = Unavailable(
+            reason=Reason.ENTITY_NOT_DESCRIBED,
+            detail=f"VisualPerFrame has no description of ClassID {class_id} in this analysis",
+        )
+        return None, {"vlm_description": reason}
+    row = chosen.row
+    timed = timebase.from_frames(row.frame, row.frame, "vlm_description.anchor")
+    description = VlmDescription(
+        text=row.description,
+        anchor=timed.anchor,
+        in_evidence=chosen.in_evidence,
+        source_ref=SourceRef(
+            stage=Stage.VLM,
+            store="VisualPerFrame",
+            record_id=f"{analysis_id}:{row.frame}:{row.class_id}:{row.block}",
+            mode="read",
+        ),
+    )
+    return description, timed.unavailable
+
+
 class EvidenceHarvester:
     def __init__(self, constants: PipelineConstants) -> None:
         self.constants = constants
@@ -102,7 +143,11 @@ class EvidenceHarvester:
         intervals += [self._visual(ctx, r, by_relation.get(r.relation_id, [])) for r in visual_rows]
         intervals.sort(key=lambda i: (i.interval_id[3], int(i.interval_id[4:])))
         reported = [p for r in visual_rows for p in by_relation.get(r.relation_id, [])]
-        entities = self._entities(ctx, row_entities, reported)
+        windows: dict[int, list[Window]] = {}
+        for r in sorted(visual_rows, key=lambda r: (r.start_frame, r.relation_id)):
+            for p in by_relation.get(r.relation_id, []):
+                windows.setdefault(p.class_id, []).append(Window(r.start_frame, r.end_frame))
+        entities = self._entities(ctx, row_entities, reported, windows, event.interval.start_frame)
 
         notes = [Note(code=NoteCode.SELECTION_BASIS, detail=self._basis(ctx, visual, audio, row_entities))]
         return entities, intervals, notes
@@ -170,16 +215,29 @@ class EvidenceHarvester:
 
     @staticmethod
     def _entities(
-        ctx: HarvestContext, row_entities: dict[int, str], participants: list[ParticipantRow]
+        ctx: HarvestContext,
+        row_entities: dict[int, str],
+        participants: list[ParticipantRow],
+        windows: dict[int, list[Window]],
+        event_start_frame: int | None,
     ) -> list[Entity]:
+        """The entities of the reported intervals and of the row, each with its VLM description.
+
+        ``windows``: the frames of the reported intervals each entity takes part in, in start order.
+        """
         first: dict[int, ParticipantRow] = {}
         for p in sorted(participants, key=lambda p: (p.relation_id, p.class_id)):
             first.setdefault(p.class_id, p)
+        class_ids = sorted(set(first) | set(row_entities))
+        described: dict[int, list[FrameDescriptionRow]] = {}
+        if class_ids:
+            for row in ctx.records.frame_descriptions(ctx.analysis.analysis_id, class_ids):
+                described.setdefault(row.class_id, []).append(row)
         row_source = SourceRef(
             stage=Stage.ISEQL, store=ctx.detection.store, record_id=canonical_row(ctx.row.values), mode="read"
         )
         entities = []
-        for class_id in sorted(set(first) | set(row_entities)):
+        for class_id in class_ids:
             participant = first.get(class_id)
             if participant is not None:
                 name = participant.class_name
@@ -191,6 +249,14 @@ class EvidenceHarvester:
                 )
             else:
                 name, source = row_entities[class_id], row_source
+            description, missing = describe_entity(
+                ctx.analysis.analysis_id,
+                ctx.timebase,
+                class_id,
+                described.get(class_id, []),
+                windows.get(class_id, []),
+                event_start_frame,
+            )
             entities.append(
                 Entity(
                     entity_id=entity_id(class_id),
@@ -198,8 +264,9 @@ class EvidenceHarvester:
                     reid_evidence=ReidEvidence(
                         status="not_available", gallery_match_id=None, similarity=None
                     ),
+                    vlm_description=description,
                     source_ref=source,
-                    unavailable={"reid_evidence": REID},
+                    unavailable={"reid_evidence": REID, **missing},
                 )
             )
         return entities

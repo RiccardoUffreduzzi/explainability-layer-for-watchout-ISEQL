@@ -16,7 +16,7 @@ from pathlib import Path
 import pytest
 
 from xai.cli import pipeline as pipeline_cli
-from xai.contract.reasons import InputError, NoteCode
+from xai.contract.reasons import InputError, NoteCode, Reason
 from xai.k1_harvester.batch import AnalysisHarvester, AnalysisOutcome
 from xai.k1_harvester.result import HarvestFailure
 from xai.tests.harness import make_batch, open_reader
@@ -143,6 +143,24 @@ def test_every_row_gets_a_draft(outcomes: dict[tuple[str, str], AnalysisOutcome]
                 drafts += result.draft is not None
 
     assert drafts >= 100
+
+
+def test_every_entity_has_a_description_or_the_reason(
+    outcomes: dict[tuple[str, str], AnalysisOutcome],
+) -> None:
+    entities = 0
+    for outcome in outcomes.values():
+        for draft in (r.draft for rule in outcome.rules for r in rule.results if r.draft is not None):
+            for entity in draft.entities:
+                entities += 1
+                reasons = entity.unavailable or {}
+                if entity.vlm_description is None:
+                    assert reasons["vlm_description"].reason == Reason.ENTITY_NOT_DESCRIBED
+                else:
+                    assert entity.vlm_description.text
+                    assert "vlm_description" not in reasons
+
+    assert entities >= 100
 
 
 def test_f3_rows_are_the_rows_of_their_modality_rules(
