@@ -2134,7 +2134,7 @@
     },
     "VlmDescription": {
       "additionalProperties": false,
-      "description": "How the VLM described the entity in one sampled frame, copied as WatchOut saved it.",
+      "description": "How the VLM described the entity in one sampled frame",
       "properties": {
         "text": {
           "minLength": 1,
