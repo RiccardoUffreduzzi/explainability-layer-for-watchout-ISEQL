@@ -1,7 +1,7 @@
 """``temporal_operator`` nodes: the operator between consecutive intervals of a branch.
 
-The reader asks the engine (``WatchOutReader.resolve_operators``) and reports each parameter as written and as
-passed to the SQL.
+The operators are those of WatchOut's compiled plan (``DetectionRecord.operators``); the
+reader reports each parameter as written.
 """
 
 from xai.contract.ids import operator_id, projection_id
@@ -14,8 +14,9 @@ GREEK = {"delta": "δ", "epsilon": "ε", "zeta": "ζ", "eta": "η", "rho": "ρ"}
 
 ENGINE_DEFAULTS = SourceRef(
     stage=Stage.CODE,
-    store="backend/src/iseql/compiler.py",
-    record_id="_operators_between_slots: zeta and eta '<=', rho 0 when the delta_map entry has none",
+    record_id=(
+        "compiler.py/_operators_between_slots: zeta and eta '<=', rho 0 when the delta_map entry has none"
+    ),
     mode="read",
 )
 
@@ -27,7 +28,7 @@ class OperatorReader:
             return []
         ctx = scope.ctx
         nodes: list[ConstraintNode] = []
-        for pair, resolved in enumerate(ctx.readings.operators(ctx.rule, ctx.form, branch)):
+        for pair, resolved in enumerate(ctx.detection.operators.get(branch.name, ())):
             first, second = branch.intervals[pair], branch.intervals[pair + 1]
             nodes.append(
                 TemporalOperatorNode(

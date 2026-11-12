@@ -11,8 +11,6 @@ def test_reason_catalog() -> None:
         "visual_confidence_not_recorded",
         "fps_not_recorded",
         "analysis_record_missing",
-        "backend_version_not_recorded",
-        "origin_not_identifiable",
         "modality_rule_absent",
         "glossary_definition_not_in_system",
         "conflicting_records",
@@ -29,7 +27,6 @@ def test_input_error_catalog() -> None:
         "RULE_NOT_FOUND",
         "EVENT_NOT_REPRODUCIBLE",
         "UNSUPPORTED_CONSTRUCT",
-        "ROW_SCHEMA_AMBIGUOUS",
     }
 
 
@@ -42,7 +39,6 @@ def test_note_codes() -> None:
         "selection_basis",
         "params_unit",
         "saved_text_diverges_from_structure",
-        "c_labels_by_kind",
     }
 
 

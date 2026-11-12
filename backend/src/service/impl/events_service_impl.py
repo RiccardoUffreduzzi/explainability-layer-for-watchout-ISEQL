@@ -1,14 +1,24 @@
 from __future__ import annotations
 
 import json
-import re
 import sqlite3
 from typing import Callable, Iterator
 
 import pandas as pd
 
 from utils.api_logger import get_logger
-from service.events_service import EventsService, EventSpec
+from iseql.compiler import result_column_labels, result_extent
+from service.events_service import (
+    DetectedRow,
+    DetectionError,
+    DetectionResult,
+    EventsService,
+    EventSpec,
+    ResolvedParams,
+    Witness,
+    WitnessArg,
+    WitnessInterval,
+)
 
 log = get_logger(__name__)
 
@@ -243,149 +253,9 @@ def _compile_event_sql(
     return sql
 
 
-def _set_expression_leaves(se: dict) -> list[dict]:
-    """Leaf nodes of a set_expression tree, in left-to-right order."""
-    leaves: list[dict] = []
-
-    def _walk(node: dict) -> None:
-        if "group" in node:
-            leaves.append(node)
-        else:
-            for c in node.get("children", []):
-                _walk(c)
-
-    _walk(se)
-    return leaves
-
-
-def _is_multiset(model: dict) -> bool:
-    se = model.get("set_expression")
-    return isinstance(se, dict) and "children" in se
-
-
-def _model_result_fields(model: dict) -> list[str] | None:
-    """Full (aligned) projection field list matching the emitted SQL SELECT order.
-
-    Handles the flat (``custom_projection``), single-set (leaf ``projection``)
-    and multi-set (``set_expression`` branch) forms. For a multi-set expression
-    the operands are aligned by field kind (args, start, end), mirroring the
-    compiler's kind-aligned UNION.
-    """
-    from iseql.compiler import _canonical_schema, _field_kind
-
-    ivs = model.get("intervals", [])
-    if not ivs:
-        return None
-    if any(iv.get("set_side") for iv in ivs):
-        return model.get("left_projection")
-    fields = model.get("custom_projection")
-    if fields:
-        return fields
-    se = model.get("set_expression")
-    if not se:
-        return None
-    if "group" in se:
-        return se.get("projection") or None
-    leaves = _set_expression_leaves(se)
-    if not leaves:
-        return None
-    leaf_fields = [l.get("projection") or [] for l in leaves]
-    schema = _canonical_schema(leaf_fields)
-    by_kind: dict[str, str] = {}
-    for kinds in leaf_fields:
-        for f in kinds:
-            by_kind.setdefault(_field_kind(f), f)
-    return [by_kind.get(k, f"M1.{k}") for k in schema]
-
-
-def _multimodal_labels(model: dict) -> list[str]:
-    """Result column labels for a multi-set (multimodal) event.
-
-    Matches the kind-aligned UNION columns: args become ``M1_<class>``, temporal
-    fields keep the left (audio) operand's ``M1.st``/``M2.et`` names.
-    """
-    from iseql.compiler import _canonical_schema, _field_kind, _interval_arg_class
-
-    leaves = _set_expression_leaves(model["set_expression"])
-    ivs_by_group: dict[str, list[dict]] = {}
-    for iv in model.get("intervals", []):
-        ivs_by_group.setdefault(iv.get("group"), []).append(iv)
-    leaf_fields = [l.get("projection") or [] for l in leaves]
-    schema = _canonical_schema(leaf_fields)
-    labels: list[str] = []
-    for kind in schema:
-        m = re.match(r"^arg(\d+)$", kind)
-        if m:
-            k = int(m.group(1))
-            cls = None
-            for l in leaves:
-                if any(_field_kind(f) == kind for f in (l.get("projection") or [])):
-                    for iv in ivs_by_group.get(l.get("group"), []):
-                        c = _interval_arg_class(iv, k)
-                        if c and c != kind:
-                            cls = c
-                            break
-                if cls:
-                    break
-            labels.append(f"M1_{cls}" if cls else kind)
-        else:
-            field = next((f for f in leaf_fields[0] if _field_kind(f) == kind), kind)
-            labels.append(field)
-    return labels
-
-
-def _result_column_labels(model: dict) -> list[str] | None:
-    """Ordered result column labels for an event model's projection.
-
-    Mirrors the projection SELECT order so duplicate ``argN`` columns can be
-    renamed to class-based labels (``M1.person``-style, SQLite-safe as
-    ``M1_person``) without aliasing the emitted SQL. ``sf``/``ef`` become
-    ``M1.sf``/``M1.ef`` (frames). Returns ``None`` when the projection can't be
-    resolved (fall back to the raw DataFrame columns).
-    """
-    from iseql.compiler import _interval_arg_class, _translate_field
-
-    ivs = model.get("intervals", [])
-    if not ivs:
-        return None
-    if _is_multiset(model):
-        return _multimodal_labels(model)
-    fields = _model_result_fields(model)
-    if not fields:
-        return None
-
-    iv_by_alias: dict[str, dict] = {}
-    for i, iv in enumerate(ivs):
-        iv_by_alias[f"M{i + 1}"] = iv
-
-    labels: list[str] = []
-    counts: dict[tuple[str, str], int] = {}
-    for f in fields:
-        parts = f.split(".")
-        if len(parts) == 2 and parts[0].startswith("M"):
-            attr = parts[1]
-            iv = iv_by_alias.get(parts[0])
-            if attr in ("sf", "ef"):
-                labels.append(f"{parts[0]}.{attr}")
-                continue
-            m = re.match(r"^arg(\d+)$", attr)
-            if m and iv is not None:
-                cls = _interval_arg_class(iv, int(m.group(1)))
-                key = (parts[0], cls)
-                counts[key] = counts.get(key, 0) + 1
-                n = counts[key]
-                suffix = "" if n == 1 else str(n)
-                labels.append(f"{parts[0]}_{cls}{suffix}")
-                continue
-            labels.append(_translate_field(f))
-            continue
-        labels.append(_translate_field(f))
-    return labels
-
-
 def _rename_result_columns(df, model: dict):
     """Rename duplicate/ambiguous query result columns to class labels."""
-    labels = _result_column_labels(model)
+    labels = result_column_labels(model)
     if labels is None:
         return df
     if len(labels) == len(df.columns):
@@ -490,6 +360,169 @@ def run_sql_detection(
         yield f"ERROR executing query: {e}"
 
 
+# ---------------------------------------------------------------------------
+# detection: one entry point for the GUI (detect_event) and the XAI pipeline
+# ---------------------------------------------------------------------------
+
+def _is_number(v) -> bool:
+    return isinstance(v, (int, float)) and not isinstance(v, bool)
+
+
+def default_params(conn: sqlite3.Connection) -> tuple[dict, dict, dict]:
+    """The parameters the GUI pre-fills: (merged values, key -> rule that won,
+    rule -> its own defaults). Rules are named "<event>/<condition>".
+
+    ``default_deltas_for`` of every rule of A, then B, then C, a later rule
+    overwriting an earlier one, as the frontend merges them.
+    """
+    values: dict = {}
+    provided_by: dict = {}
+    by_rule: dict = {}
+    for condition in VALID_CONDITIONS:
+        for spec in _events_from_db(conn, condition):
+            fields = ({f: k for f, k in derive_delta_fields(spec.model_json).items() if k}
+                      if spec.model_json else {})
+            ref = f"{spec.id}/{condition}"
+            by_rule[ref] = default_deltas_for(spec.model_json, spec.id, fields)
+            for key, value in by_rule[ref].items():
+                values[key] = value
+                provided_by[key] = ref
+    return values, provided_by, by_rule
+
+
+def resolve_params(conn: sqlite3.Connection, condition: str, params: dict, unit: str,
+                   sampling_rate, origin: str = "request", provided_by: dict | None = None,
+                   rule_defaults: dict | None = None) -> ResolvedParams:
+    """The parameters as the compiler receives them, with every step.
+
+    With ``unit == "seconds"`` every numeric value is multiplied by the sampling
+    rate and rounded, then ``_resolve_deltas`` checks the keys required by the
+    maps inf to None and casts to int.
+    """
+    written = dict(params)
+    converted = dict(written)
+    if unit == "seconds":
+        converted = {k: (round(v * sampling_rate) if _is_number(v) else v)
+                     for k, v in written.items()}
+    engine = _resolve_deltas(condition, converted, conn)
+    return ResolvedParams(origin=origin, unit=unit, written=written, converted=converted,
+                          engine=engine, provided_by=dict(provided_by or {}),
+                          rule_defaults=dict(rule_defaults or {}))
+
+
+def format_time(seconds: float) -> str:
+    total_ms = int(round(seconds * 1000))
+    ms = total_ms % 1000
+    total_s = total_ms // 1000
+    s = total_s % 60
+    m = (total_s // 60) % 60
+    h = (total_s // 3600) % 24
+    d = total_s // 86400
+    if d > 0:
+        return f"{d}d {h:02d}:{m:02d}:{s:02d}.{ms:03d}"
+    return f"{h:02d}:{m:02d}:{s:02d}.{ms:03d}"
+
+
+def extent_aliases(model_json: str | None) -> tuple[str | None, str | None]:
+    """(start alias, end alias) of an event's rows; (None, None) when unreadable."""
+    try:
+        return result_extent(json.loads(model_json))
+    except Exception:
+        return None, None
+
+
+def gui_row(row: dict, start_alias: str | None, end_alias: str | None, fps) -> dict:
+    """A result row as the GUI shows it: frames derived from seconds, times formatted as HH:MM:SS.mmm."""
+    row = dict(row)
+    st_key = f"{start_alias}.st" if start_alias else None
+    et_key = f"{end_alias}.et" if end_alias else None
+    sf_key = f"{start_alias}.sf" if start_alias else None
+    ef_key = f"{end_alias}.ef" if end_alias else None
+    # seconds-frame conversion
+    if start_alias and st_key in row and sf_key not in row and _is_number(row.get(st_key)):
+        row[sf_key] = round(row[st_key] * fps)
+    if end_alias and et_key in row and ef_key not in row and _is_number(row.get(et_key)):
+        row[ef_key] = round(row[et_key] * fps)
+    # time-domain: format st/et seconds -> "HH:MM:SS.mmm"
+    if st_key and st_key in row and row[st_key] is not None and not isinstance(row[st_key], str):
+        row[st_key] = format_time(row[st_key])
+    if et_key and et_key in row and row[et_key] is not None and not isinstance(row[et_key], str):
+        row[et_key] = format_time(row[et_key])
+    return row
+
+
+def _witnesses(payload: str) -> tuple[Witness, ...]:
+    return tuple(
+        Witness(branch=w["branch"], intervals=tuple(
+            WitnessInterval(alias=i["alias"], table=i["table"], id=i["id"], args=tuple(
+                WitnessArg(position=a["position"], class_id=a["class_id"], class_name=a["class"])
+                for a in i["args"]))
+            for i in w["intervals"]))
+        for w in json.loads(payload))
+
+
+def detect(conn: sqlite3.Connection, *, analysis_id: str, event_type: str, condition: str,
+           params: dict | None = None, unit: str = "seconds",
+           with_lineage: bool = False) -> DetectionResult:
+    """One detection, as the GUI runs it. Reads only.
+
+    ``params=None`` uses ``default_params``. With ``with_lineage`` the lineage
+    query runs instead of the detection SQL.
+    """
+    from iseql.compiler import compile_event_plan
+
+    if condition not in VALID_CONDITIONS:
+        raise ValueError(f"unknown condition '{condition}'; expected A | B | C")
+    analysis = conn.execute("SELECT SamplingRate FROM Analyses WHERE ID = ?",
+                            (analysis_id,)).fetchone()
+    if analysis is None:
+        raise ValueError(f"unknown analysis_id '{analysis_id}'")
+    fps = analysis[0]
+    spec = next((e for e in _events_from_db(conn, condition) if e.id == event_type), None)
+    if spec is None:
+        raise ValueError(f"event '{event_type}' not available for condition {condition}")
+    if not spec.model_json:
+        raise DetectionError(f"event '{event_type}' has no model")
+    if params is None:
+        values, provided_by, by_rule = default_params(conn)
+        resolved = resolve_params(conn, condition, values, unit, fps, "rule_defaults", provided_by,
+                                  by_rule)
+    else:
+        resolved = resolve_params(conn, condition, params, unit, fps)
+    shown = {k: (None if v in ("inf", "∞") else v) for k, v in resolved.written.items()}
+    compiled = compile_event_plan(spec.model_json, resolved.engine, analysis_id, fps=fps,
+                                  audio_predicates=_resolve_audio_predicates(conn),
+                                  text_values=shown, lineage=with_lineage)
+    lineage = with_lineage and compiled.lineage_sql is not None
+    try:
+        model = json.loads(spec.model_json)
+    except Exception:
+        model = None
+    try:
+        df = pd.read_sql_query(compiled.lineage_sql if lineage else compiled.sql, conn)
+        payloads = None
+        if lineage:
+            payloads = df.pop("lineage").tolist()
+            names = [d[0] for d in conn.execute(f"{compiled.sql}\nLIMIT 0").description]
+            df.columns = names
+        values_rows: list[dict] = []
+        if not df.empty:
+            if model is not None:
+                df = _rename_result_columns(df, model)
+            values_rows = json.loads(df.to_json(orient='records'))
+    except Exception as e:
+        raise DetectionError(f"executing query: {e}") from e
+    start_alias, end_alias = extent_aliases(spec.model_json)
+    rows = tuple(
+        DetectedRow(values=row, gui=gui_row(row, start_alias, end_alias, fps),
+                    witnesses=_witnesses(payloads[i]) if payloads is not None else None)
+        for i, row in enumerate(values_rows))
+    return DetectionResult(
+        analysis_id=analysis_id, event_type=event_type, condition=condition,
+        sampling_rate=fps, model=model, plan=compiled.plan, params=resolved,
+        sql=compiled.sql, rows=rows, lineage=lineage)
+
+
 def register_events(conn: sqlite3.Connection, models: list[dict]) -> int:
     """Upsert user-defined event definitions into the registry.
 
@@ -545,3 +578,17 @@ class EventsServiceImpl(EventsService):
         fps: int = 1,
     ) -> Iterator[str]:
         return run_sql_detection(conn, event_type, deltas, analysis_id, condition, log or log.info, fps)
+
+    def detect(
+        self,
+        conn,
+        *,
+        analysis_id: str,
+        event_type: str,
+        condition: str,
+        params: dict | None = None,
+        unit: str = "seconds",
+        with_lineage: bool = False,
+    ) -> DetectionResult:
+        return detect(conn, analysis_id=analysis_id, event_type=event_type, condition=condition,
+                      params=params, unit=unit, with_lineage=with_lineage)

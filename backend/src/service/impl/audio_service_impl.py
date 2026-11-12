@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple
 
 import numpy as np
-import scipy.signal
 
 from utils.api_logger import get_logger
 from utils.database import commit_with_retry
@@ -186,6 +185,15 @@ def estimate_audio_vram_bytes(quantization: str, safety_factor: float) -> int:
 
 
 class AudioServiceImpl(AudioService):
+    @staticmethod
+    def constant_confidence(provider: str) -> float | None:
+        """Confidence stored for every interval of a provider that gives no score.
+
+        Qwen2-Audio answers with a class name only, so its intervals
+        get 1.0; panns stores the model's own score (None here).
+        """
+        return 1.0 if provider == "huggingface" else None
+
     def __init__(self, audio_provider: str, quantization: str,
                  audio_window: float, audio_hop: float,
                  classes: list[str], keywords: dict[str, list[str]],
@@ -258,6 +266,7 @@ class AudioServiceImpl(AudioService):
     def _analyze_panns(self, audio_path: str, fps: int, log_fn) -> list:
         import soundfile as sf
         import torch
+        import scipy.signal
         from panns_inference import AudioTagging
 
         audio_16k, _ = sf.read(audio_path, dtype="float32")
@@ -377,7 +386,8 @@ class AudioServiceImpl(AudioService):
             if resp and resp not in ('none', 'none()'):
                 csc = normalize(resp, self._synonyms)
                 if csc:
-                    all_results.append({"audio_class": csc, "start_frame": sf_, "end_frame": ef_, "confidence": 1.0})
+                    all_results.append({"audio_class": csc, "start_frame": sf_, "end_frame": ef_,
+                                        "confidence": self.constant_confidence("huggingface")})
                     log_fn(f"  Window {window_idx}: {csc}")
 
             window_idx += 1

@@ -27,51 +27,6 @@ DB_TIMEOUT_SEC = 60.0
 ANALYSIS_ID_HEX_LENGTH = 12
 
 
-def _format_time(seconds: float) -> str:
-    total_ms = int(round(seconds * 1000))
-    ms = total_ms % 1000
-    total_s = total_ms // 1000
-    s = total_s % 60
-    m = (total_s // 60) % 60
-    h = (total_s // 3600) % 24
-    d = total_s // 86400
-    if d > 0:
-        return f"{d}d {h:02d}:{m:02d}:{s:02d}.{ms:03d}"
-    return f"{h:02d}:{m:02d}:{s:02d}.{ms:03d}"
-
-
-def _projection_extent_aliases(event_type: str, condition: str, specs) -> tuple[str | None, str | None]:
-    """Resolve which interval aliases produce the event's start/end frames.
-
-    Returns (start_alias, end_alias) like ``("M1", "M2")`` so the frontend can
-    label frame columns ``M1.sf``/``M2.ef`` and time columns ``M1.st``/``M2.et``
-    by source interval. Set-operation events derive the extent from the left
-    (audio) operand. Falls back to ``(None, None)`` when the model can't be read.
-    """
-    try:
-        import json as _json
-        from service.events_service import EventSpec
-        spec = next((s for s in (specs or []) if getattr(s, "id", None) == event_type
-                     and getattr(s, "condition", None) == condition), None)
-        if spec is None or not getattr(spec, "model_json", None):
-            return None, None
-        model = _json.loads(spec.model_json)
-        from service.impl.events_service_impl import _model_result_fields
-        fields = _model_result_fields(model)
-        start_alias = end_alias = None
-        if fields:
-            for f in fields:
-                parts = f.split(".")
-                if len(parts) == 2 and parts[0].startswith("M") and parts[1] in ("sf", "st", "ef", "et"):
-                    if start_alias is None and parts[1] in ("sf", "st"):
-                        start_alias = parts[0]
-                    if parts[1] in ("ef", "et"):
-                        end_alias = parts[0]
-        return start_alias, end_alias
-    except Exception:
-        return None, None
-
-
 def _get_db_conn(cfg: Config) -> sqlite3.Connection:
     conn = sqlite3.connect(str(cfg.data.db_path), timeout=DB_TIMEOUT_SEC)
     conn.row_factory = sqlite3.Row
@@ -455,10 +410,10 @@ class AnalysisServiceImpl(AnalysisService):
         cfg = Config.get()
 
         if run.stage != AnalysisStage.DONE:
-            from fastapi import HTTPException
             raise HTTPException(status_code=409, detail=f"analysis {analysis_id} is not done")
 
-        from service.impl.events_service_impl import events_for_condition, run_sql_detection
+        from service.events_service import DetectionError
+        from service.impl.events_service_impl import EventsServiceImpl
 
         # Persist the raw operator parameters (pre-conversion) so the frontend
         # can restore them when this analysis is loaded again.
@@ -473,72 +428,24 @@ class AnalysisServiceImpl(AnalysisService):
         except Exception as e:
             log.warning("Failed to persist analysis deltas: %s", e)
 
-        if unit == "seconds":
-            fps = run.sampling_rate
-            deltas = {
-                k: (round(v * fps) if isinstance(v, (int, float)) and not isinstance(v, bool) else v)
-                for k, v in deltas.items()
-            }
-
-        rows: list[dict] = []
-        conn_specs = None
         try:
             conn = _get_db_conn(cfg)
             try:
-                valid_ids = {e.id for e in events_for_condition(condition, conn=conn)}
-                if event_type not in valid_ids:
-                    raise HTTPException(status_code=400, detail=f"event '{event_type}' not available for condition {condition}")
-                conn_specs = events_for_condition(condition, conn=conn)
-                for line in run_sql_detection(conn, event_type, deltas, analysis_id=run.id, condition=condition,
-                                              fps=run.sampling_rate):
-                    if line.startswith("__RESULT__:"):
-                        payload = line[len("__RESULT__:"):]
-                        try:
-                            rows = json.loads(payload)
-                        except Exception:
-                            rows = []
+                result = EventsServiceImpl().detect(
+                    conn, analysis_id=run.id, event_type=event_type, condition=condition,
+                    params=deltas, unit=unit)
+                rows = [r.gui for r in result.rows]
+            except DetectionError as e:
+                # The GUI shows no rows when the query or its rows fail.
+                log.warning("Detection of '%s' (condition %s) gave no rows: %s",
+                            event_type, condition, e)
+                rows = []
             finally:
                 conn.close()
         except ValueError as e:
-            from fastapi import HTTPException
             raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
-            from fastapi import HTTPException
             raise HTTPException(status_code=500, detail=f"detection failed: {e}")
-
-        fps = run.sampling_rate
-        start_alias, end_alias = _projection_extent_aliases(event_type, condition, conn_specs or None)
-        for row in rows:
-            st_key = f"{start_alias}.st" if start_alias else None
-            et_key = f"{end_alias}.et" if end_alias else None
-            sf_key = f"{start_alias}.sf" if start_alias else None
-            ef_key = f"{end_alias}.ef" if end_alias else None
-
-            # frame-domain: derive sf/ef (frames) from st/et (seconds) when a
-            # time-authored event did not project frame columns, so the frontend
-            # unit toggle always has both pairs to switch between.
-            def _is_num(v):
-                return isinstance(v, (int, float)) and not isinstance(v, bool)
-
-            # time -> frame: a time-authored event lacks frame columns, so
-            # derive them from the projected st/et seconds (sf = st * fps).
-            if start_alias and st_key in row and sf_key not in row and _is_num(row.get(st_key)):
-                row[sf_key] = round(row[st_key] * fps)
-            if end_alias and et_key in row and ef_key not in row and _is_num(row.get(et_key)):
-                row[ef_key] = round(row[et_key] * fps)
-
-            # time-domain: format st/et seconds -> "HH:MM:SS.mmm"
-            if st_key and st_key in row and row[st_key] is not None and not isinstance(row[st_key], str):
-                row[st_key] = _format_time(row[st_key])
-            if et_key and et_key in row and row[et_key] is not None and not isinstance(row[et_key], str):
-                row[et_key] = _format_time(row[et_key])
-            # time-domain: derive st/et from the projected sf/ef frames when absent
-            sf = row.get(sf_key) if sf_key else None
-            ef = row.get(ef_key) if ef_key else None
-            if st_key is None and sf is not None and start_alias:
-                row[st_key] = _format_time(sf / fps)
-            if et_key is None and ef is not None and end_alias:
-                row[et_key] = _format_time(ef / fps)
 
         return {
             "analysis_id": analysis_id,

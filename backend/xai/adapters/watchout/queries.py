@@ -54,38 +54,25 @@ def appconfig_updated_at(conn: sqlite3.Connection, key: str) -> str | None:
     return None if row is None or row["updated_at"] is None else str(row["updated_at"])
 
 
-def visual_intervals(
-    conn: sqlite3.Connection, analysis_id: str, predicates: Sequence[str]
-) -> list[sqlite3.Row]:
-    if not predicates:
-        return []
-    marks = ", ".join("?" for _ in predicates)
-    return conn.execute(
-        "SELECT RelationID, StartFrame, EndFrame, RelationType FROM VisualPerInterval "
-        f"WHERE AnalysisID = ? AND RelationType IN ({marks}) ORDER BY RelationID",
-        (analysis_id, *predicates),
-    ).fetchall()
-
-
-def participants(conn: sqlite3.Connection, relation_ids: Sequence[int]) -> list[sqlite3.Row]:
+def visual_intervals(conn: sqlite3.Connection, relation_ids: Sequence[int]) -> list[sqlite3.Row]:
     if not relation_ids:
         return []
     marks = ", ".join("?" for _ in relation_ids)
     return conn.execute(
-        f"SELECT RelationID, ClassID, Class FROM VisualParticipant WHERE RelationID IN ({marks}) "
-        "ORDER BY RelationID, ClassID",
+        "SELECT RelationID, StartFrame, EndFrame, RelationType FROM VisualPerInterval "
+        f"WHERE RelationID IN ({marks}) ORDER BY RelationID",
         tuple(relation_ids),
     ).fetchall()
 
 
-def audio_intervals(conn: sqlite3.Connection, analysis_id: str, classes: Sequence[str]) -> list[sqlite3.Row]:
-    if not classes:
+def audio_intervals(conn: sqlite3.Connection, interval_ids: Sequence[int]) -> list[sqlite3.Row]:
+    if not interval_ids:
         return []
-    marks = ", ".join("?" for _ in classes)
+    marks = ", ".join("?" for _ in interval_ids)
     return conn.execute(
         "SELECT AudioIntervalID, StartFrame, EndFrame, AudioClass, Confidence FROM AudioPerInterval "
-        f"WHERE AnalysisID = ? AND AudioClass IN ({marks}) ORDER BY AudioIntervalID",
-        (analysis_id, *classes),
+        f"WHERE AudioIntervalID IN ({marks}) ORDER BY AudioIntervalID",
+        tuple(interval_ids),
     ).fetchall()
 
 

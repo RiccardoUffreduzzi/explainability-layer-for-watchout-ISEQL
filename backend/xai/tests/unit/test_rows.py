@@ -2,8 +2,26 @@
 
 import pytest
 
-from xai.k1_harvester.ports import DetectedRow, Extent
-from xai.k1_harvester.rows import class_id, extent_anchor, row_matches, same_row, same_value
+from xai.k1_harvester.ports import (
+    Branch,
+    DetectedRow,
+    EngineError,
+    Extent,
+    ProjectedField,
+    ResultColumn,
+    RuleLayout,
+    Witness,
+    WitnessInterval,
+)
+from xai.k1_harvester.rows import (
+    class_id,
+    extent_anchor,
+    row_branches,
+    row_columns,
+    row_matches,
+    same_row,
+    same_value,
+)
 from xai.k1_harvester.timebase import TimeBase
 
 ROW = DetectedRow(
@@ -15,6 +33,7 @@ ROW = DetectedRow(
         "M1.sf": 144,
         "M2.ef": 240,
     },
+    witnesses=(),
 )
 
 
@@ -82,3 +101,85 @@ def test_extent_from_seconds_then_from_frames() -> None:
 )
 def test_class_id(value: object, expected: int | None) -> None:
     assert class_id(value) == expected
+
+
+# ----------------------------------------------------------------------------- branches and columns
+
+NO_EXTENT = Extent(start_seconds=None, end_seconds=None, start_frames=None, end_frames=None)
+
+
+def _branch(name: str, fields: tuple[ProjectedField, ...], extent: Extent) -> Branch:
+    return Branch(
+        name=name,
+        side=name,
+        intervals=(),
+        conditions=(),
+        projection=tuple(f.field for f in fields),
+        projection_pointer=f"/{name}",
+        projection_text="",
+        fields=fields,
+        extent=extent,
+    )
+
+
+LEFT = _branch(
+    "left",
+    (ProjectedField("M1.st", "st", None), ProjectedField("M2.et", "et", None)),
+    Extent(start_seconds="M1.st", end_seconds="M2.et", start_frames=None, end_frames=None),
+)
+RIGHT = _branch(
+    "right",
+    (
+        ProjectedField("M1.arg1", "arg1", "vehicle"),
+        ProjectedField("M1.st", "st", None),
+        ProjectedField("M1.et", "et", None),
+    ),
+    Extent(start_seconds="M1.st", end_seconds="M1.et", start_frames=None, end_frames=None),
+)
+
+
+def _layout(columns: tuple[ResultColumn, ...] | None) -> RuleLayout:
+    return RuleLayout(
+        form="F3",
+        branches=(LEFT, RIGHT),
+        set_operation=None,
+        multiset=False,
+        columns=columns,
+        columns_problem=None if columns else "a column holds a different field on each side",
+        extent=LEFT.extent,
+    )
+
+
+def _row(*branches: str) -> DetectedRow:
+    witnesses = tuple(Witness(b, (WitnessInterval("M1", "VisualPerInterval", 48, ()),)) for b in branches)
+    return DetectedRow(values={"st": 12.0, "et": 6.0, "__p1": 10.0}, gui_values={}, witnesses=witnesses)
+
+
+def test_the_branches_of_a_row_are_those_of_its_witnesses_in_rule_order() -> None:
+    assert row_branches(_layout(None), _row("right", "left")) == (LEFT, RIGHT)
+    assert row_branches(_layout(None), _row("right")) == (RIGHT,)
+
+
+def test_a_row_without_witnesses_in_the_rule_is_an_engine_error() -> None:
+    with pytest.raises(EngineError):
+        row_branches(_layout(None), _row("other"))
+
+
+def test_an_f3_row_is_read_by_position_as_the_side_of_its_witness() -> None:
+    read = row_columns(_layout(None), _row("right"))
+
+    assert [(c.label, c.kind, dict(c.fields), c.arg_class) for c in read.columns] == [
+        ("st", "arg1", {"right": "M1.arg1"}, "vehicle"),
+        ("et", "st", {"right": "M1.st"}, None),
+        ("__p1", "et", {"right": "M1.et"}, None),
+    ]
+    assert read.extent == Extent(start_seconds="et", end_seconds="__p1", start_frames=None, end_frames=None)
+
+
+def test_rule_columns_are_used_when_the_plan_has_them() -> None:
+    columns = (ResultColumn(label="M1.st", kind="st", fields={"left": "M1.st"}, arg_class=None),)
+
+    read = row_columns(_layout(columns), _row("right"))
+
+    assert read.columns == columns
+    assert read.extent == LEFT.extent

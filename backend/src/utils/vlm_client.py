@@ -9,15 +9,25 @@ ENV_KEYS = {
     "ollama": None,
 }
 
+# Sampling settings of every VLM call: no caller passes temperature or seed.
+_DEFAULT_TEMPERATURE = 0.0
+_DEFAULT_SEED = 42
+
+
 class VLMClient:
+    @staticmethod
+    def generation_defaults() -> dict:
+        """Temperature and seed a client uses when the caller passes none."""
+        return {"temperature": _DEFAULT_TEMPERATURE, "seed": _DEFAULT_SEED}
+
     def __init__(self,
                  provider: str,
                  api_key: str = None,
                  model: str = None,
                  base_url: str = None,
                  max_tokens: int = 2048,
-                 temperature: float = 0.0,
-                 seed: int | None = 42,
+                 temperature: float = _DEFAULT_TEMPERATURE,
+                 seed: int | None = _DEFAULT_SEED,
                  timeout: float = 60.0):
         provider = provider.lower().strip()
         if provider not in ENV_KEYS:

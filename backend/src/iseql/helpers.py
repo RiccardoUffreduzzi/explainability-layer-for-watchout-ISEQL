@@ -279,3 +279,16 @@ OPERATOR_HELPERS = {
     "LOJ": (iseql_loj, OPERATOR_PARAMS["LOJ"]),
     "ROJ": (iseql_roj, OPERATOR_PARAMS["ROJ"]),
 }
+
+
+def sql_threshold(name: str, value):
+    """A threshold as the helpers above write it into the SQL.
+
+    δ and ε are cast with ``int()`` (None = unbounded), ρ is
+    ``int(ρ or 0)``, ζ and η are written as given.
+    """
+    if name in ("zeta", "eta"):
+        return value
+    if name == "rho":
+        return int(value or 0)
+    return None if value is None else int(value)

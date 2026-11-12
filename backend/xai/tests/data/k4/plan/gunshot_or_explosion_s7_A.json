@@ -2,11 +2,7 @@
   "bindings": [
     {
       "basis": [
-        "predicate",
-        "arg_classes",
-        "M1.arg1",
-        "M1.st",
-        "M1.et"
+        "engine_lineage"
       ],
       "branch": "s1",
       "interval_ids": [
@@ -20,12 +16,12 @@
     "branches": [
       "s1"
     ],
-    "contract_hash": "592e0eb7232f9674df714e7aea5e7207f0e1364bc3586dae8a8907375f8631a5",
-    "contract_version": "0.3.0-k1",
+    "contract_hash": "584530e66475416e4281445f32bb49a44d91e555e3d73b810297f0121c71e719",
+    "contract_version": "0.4.0-k1",
     "event_id": "ev_b04365241841",
     "label": "gunshot_or_explosion",
     "model_id": "gunshot_or_explosion/A",
-    "plan_hash": "8348f4eebedebde139d19a5db6e03e6feddfd8481080c7ace5eb29889a6433fd",
+    "plan_hash": "11ea425d5d73305f74a2efa5582baf7efe07112a00d0d2efca15c808b0126ec0",
     "plan_version": "0.1.0-k4",
     "source_of_truth_version": "0.2.0-k2"
   },

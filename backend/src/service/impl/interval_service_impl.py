@@ -10,8 +10,16 @@ from service.interval_service import IntervalService
 
 log = get_logger(__name__)
 
+# Sightings of the same relation closer than this many samples join one interval.
+_MERGE_TOLERANCE_SAMPLES = 2
+
 
 class IntervalServiceImpl(IntervalService):
+    @staticmethod
+    def merge_tolerance_samples() -> int:
+        """Largest gap, in sampled frames, that still merges two sightings into one interval"""
+        return _MERGE_TOLERANCE_SAMPLES
+
     def build_visual_and_save(
         self,
         conn: sqlite3.Connection,
@@ -56,7 +64,7 @@ class IntervalServiceImpl(IntervalService):
 
             log_fn("Computing duration intervals with merge logic...")
             unique_events = events_per_frame.groupby(["RelationType", "Participants"])
-            merge_threshold = 2 * sampling_rate
+            merge_threshold = self.merge_tolerance_samples() * sampling_rate
             processed: list[dict] = []
 
             for (rel_type, participants), group in unique_events:

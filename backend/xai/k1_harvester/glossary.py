@@ -66,8 +66,7 @@ class GlossaryHarvester:
     def _source(self, section: str, term: str, found: bool) -> SourceRef:
         return SourceRef(
             stage=Stage.CODE,
-            store=self.glossary.store,
-            record_id=f"{section}.{term}",
+            record_id=f"{self.glossary.file}/{section}.{term}",
             mode="read" if found else "not_available",
         )
 
@@ -79,8 +78,7 @@ class GlossaryHarvester:
         definition = descriptions.get(term)
         source = SourceRef(
             stage=Stage.CONFIG,
-            store="AppConfig",
-            record_id=f"relation_vocab.relation_descriptions.{term}",
+            record_id=f"AppConfig/relation_vocab.relation_descriptions.{term}",
             mode="read" if definition else "not_available",
         )
         return GlossaryEntry(
@@ -114,8 +112,7 @@ class GlossaryHarvester:
             plain_template=text.plain_template if text else term,
             source=SourceRef(
                 stage=Stage.CONFIG,
-                store="AppConfig",
-                record_id=f"audio_taxonomy.keywords.{term}",
+                record_id=f"AppConfig/audio_taxonomy.keywords.{term}",
                 mode="read" if definition else "not_available",
             ),
             sources={"plain_template": self._source("audio_classes", term, text is not None)},

@@ -11,11 +11,11 @@ from typing import Any
 
 import pytest
 
-from xai.tests.harness import PinnedReader
+from xai.adapters.watchout.reader import SqliteWatchOutReader
 
 
 def test_defaults_equal_the_gui_merge(
-    reader: PinnedReader, watchout_db: Path, monkeypatch: pytest.MonkeyPatch
+    reader: SqliteWatchOutReader, watchout_db: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     import api.schema_controller as schema
 

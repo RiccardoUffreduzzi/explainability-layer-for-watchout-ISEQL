@@ -57,11 +57,7 @@
             "iv_v11"
           ],
           "basis": [
-            "predicate",
-            "arg_classes",
-            "M1.arg1",
-            "M1.st",
-            "M1.et"
+            "engine_lineage"
           ]
         }
       ]

@@ -206,7 +206,7 @@ class Binding(ContractModel):
     interval_ids: list[IntervalId]
     """The candidates, in contract order: one when ``attributed``, none when ``not_found``."""
     basis: list[NonEmptyStr]
-    """The criteria applied, in order: ``predicate``, ``arg_classes``, ``M1.arg1``, ``M1.st`` ..."""
+    """The criteria applied, in order: ``engine_lineage`` (``intervals[*].bindings``)."""
 
 
 class ExcludedConstruct(ContractModel):

@@ -2,11 +2,7 @@
   "bindings": [
     {
       "basis": [
-        "predicate",
-        "arg_classes",
-        "M1.arg1",
-        "M1.st",
-        "M1.et"
+        "engine_lineage"
       ],
       "branch": "s2",
       "interval_ids": [
@@ -20,12 +16,12 @@
     "branches": [
       "s2"
     ],
-    "contract_hash": "dcc4ff3e77d1c661818111f4b7c6f4d7f4b827ad8efccfa73f86c34083bca63e",
-    "contract_version": "0.3.0-k1",
+    "contract_hash": "9bfd289b2fcaf573d63bb43a934bc8b1e79bf6f0f2274e14270a46e69ed41c96",
+    "contract_version": "0.4.0-k1",
     "event_id": "ev_14cb6286bf2e",
     "label": "vehicle_collision",
     "model_id": "vehicle_collision/C",
-    "plan_hash": "9553bb09717f6c2b72009cc1c4a202c529ed74c88f877094985d15fa769a50a2",
+    "plan_hash": "22134e7a6d7dd023fdf93e2377a8c02f60039bdfaf4bc4b109efdc1c0afcd736",
     "plan_version": "0.1.0-k4",
     "source_of_truth_version": "0.2.0-k2"
   },

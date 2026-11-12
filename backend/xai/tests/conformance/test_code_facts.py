@@ -1,7 +1,8 @@
-"""Facts of WatchOut's code that K1 cannot read at run time.
+"""Facts of WatchOut's code that K1 cites but does not read at run time.
 
-``resources/pipeline_constants.yaml`` copies them; these tests read the code with
-``ast`` and fail, naming the entry to update, when WatchOut changes one of them.
+The merge tolerance, the constant audio confidence and the VLM defaults come from
+WatchOut's methods (``CodeFacts``). What stays a citation is checked here with ``ast``:
+the code a draft cites exists, and the facts it states about it still hold.
 """
 
 import ast
@@ -9,13 +10,26 @@ from pathlib import Path
 
 import pytest
 
-from xai.adapters.resource_files import load_pipeline_constants
+from xai.adapters.watchout.code_facts import WatchOutCodeFacts
 from xai.contract.primitives import SourceRef
-from xai.k1_harvester.meta import SAMPLING_STRIDE, VLM_DEFAULTS
+from xai.k1_harvester.evidence import confidence_source
+from xai.k1_harvester.meta import MERGE_TOLERANCE, SAMPLING_STRIDE, VLM_DEFAULTS
+from xai.k1_harvester.ports import AudioIntervalRow
 from xai.k1_harvester.rule.readers.operator import ENGINE_DEFAULTS
 from xai.tests.support import BACKEND_DIR
 
-SERVICE_IMPL = BACKEND_DIR / "src" / "service" / "impl"
+SRC = BACKEND_DIR / "src"
+SERVICE_IMPL = SRC / "service" / "impl"
+
+CLASS_FILES = {
+    "VisualServiceImpl": SERVICE_IMPL / "visual_service_impl.py",
+    "IntervalServiceImpl": SERVICE_IMPL / "interval_service_impl.py",
+    "AudioServiceImpl": SERVICE_IMPL / "audio_service_impl.py",
+    "VLMClient": SRC / "utils" / "vlm_client.py",
+}
+"""The file of each class a code SourceRef names."""
+
+MODULE_FILES = {"compiler.py": SRC / "iseql" / "compiler.py"}
 
 
 def _method(path: Path, class_name: str, method: str) -> ast.FunctionDef:
@@ -28,39 +42,50 @@ def _method(path: Path, class_name: str, method: str) -> ast.FunctionDef:
     raise AssertionError(f"{path.name}: {class_name}.{method} not found")
 
 
-def test_merge_tolerance_is_the_factor_of_the_sampling_rate() -> None:
-    constants = load_pipeline_constants()
-    path = BACKEND_DIR.parent / constants.merge_tolerance.origin_file
-    function = _method(path, "IntervalServiceImpl", "build_visual_and_save")
-    assignments = [
-        node
-        for node in ast.walk(function)
-        if isinstance(node, ast.Assign)
-        and any(isinstance(t, ast.Name) and t.id == "merge_threshold" for t in node.targets)
-    ]
-
-    assert [ast.unparse(a.value) for a in assignments] == [
-        f"{constants.merge_tolerance.samples} * sampling_rate"
-    ], "update merge_tolerance in xai/resources/pipeline_constants.yaml"
+def _cited(source: SourceRef) -> tuple[Path, str | None, str]:
+    """File, class and function a code ``record_id`` names: ``Class.method...`` or ``file.py/function``."""
+    head = source.record_id.split("/", 1)
+    if head[0] in MODULE_FILES:
+        return MODULE_FILES[head[0]], None, head[1].split(":")[0]
+    class_name, rest = source.record_id.split(".", 1)
+    return CLASS_FILES[class_name], class_name, rest.split("(")[0].split("/")[0]
 
 
-def test_huggingface_audio_writes_a_constant_confidence() -> None:
-    constants = load_pipeline_constants()
-    expected = constants.constant_audio_confidence
-    path = BACKEND_DIR.parent / expected.origin_file
-    function = _method(path, "AudioServiceImpl", "_analyze_huggingface")
-    values = [
-        value
-        for node in ast.walk(function)
-        if isinstance(node, ast.Dict)
-        for key, value in zip(node.keys, node.values, strict=True)
-        if isinstance(key, ast.Constant) and key.value == "confidence"
-    ]
+@pytest.mark.parametrize(
+    "source",
+    [SAMPLING_STRIDE, VLM_DEFAULTS, MERGE_TOLERANCE, ENGINE_DEFAULTS],
+    ids=lambda s: s.record_id.split(":")[0],
+)
+def test_the_code_a_draft_cites_exists(source: SourceRef) -> None:
+    path, class_name, name = _cited(source)
+    if class_name is not None:
+        _method(path, class_name, name)
+    else:
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        assert any(isinstance(n, ast.FunctionDef) and n.name == name for n in tree.body), (
+            f"{path.name}: {name}"
+        )
 
-    assert values, "update constant_audio_confidence in xai/resources/pipeline_constants.yaml"
-    assert all(isinstance(v, ast.Constant) and v.value == expected.value for v in values), (
-        "update constant_audio_confidence in xai/resources/pipeline_constants.yaml"
-    )
+
+def test_the_constant_confidence_source_names_a_method_of_the_code() -> None:
+    row = AudioIntervalRow(interval_id=1, start_frame=0, end_frame=1, audio_class="x", confidence=0.5)
+    sources = confidence_source(0.5, "huggingface", row)
+
+    assert sources is not None
+    source = sources["confidence"]
+    assert isinstance(source, SourceRef)
+    path, class_name, name = _cited(source)
+    assert class_name is not None
+    _method(path, class_name, name)
+
+
+def test_the_reading_methods_return_what_k1_expects() -> None:
+    facts = WatchOutCodeFacts()
+
+    assert isinstance(facts.merge_tolerance_samples(), int)
+    assert facts.constant_audio_confidence("huggingface") is not None
+    assert facts.constant_audio_confidence("panns") is None
+    facts.vlm_defaults()
 
 
 def test_the_analysis_creates_the_vlm_client_with_its_defaults() -> None:
@@ -80,11 +105,15 @@ def test_the_analysis_creates_the_vlm_client_with_its_defaults() -> None:
 
 def test_the_visual_pipeline_keeps_one_frame_every_sampling_rate() -> None:
     # K1 reports sample_every_n = SamplingRate: true while the visual pipeline samples with that stride.
-    function = _method(BACKEND_DIR.parent / SAMPLING_STRIDE.store, "VisualServiceImpl", "run_pipeline")
+    path, class_name, name = _cited(SAMPLING_STRIDE)
+    assert class_name is not None
+    function = _method(path, class_name, name)
     strides = [
         ast.unparse(n) for n in ast.walk(function) if isinstance(n, ast.BinOp) and isinstance(n.op, ast.Mod)
     ]
-    assert strides == [SAMPLING_STRIDE.record_id], "sample_every_n in contract_meta no longer holds"
+    assert strides == [SAMPLING_STRIDE.record_id.split("/", 1)[1]], (
+        "sample_every_n in contract_meta no longer holds"
+    )
 
     tree = ast.parse((SERVICE_IMPL / "analysis_service_impl.py").read_text(encoding="utf-8"))
     calls = [
@@ -100,19 +129,4 @@ def test_the_visual_pipeline_keeps_one_frame_every_sampling_rate() -> None:
         keywords = {k.arg: ast.unparse(k.value) for k in call.keywords}
         assert keywords.get("sampling_rate") == "run.sampling_rate", (
             "sample_every_n in contract_meta no longer holds"
-        )
-
-
-@pytest.mark.parametrize("source", [VLM_DEFAULTS, ENGINE_DEFAULTS], ids=lambda s: s.record_id.split(":")[0])
-def test_the_code_a_draft_cites_exists(source: SourceRef) -> None:
-    # record_id names the function or method before the colon.
-    path = BACKEND_DIR.parent / source.store
-    name = source.record_id.split(":")[0]
-    if "." in name:
-        class_name, method = name.split(".")
-        _method(path, class_name, method)
-    else:
-        tree = ast.parse(path.read_text(encoding="utf-8"))
-        assert any(isinstance(n, ast.FunctionDef) and n.name == name for n in tree.body), (
-            f"{source.store}: {name}"
         )

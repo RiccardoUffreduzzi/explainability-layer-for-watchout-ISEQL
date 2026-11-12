@@ -157,11 +157,7 @@
             "iv_v59"
           ],
           "basis": [
-            "predicate",
-            "arg_classes",
-            "M1.arg1",
-            "M1.arg2",
-            "M1.st"
+            "engine_lineage"
           ]
         },
         {
@@ -172,10 +168,7 @@
             "iv_v60"
           ],
           "basis": [
-            "predicate",
-            "arg_classes",
-            "M2.arg1",
-            "M2.et"
+            "engine_lineage"
           ]
         }
       ]

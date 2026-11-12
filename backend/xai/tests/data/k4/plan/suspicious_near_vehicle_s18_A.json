@@ -2,12 +2,7 @@
   "bindings": [
     {
       "basis": [
-        "predicate",
-        "arg_classes",
-        "M1.arg1",
-        "M1.arg2",
-        "M1.st",
-        "M1.et"
+        "engine_lineage"
       ],
       "branch": "s1",
       "interval_ids": [
@@ -21,12 +16,12 @@
     "branches": [
       "s1"
     ],
-    "contract_hash": "f7b64ad766955387adece4a840e34286b31ec6f4f9fc14a505b013856ad08c7f",
-    "contract_version": "0.3.0-k1",
+    "contract_hash": "100d72fb326e0d5ad45da6e6da8a59ab266431c33cd4088ffdba444b9b2631c0",
+    "contract_version": "0.4.0-k1",
     "event_id": "ev_69409d7b3e1a",
     "label": "suspicious_near_vehicle",
     "model_id": "suspicious_near_vehicle/A",
-    "plan_hash": "a4d75808a224039ec4eb492b3c718c6c1961716485fbc071314db8b30f5c73c7",
+    "plan_hash": "d48739820bcd4350a85be3bd0f5090fb94daa9265ea1a3503a20b115e23af4e2",
     "plan_version": "0.1.0-k4",
     "source_of_truth_version": "0.2.0-k2"
   },

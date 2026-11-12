@@ -11,15 +11,12 @@ from typing import Literal
 from xai.contract.model import Condition, Modality, RowMatch
 from xai.k1_harvester.ports import (
     AnalysisSnapshot,
-    BackendVersion,
     Branch,
+    CodeFacts,
     DetectedRow,
-    Detection,
-    IseqlEngine,
+    DetectionRecord,
     ModelForm,
     ParamsSnapshot,
-    ResolvedOperator,
-    RowColumns,
     RuleLayout,
     RuleSnapshot,
     VlmDefaults,
@@ -28,7 +25,7 @@ from xai.k1_harvester.ports import (
     WatchOutRecords,
 )
 from xai.k1_harvester.request import HarvestRequest
-from xai.k1_harvester.rule.form_detector import ModelFormDetector
+from xai.k1_harvester.rows import RowColumns
 from xai.k1_harvester.timebase import TimeBase, TimedAnchor
 
 MODALITY_CONDITIONS: dict[Modality, Condition] = {"visual": "A", "audio": "B"}
@@ -49,15 +46,12 @@ class AnalysisReadings:
         self.analysis = analysis
         self.vocabulary = vocabulary
         self.params = params
+        """The parameters asked as WatchOut used them."""
         self.timebase = TimeBase(analysis.fps)
         self._rules: dict[tuple[str, str], RuleSnapshot | None] = {}
-        self._layouts: dict[str, tuple[ModelForm, RuleLayout]] = {}
-        self._detections: dict[str, Detection] = {}
-        self._operators: dict[tuple[str, str], tuple[ResolvedOperator, ...]] = {}
+        self._detections: dict[str, DetectionRecord] = {}
         self._default_params: ParamsSnapshot | None = None
         self._vlm_defaults: VlmDefaults | None = None
-        self._backend_version: tuple[BackendVersion | None] | None = None
-        self._forms = ModelFormDetector()
 
     def rule(self, event_type: str, condition: Condition) -> RuleSnapshot | None:
         key = (event_type, condition)
@@ -65,26 +59,11 @@ class AnalysisReadings:
             self._rules[key] = self.reader.rule(event_type, condition)
         return self._rules[key]
 
-    def layout(self, rule: RuleSnapshot) -> tuple[ModelForm, RuleLayout]:
-        """Form of the rule and its structure as the compiler executes it"""
-        if rule.ref not in self._layouts:
-            form = self._forms.detect(rule)
-            self._layouts[rule.ref] = (form, self.reader.rule_layout(rule, form))
-        return self._layouts[rule.ref]
-
-    def detection(self, rule: RuleSnapshot) -> Detection:
+    def detection(self, rule: RuleSnapshot) -> DetectionRecord:
+        """The rule compiled and run with the analysis parameters, rows with their lineage."""
         if rule.ref not in self._detections:
-            self._detections[rule.ref] = self.reader.detect(rule, self.analysis, self.params)
+            self._detections[rule.ref] = self.reader.detection(rule, self.analysis, self.params)
         return self._detections[rule.ref]
-
-    def operators(self, rule: RuleSnapshot, form: ModelForm, branch: Branch) -> tuple[ResolvedOperator, ...]:
-        """The operators of a branch with the analysis parameters, the same for every row"""
-        key = (rule.ref, branch.name)
-        if key not in self._operators:
-            self._operators[key] = self.reader.resolve_operators(
-                rule, form, branch, self.params, self.analysis.fps
-            )
-        return self._operators[key]
 
     def default_params(self) -> ParamsSnapshot:
         """The rule defaults, also when the detection uses the parameters saved by the GUI."""
@@ -99,28 +78,18 @@ class AnalysisReadings:
             self._vlm_defaults = self.reader.vlm_defaults()
         return self._vlm_defaults
 
-    def backend_version(self) -> BackendVersion | None:
-        if self._backend_version is None:
-            self._backend_version = (self.reader.backend_version(),)
-        return self._backend_version[0]
-
-
-@dataclass(frozen=True)
-class ModalityDetectionSet:
-    """The rows of the rule of one modality (Evento_A or Evento_B) with the same parameters."""
-
-    modality: Modality
-    rule: RuleSnapshot
-    layout: RuleLayout
-    detection: Detection
+    @property
+    def facts(self) -> CodeFacts:
+        """Values of WatchOut's code."""
+        return self.reader
 
 
 @dataclass(frozen=True)
 class OriginMatchRow:
-    """A row of Evento_A or Evento_B equal to the located row."""
+    """A row of Evento_A or Evento_B produced by the same interval rows as the located row."""
 
     modality: Modality
-    detection: Detection
+    detection: DetectionRecord
     row: DetectedRow
 
 
@@ -128,17 +97,14 @@ class OriginMatchRow:
 class RowOrigin:
     """Which modality and which branches of the rule the located row comes from."""
 
-    modality: Literal["visual", "audio", "both"] | None
-    """None: a condition C row that matches no row of Evento_A or Evento_B."""
+    modality: Literal["visual", "audio", "both"]
     branches: tuple[Branch, ...]
-    """The branches the row can come from: one when it is known, all of them otherwise."""
-    modality_sets: tuple[ModalityDetectionSet, ...]
-    """Evento_A and Evento_B: the detections the row is compared with (condition C), or its own."""
+    """The branches with a witness of the row, in rule order."""
+    modality_sets: tuple[DetectionRecord, ...]
+    """Evento_A and Evento_B (condition C), or the row's own detection."""
     absent_modalities: tuple[Modality, ...]
     """Modalities whose rule the event does not have."""
     matched: tuple[OriginMatchRow, ...] = ()
-    method: str | None = None
-    """How a condition C row was compared; None for conditions A and B."""
 
     @property
     def branch(self) -> Branch | None:
@@ -148,12 +114,10 @@ class RowOrigin:
 
 @dataclass(frozen=True)
 class PreparedRule:
-    """A rule and what all the rows of its detection share: form, layout and the rows."""
+    """A rule and its detection, shared by all the rows."""
 
     rule: RuleSnapshot
-    form: ModelForm
-    layout: RuleLayout
-    detection: Detection
+    detection: DetectionRecord
 
 
 @dataclass(frozen=True)
@@ -164,9 +128,7 @@ class HarvestContext:
     condition: Condition
     readings: AnalysisReadings
     rule: RuleSnapshot
-    form: ModelForm
-    layout: RuleLayout
-    detection: Detection
+    detection: DetectionRecord
     row: DetectedRow
     row_columns: RowColumns
     """What each column of the row holds; ``layout`` stays the rule's."""
@@ -178,12 +140,21 @@ class HarvestContext:
     extracted_at: datetime
 
     @property
+    def form(self) -> ModelForm:
+        return self.detection.layout.form
+
+    @property
+    def layout(self) -> RuleLayout:
+        return self.detection.layout
+
+    @property
     def analysis(self) -> AnalysisSnapshot:
         return self.readings.analysis
 
     @property
     def params(self) -> ParamsSnapshot:
-        return self.readings.params
+        """The params as WatchOut used them for this detection."""
+        return self.detection.params
 
     @property
     def vocabulary(self) -> Vocabulary:
@@ -196,8 +167,4 @@ class HarvestContext:
     @property
     def records(self) -> WatchOutRecords:
         """Rows of WatchOut's database, for the sections that read rows of their own."""
-        return self.readings.reader
-
-    @property
-    def engine(self) -> IseqlEngine:
         return self.readings.reader

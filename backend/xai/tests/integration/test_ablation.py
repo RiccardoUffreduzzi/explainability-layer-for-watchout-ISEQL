@@ -16,7 +16,7 @@ from pathlib import Path
 import pytest
 
 from xai.cli import pipeline as pipeline_cli
-from xai.contract.reasons import InputError, NoteCode, Reason
+from xai.contract.reasons import InputError, Reason
 from xai.k1_harvester.batch import AnalysisHarvester, AnalysisOutcome
 from xai.k1_harvester.result import HarvestFailure
 from xai.tests.harness import make_batch, open_reader
@@ -208,8 +208,6 @@ def test_a_visual_f3_row_has_its_vehicle_in_the_st_column(
         "ent_12",
     )
     assert (visual.event.interval.start_s, visual.event.interval.end_s) == (6.0, 10.0)
-    notes = [n.detail for n in visual.harvest_report.notes if n.code == NoteCode.C_LABELS_BY_KIND]
-    assert notes and "read by position as its right side" in notes[0]
 
 
 # ----------------------------------------------------------------------------- a whole ablation dataset

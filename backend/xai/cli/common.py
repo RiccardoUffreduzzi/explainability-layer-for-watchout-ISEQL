@@ -9,7 +9,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from xai.adapters.clock import SystemClock
-from xai.adapters.resource_files import load_glossary, load_pipeline_constants
+from xai.adapters.resource_files import load_glossary
 from xai.adapters.watchout.connection import default_db_path, open_read_only
 from xai.adapters.watchout.reader import SqliteWatchOutReader
 from xai.k1_harvester.ports import Clock
@@ -53,9 +53,7 @@ def open_stage(args: argparse.Namespace, clock: Clock | None = None) -> Iterator
     db = args.db if args.db is not None else default_db_path()
     conn = open_read_only(db, args.config_db)
     try:
-        yield StageHarvester(
-            SqliteWatchOutReader(conn), clock or SystemClock(), load_glossary(), load_pipeline_constants()
-        )
+        yield StageHarvester(SqliteWatchOutReader(conn), clock or SystemClock(), load_glossary())
     finally:
         conn.close()
 

@@ -1,8 +1,9 @@
 """K1's ports and the snapshot types they return.
 
 The core reaches WatchOut only through ``WatchOutReader`` and time only through ``Clock``.
-``WatchOutReader`` bundles three ports: ``WatchOutRecords`` (database rows), ``IseqlEngine``
-and ``CodeFacts`` (values that live only in WatchOut's code).
+``WatchOutReader`` bundles three ports: ``WatchOutRecords`` (database rows),
+``DetectionSource`` (WatchOut's detections, with the compiled rule and the lineage of
+each row) and ``CodeFacts`` (values that live only in WatchOut's code).
 """
 
 from collections.abc import Mapping, Sequence
@@ -11,7 +12,7 @@ from datetime import datetime
 from typing import Any, Literal, Protocol, Union
 
 from xai.contract.ids import RowValue
-from xai.contract.model import Condition, TimeUnit
+from xai.contract.model import Condition, Modality, TimeUnit
 from xai.contract.primitives import SourceRef, Stage
 
 ModelForm = Literal["F1", "F2", "F3"]
@@ -23,6 +24,8 @@ ParamValue = int | float | str
 
 ParamName = Literal["delta", "epsilon", "zeta", "eta", "rho"]
 ParamOrigin = Literal["literal", "named_key", "template_geometry", "engine_default"]
+
+IntervalTable = Literal["VisualPerInterval", "AudioPerInterval"]
 
 
 # analysis and rules
@@ -45,9 +48,9 @@ class AnalysisSnapshot:
     audio_hop: float | None
 
     @property
-    def store(self) -> str:
-        """Store name used by the SourceRefs pointing to this row."""
-        return f"Analyses:{self.analysis_id}"
+    def record(self) -> str:
+        """``record_id`` prefix of the SourceRefs pointing to this row: ``Analyses/<id>``."""
+        return f"Analyses/{self.analysis_id}"
 
     @property
     def fps(self) -> int | None:
@@ -68,13 +71,13 @@ class RuleSnapshot:
         return f"{self.event_type}/{self.condition}"
 
     def pointer(self, path: str) -> str:
-        """``record_id`` of a part of the model, e.g. ``handoff/A#/intervals/0``."""
+        """The rule and a part of its model, e.g. ``handoff/A#/intervals/0``."""
         return f"{self.ref}#{path}"
 
     def source(self, path: str | None = None) -> SourceRef:
         """SourceRef of the whole rule, or of the model part at ``path``."""
-        record_id = self.ref if path is None else self.pointer(path)
-        return SourceRef(stage=Stage.ISEQL, store="EventSpec", record_id=record_id, mode="read")
+        record = self.ref if path is None else self.pointer(path)
+        return SourceRef(stage=Stage.ISEQL, record_id=f"EventSpec/{record}", mode="read")
 
 
 @dataclass(frozen=True)
@@ -105,23 +108,20 @@ class ParamsSnapshot:
         if self.origin == "saved_by_gui":
             return SourceRef(
                 stage=Stage.CONFIG,
-                store=f"Analyses:{self.analysis_id}#DeltasJson",
-                record_id=f"deltas.{key}",
+                record_id=f"Analyses/{self.analysis_id}/DeltasJson/deltas.{key}",
                 mode="read",
             )
         own = self.rule_defaults.get(rule_ref, {})
         ref = rule_ref if key in own and own[key] == self.values.get(key) else self.provider[key]
-        return SourceRef(stage=Stage.ISEQL, store="EventSpec", record_id=f"{ref}#/iseql_text", mode="read")
+        return SourceRef(stage=Stage.ISEQL, record_id=f"EventSpec/{ref}#/iseql_text", mode="read")
 
     def origin_source(self, rule_ref: str) -> SourceRef:
         """Source of ``contract_meta.params_origin``."""
         if self.origin == "saved_by_gui":
             return SourceRef(
-                stage=Stage.CONFIG, store=f"Analyses:{self.analysis_id}", record_id="DeltasJson", mode="read"
+                stage=Stage.CONFIG, record_id=f"Analyses/{self.analysis_id}/DeltasJson", mode="read"
             )
-        return SourceRef(
-            stage=Stage.ISEQL, store="EventSpec", record_id=f"{rule_ref}#/iseql_text", mode="read"
-        )
+        return SourceRef(stage=Stage.ISEQL, record_id=f"EventSpec/{rule_ref}#/iseql_text", mode="read")
 
 
 @dataclass(frozen=True)
@@ -143,19 +143,13 @@ class Vocabulary:
 
 @dataclass(frozen=True)
 class VlmDefaults:
-    """``VLMClient.__init__`` defaults, i.e. what the analysis actually uses."""
+    """``VLMClient.generation_defaults()``: the temperature and seed every VLM call uses."""
 
     temperature: float
     seed: int
 
 
-@dataclass(frozen=True)
-class BackendVersion:
-    text: str
-    source: SourceRef
-
-
-# rule structure
+# rule structure, as WatchOut's compiler plan describes it
 
 
 @dataclass(frozen=True)
@@ -175,6 +169,8 @@ class BranchInterval:
     """Position in ``model.intervals``."""
     alias: str
     """Branch-local variable (``M1``..``Mn``), named as the compiler does."""
+    modality: Modality
+    """The table the compiler reads: ``VisualPerInterval`` (visual) or ``AudioPerInterval`` (audio)."""
     selection: tuple[SelectionAlternative, ...]
     """The selection as the compiler reads it; multiple alternatives are OR-ed."""
     text: str
@@ -200,6 +196,28 @@ class BranchCondition:
 
 
 @dataclass(frozen=True)
+class ProjectedField:
+    """A field a branch projects, at its position in the branch's result row."""
+
+    field: str
+    """``<alias>.<attribute>``, e.g. ``M1.arg1`` or ``M2.et``."""
+    kind: str
+    """``arg1``.., ``st``, ``et``, ``sf``, ``ef``."""
+    arg_class: str | None
+    """Class WatchOut names an argument column after."""
+
+
+@dataclass(frozen=True)
+class Extent:
+    """Row keys holding the event's start and end, as ``detect_event`` finds them."""
+
+    start_seconds: str | None
+    end_seconds: str | None
+    start_frames: str | None
+    end_frames: str | None
+
+
+@dataclass(frozen=True)
 class Branch:
     """One chain of the rule: a group (F2), a set side (F3) or the whole rule (F1)."""
 
@@ -211,6 +229,13 @@ class Branch:
     projection: tuple[str, ...]
     projection_pointer: str
     projection_text: str
+    fields: tuple[ProjectedField, ...]
+    """``projection`` with the kind and class of each field."""
+    extent: Extent
+    """The branch's own start and end fields (projected fields, not row keys)."""
+
+    def interval(self, alias: str) -> BranchInterval | None:
+        return next((bi for bi in self.intervals if bi.alias == alias), None)
 
 
 @dataclass(frozen=True)
@@ -236,41 +261,6 @@ class ResultColumn:
 
 
 @dataclass(frozen=True)
-class Extent:
-    """Row keys holding the event's start and end, as ``detect_event`` finds them."""
-
-    start_seconds: str | None
-    end_seconds: str | None
-    start_frames: str | None
-    end_frames: str | None
-
-
-@dataclass(frozen=True)
-class SideField:
-    """A field projected by a set side, at its position in the result row."""
-
-    field: str
-    kind: str
-    """``arg1``.., ``st``, ``et``, ``sf``, ``ef``."""
-    arg_class: str | None
-
-
-@dataclass(frozen=True)
-class SideColumns:
-    """How a row from one set side of an F3 rule maps onto the result columns.
-
-    The compiler aligns the two sides by position, pads the shorter one with NULLs
-    and names the columns after the left side. So a column can hold something
-    different on each side, and can only be read once the row's side is known.
-    """
-
-    fields: tuple[SideField, ...]
-    """The side's projected fields, in result-column order."""
-    extent: Extent
-    """The side's start and end fields (projected fields, not row keys)."""
-
-
-@dataclass(frozen=True)
 class RuleLayout:
     """The rule as the compiler executes it."""
 
@@ -280,23 +270,12 @@ class RuleLayout:
     multiset: bool
     """Branches combined by a set operation with kind-aligned columns (F2 with ``op``)."""
     columns: tuple[ResultColumn, ...] | None
-    """None when the columns can't be traced back to the branches (see ``columns_problem``)."""
+    """None when a column holds a different field on each side (F3): a row is then read by its side."""
     columns_problem: str | None
     extent: Extent
-    side_columns: Mapping[str, SideColumns] = field(default_factory=dict)
-    """F3 with ``columns`` None: each side's columns by position; the row tells which side it is."""
 
-
-@dataclass(frozen=True)
-class RowColumns:
-    """What each column of a detection row holds: the rule's columns, or its set side's."""
-
-    columns: tuple[ResultColumn, ...]
-    extent: Extent
-    side: Branch | None = None
-    """The set side the row was read as, if the columns depend on the side."""
-    method: str | None = None
-    """How the row's side was determined; None when the rule's columns fit every row."""
+    def branch(self, name: str) -> Branch:
+        return next(b for b in self.branches if b.name == name)
 
 
 @dataclass(frozen=True)
@@ -330,22 +309,72 @@ class ResolvedOperator:
 
 
 @dataclass(frozen=True)
-class DetectedRow:
-    values: Mapping[str, RowValue]
-    """Row as returned by ``run_sql_detection``."""
-    gui_values: Mapping[str, RowValue]
-    """Row as ``detect_event`` passes it to the GUI (frames added, times formatted)."""
+class WitnessArg:
+    position: int
+    """The argument position the rule reads"""
+    class_id: int | None
+    class_name: str | None
 
 
 @dataclass(frozen=True)
-class Detection:
-    rule_ref: str
+class WitnessInterval:
+    alias: str
+    """``M1``, ``M2``... in the witness's branch"""
+    table: IntervalTable
+    row_id: int
+    """``RelationID`` or ``AudioIntervalID``"""
+    args: tuple[WitnessArg, ...]
+
+    @property
+    def key(self) -> tuple[str, int]:
+        return self.table, self.row_id
+
+
+@dataclass(frozen=True)
+class Witness:
+    """One combination of interval rows of one branch that produces the row"""
+
+    branch: str
+    intervals: tuple[WitnessInterval, ...]
+
+    @property
+    def keys(self) -> frozenset[tuple[str, int]]:
+        return frozenset(i.key for i in self.intervals)
+
+
+@dataclass(frozen=True)
+class DetectedRow:
+    values: Mapping[str, RowValue]
+    """The row under its column labels, as the detection returns it."""
+    gui_values: Mapping[str, RowValue]
+    """Row as ``detect_event`` passes it to the GUI (frames added, times formatted)."""
+    witnesses: tuple[Witness, ...]
+    """The interval rows behind the row: one witness per combination that produces it."""
+
+    @property
+    def branches(self) -> tuple[str, ...]:
+        """Names of the branches with a witness, each once, in witness order."""
+        return tuple(dict.fromkeys(w.branch for w in self.witnesses))
+
+
+@dataclass(frozen=True)
+class DetectionRecord:
+    """One rule run on one analysis: the compiled rule, the parameters and the rows."""
+
+    rule: RuleSnapshot
     analysis_id: str
+    layout: RuleLayout
+    operators: Mapping[str, tuple[ResolvedOperator, ...]]
+    """Branch name -> operators between consecutive intervals, in order."""
+    params: ParamsSnapshot
+    text: str
+    """The rule in ISEQL notation with the parameters as written."""
     rows: tuple[DetectedRow, ...]
 
     @property
-    def store(self) -> str:
-        return f"detection:{self.rule_ref}@{self.analysis_id}"
+    def record(self) -> str:
+        """``record_id`` prefix of the SourceRefs pointing to a row: ``detection/<rule>@<analysis>``."""
+        return f"detection/{self.rule.ref}@{self.analysis_id}"
 
 
 @dataclass(frozen=True)
@@ -354,13 +383,6 @@ class VisualIntervalRow:
     start_frame: int
     end_frame: int
     relation_type: str
-
-
-@dataclass(frozen=True)
-class ParticipantRow:
-    relation_id: int
-    class_id: int
-    class_name: str
 
 
 @dataclass(frozen=True)
@@ -397,12 +419,12 @@ class DetectionNotPossible(Exception):
     """WatchOut itself couldn't run this detection"""
 
 
+class RuleNotSupported(Exception):
+    """The rule has a form K1 does not explain: nested groups or query references (F4)."""
+
+
 class EngineError(RuntimeError):
     """WatchOut's engine failed: an infrastructure problem, not missing data."""
-
-
-class RowNotReadable(Exception):
-    """Can't tell what the columns of a row hold (``ROW_SCHEMA_AMBIGUOUS``)."""
 
 
 # ports
@@ -419,15 +441,15 @@ class WatchOutRecords(Protocol):
 
     def saved_params(self, analysis_id: str) -> ParamsSnapshot | None: ...
 
-    def default_params(self) -> ParamsSnapshot: ...
+    def default_params(self) -> ParamsSnapshot:
+        """The parameters the GUI pre-fills, as WatchOut's ``default_params`` merges them."""
+        ...
 
     def vocabulary(self) -> Vocabulary | None: ...
 
-    def visual_intervals(self, analysis_id: str, predicates: set[str]) -> list[VisualIntervalRow]: ...
+    def visual_intervals(self, relation_ids: Sequence[int]) -> list[VisualIntervalRow]: ...
 
-    def participants(self, relation_ids: Sequence[int]) -> list[ParticipantRow]: ...
-
-    def audio_intervals(self, analysis_id: str, classes: set[str]) -> list[AudioIntervalRow]: ...
+    def audio_intervals(self, interval_ids: Sequence[int]) -> list[AudioIntervalRow]: ...
 
     def frame_descriptions(self, analysis_id: str, class_ids: Sequence[int]) -> list[FrameDescriptionRow]:
         """``VisualPerFrame`` rows of those subjects that have a text, by ClassID, Frame, Block.
@@ -437,35 +459,38 @@ class WatchOutRecords(Protocol):
         ...
 
 
-class IseqlEngine(Protocol):
-    """ISEQL engine applied to a rule: rows, layout, operators, rendering."""
+class DetectionSource(Protocol):
+    """WatchOut's detections, with the compiled rule, the params and each row's lineage."""
 
-    def detect(self, rule: RuleSnapshot, analysis: AnalysisSnapshot, params: ParamsSnapshot) -> Detection: ...
+    def detection(
+        self, rule: RuleSnapshot, analysis: AnalysisSnapshot, params: ParamsSnapshot
+    ) -> DetectionRecord:
+        """The rows ``detect_event`` shows for the rule.
 
-    def rule_layout(self, rule: RuleSnapshot, form: ModelForm) -> RuleLayout: ...
-
-    def row_columns(self, layout: RuleLayout, row: DetectedRow) -> RowColumns:
-        """What each column of the row holds; raises ``RowNotReadable`` if that can't be told."""
+        Raises ``ParamsMissing``, ``DetectionNotPossible``, ``RuleNotSupported`` or ``EngineError``.
+        """
         ...
 
-    def resolve_operators(
-        self, rule: RuleSnapshot, form: ModelForm, branch: Branch, params: ParamsSnapshot, fps: int | None
-    ) -> tuple[ResolvedOperator, ...]:
-        """Operators between consecutive intervals of the branch, in order."""
+    def rule_text(self, rule: RuleSnapshot, values: Mapping[str, ParamValue]) -> str:
+        """The rule in ISEQL notation with these parameter values"""
         ...
-
-    def render_rule(self, rule: RuleSnapshot, params: ParamsSnapshot) -> str: ...
 
 
 class CodeFacts(Protocol):
-    """Values that live only in WatchOut's code."""
+    """Values that live only in WatchOut's code, read through its methods."""
 
     def vlm_defaults(self) -> VlmDefaults: ...
 
-    def backend_version(self) -> BackendVersion | None: ...
+    def merge_tolerance_samples(self) -> int:
+        """Largest gap, in sampled frames, that still merges two sightings into one interval."""
+        ...
+
+    def constant_audio_confidence(self, provider: str) -> float | None:
+        """The confidence written for every interval of a provider with no score; None otherwise."""
+        ...
 
 
-class WatchOutReader(WatchOutRecords, IseqlEngine, CodeFacts, Protocol):
+class WatchOutReader(WatchOutRecords, DetectionSource, CodeFacts, Protocol):
     """Everything K1 reads from WatchOut, over a single read-only connection."""
 
 

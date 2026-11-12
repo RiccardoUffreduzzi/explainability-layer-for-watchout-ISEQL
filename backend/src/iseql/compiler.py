@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import json
 import re
+import sqlite3
 from typing import Optional
 
 from iseql.helpers import (
@@ -29,6 +30,21 @@ from iseql.helpers import (
     detect_operator,
     Interval,
     Predicate,
+    sql_threshold,
+)
+from iseql.plan import (
+    BranchPlan,
+    ColumnPlan,
+    CompiledEvent,
+    CompiledPlan,
+    ConditionPlan,
+    ExtentPlan,
+    FieldPlan,
+    IntervalPlan,
+    OperatorPlan,
+    ParamPlan,
+    SelectionPlan,
+    SetNode,
 )
 from utils.api_logger import get_logger
 
@@ -199,10 +215,20 @@ def _temporal_selects(prefix: str, temporal: set[str], fps: int | str) -> list[s
     return [exprs[c] for c in ("sf", "ef", "st", "et") if c in temporal]
 
 
+def _lineage_selects(source: str, positions) -> list[str]:
+    """Columns a lineage query adds to a predicate: the id of the interval
+    row and, for a visual interval, the class of each participant."""
+    if source == _AUDIO_SOURCE:
+        return ["API.AudioIntervalID AS __rid"]
+    return ["VPI.RelationID AS __rid"] + [f"VP_{k}.Class AS __arg{k}_class" for k in positions]
+
+
 def _predicate_cte(alias: str, iv: dict, analysis_id: str,
                    audio_predicates: set[str], fps: int | str = 1,
-                   temporal: set[str] = ("sf", "ef")) -> str:
+                   temporal: set[str] = ("sf", "ef"), lineage: bool = False) -> str:
     """Render one predicate interval as a CTE.
+
+    ``lineage`` adds the columns of ``_lineage_selects`` (lineage query only).
 
     The CTE exposes only the temporal columns the query references
     (``temporal``): frame domain ``sf``/``ef`` are raw frame columns, time
@@ -234,6 +260,8 @@ def _predicate_cte(alias: str, iv: dict, analysis_id: str,
             for k in range(1, maxarg + 1):
                 selects.append(f"NULL AS arg{k}")
             selects += _temporal_selects("", temporal, fps)
+            if lineage:
+                selects += _lineage_selects(source, ())
             conds = [_relation_values(b["preds"], source) for b in branches]
             where = "(" + " OR ".join(f"({c})" for c in conds) + ")"
             return (
@@ -247,6 +275,8 @@ def _predicate_cte(alias: str, iv: dict, analysis_id: str,
         for k in sorted(slots):
             selects.append(f"VP_{k}.ClassID AS arg{k}")
         selects += _temporal_selects("VPI.", temporal, fps)
+        if lineage:
+            selects += _lineage_selects(source, sorted(slots))
         joins = [f"JOIN VisualParticipant VP_{k} ON VPI.RelationID = VP_{k}.RelationID"
                  for k in sorted(slots)]
         branch_sqls = []
@@ -279,6 +309,8 @@ def _predicate_cte(alias: str, iv: dict, analysis_id: str,
         for k in range(1, len(args) + 1):
             selects.append(f"NULL AS arg{k}")
         selects += _temporal_selects("", temporal, fps)
+        if lineage:
+            selects += _lineage_selects(source, ())
         return (
             f"{alias} AS (\n"
             f"    SELECT {', '.join(selects)}\n"
@@ -297,6 +329,8 @@ def _predicate_cte(alias: str, iv: dict, analysis_id: str,
             f"AND {_class_filter_multi(j_alias, args[k])}"
         )
     selects += _temporal_selects("VPI.", temporal, fps)
+    if lineage:
+        selects += _lineage_selects(source, sorted(args))
     joins_sql = "\n".join("    " + j for j in joins)
     return (
         f"{alias} AS (\n"
@@ -588,38 +622,60 @@ def _slots(ivs: list[dict]) -> list[list[dict]]:
     return slots
 
 
-def _delta_entry(model: dict, pair_idx: int, side: str | None = None) -> dict:
-    """Resolve a delta_map entry. Set-operation sides may key entries as
-    'left.<i>' / 'right.<i>' (falls back to '<i>')."""
+def _delta_map_key(model: dict, pair_idx: int, side: str | None = None) -> str | None:
+    """The delta_map key of an operator pair. Set-operation sides may key entries
+    as 'left.<i>' / 'right.<i>' (falls back to '<i>'); None if no entry."""
     dm = model.get("delta_map", {})
-    if side is not None:
-        key = f"{side}.{pair_idx}"
-        if key in dm:
-            return dm[key] or {}
-    return dm.get(str(pair_idx), {}) or {}
+    if side is not None and f"{side}.{pair_idx}" in dm:
+        return f"{side}.{pair_idx}"
+    return str(pair_idx) if str(pair_idx) in dm else None
 
 
-def _operators_between_slots(model: dict, ivs: list[dict], deltas: dict,
-                             slot_bounds: list[tuple[int, int]],
-                             slot_indices: list[int],
-                             side: str | None = None,
-                             fps: int | str = 1) -> list[str]:
-    """Operators between consecutive slots, using each slot's span."""
-    conds = []
+def _delta_entry(model: dict, pair_idx: int, side: str | None = None) -> dict:
+    """Resolve a delta_map entry"""
+    key = _delta_map_key(model, pair_idx, side)
+    return (model.get("delta_map", {})[key] or {}) if key is not None else {}
+
+
+def _choose_operator(model: dict, r_bounds: tuple[int, int], s_bounds: tuple[int, int],
+                     pair_idx: int, side: str | None):
+    """The operator between two template spans: ``detect_operator`` on the
+    geometry, then the matching ``operator_overrides`` entries.
+
+    ``pair_idx`` is the 0-based interval pair index the overrides refer to.
+    """
+    r = Interval(Predicate("slot", []), *r_bounds)
+    s = Interval(Predicate("slot", []), *s_bounds)
+    res = detect_operator(r, s)
+    op = res.operator
+    override_index = None
+    for i, ov in enumerate(model.get("operator_overrides", [])):
+        if ov.get("side") in (None, "none", side) and ov.get("pair_idx") == pair_idx + 1:
+            op = ov.get("operator", op)
+            override_index = i
+            if op in ("SP", "EF"):
+                res = apply_manual_override(op, r, s)
+    return r, s, res, op, override_index
+
+
+def _resolve_operators(model: dict, deltas: dict,
+                       slot_bounds: list[tuple[int, int]],
+                       slot_indices: list[int],
+                       side: str | None = None,
+                       fps: int | str = 1,
+                       render=None) -> list[OperatorPlan]:
+    """Resolve the operators between consecutive slots, using each slot's span.
+
+    Operator, every threshold and its origin are fixed here once. SQL
+    condition is emitted from the same values.
+    ``render(pair_idx)`` gives the ISEQL text of the operator
+    """
+    plans: list[OperatorPlan] = []
     for k in range(len(slot_bounds) - 1):
-        rts, rte = slot_bounds[k]
-        sts, ste = slot_bounds[k + 1]
-        r = Interval(Predicate("slot", []), rts, rte)
-        s = Interval(Predicate("slot", []), sts, ste)
-        res = detect_operator(r, s)
-        op = res.operator
         # map a slot pair back to the underlying interval pair index for overrides
         pair_idx = slot_indices[k]
-        for ov in model.get("operator_overrides", []):
-            if ov.get("side") in (None, "none", side) and ov.get("pair_idx") == pair_idx + 1:
-                op = ov.get("operator", op)
-                if op in ("SP", "EF"):
-                    res = apply_manual_override(op, r, s)
+        r, s, res, op, override_index = _choose_operator(
+            model, slot_bounds[k], slot_bounds[k + 1], pair_idx, side)
         if op == "UNKNOWN":
             raise ModelValidationError(
                 f"cannot determine operator between slots {k + 1} and {k + 2}; "
@@ -628,6 +684,7 @@ def _operators_between_slots(model: dict, ivs: list[dict], deltas: dict,
         helper, param_names = OPERATOR_HELPERS[op]
         cols = _domain_cols(model)
         params: dict[str, object] = {}
+        origin: dict[str, str] = {}
         time_domain = (cols == ("st", "et"))
         for p in ("delta", "epsilon"):
             if p in param_names:
@@ -637,9 +694,13 @@ def _operators_between_slots(model: dict, ivs: list[dict], deltas: dict,
                 if val is not None and time_domain and isinstance(fps, (int, float)):
                     val = val / fps
                 params[p] = val
+                origin[p] = "template_geometry"
         params["zeta"] = "<="
         params["eta"] = "<="
         params["rho"] = 0
+        for p in ("zeta", "eta", "rho"):
+            origin[p] = "engine_default"
+        entry_key = _delta_map_key(model, pair_idx, side)
         entry = _delta_entry(model, pair_idx, side)
         for p in ALL_PARAMS:
             if p in entry:
@@ -653,19 +714,63 @@ def _operators_between_slots(model: dict, ivs: list[dict], deltas: dict,
                 elif p == "rho" and val is None:
                     val = 0
                 params[p] = val
+                named = isinstance(raw, str) and deltas is not None and raw in deltas
+                origin[p] = "named_key" if named else "literal"
         a1, a2 = f"M{k + 1}", f"M{k + 2}"
-        conds.append(helper(a1, a2, cols=cols, **_operator_kwargs(helper, params)))
-    return conds
+        kwargs = _operator_kwargs(helper, params)
+        sql = helper(a1, a2, cols=cols, **kwargs)
+        if override_index is None:
+            detail = f"detect_operator on template ts/te [{r.Ts},{r.Te}] and [{s.Ts},{s.Te}]"
+        else:
+            ov = model["operator_overrides"][override_index]
+            detail = (f"operator_overrides[{override_index}]: side {ov.get('side')}, "
+                      f"pair_idx {pair_idx + 1}, operator {op}")
+        plans.append(OperatorPlan(
+            pair=pair_idx,
+            left=a1,
+            right=a2,
+            operator=op,
+            chosen_by="geometry" if override_index is None else "override",
+            override_index=override_index,
+            detail=detail,
+            delta_map_key=entry_key,
+            domain="seconds" if time_domain else "frames",
+            params=tuple(
+                ParamPlan(
+                    name=p,
+                    origin=origin[p],
+                    authored=entry[p] if p in entry else None,
+                    resolved=value,
+                    in_sql=sql_threshold(p, value),
+                    pointer=f"/delta_map/{entry_key}/{p}" if p in entry else None,
+                )
+                for p, value in kwargs.items()
+            ),
+            sql=sql,
+            text=render(pair_idx) if render is not None else "",
+        ))
+    return plans
+
+
+def _operators_between_slots(model: dict, ivs: list[dict], deltas: dict,
+                             slot_bounds: list[tuple[int, int]],
+                             slot_indices: list[int],
+                             side: str | None = None,
+                             fps: int | str = 1) -> list[str]:
+    """Operators between consecutive slots, using each slot's span."""
+    return [p.sql for p in _resolve_operators(model, deltas, slot_bounds, slot_indices, side, fps)]
 
 
 def _render_chain(model: dict, ivs: list[dict], analysis_id: str, deltas: dict,
                   alias_start: int = 1, side: str | None = None,
-                  fps: int | str = 1, audio_predicates: set[str] | None = None
+                  fps: int | str = 1, audio_predicates: set[str] | None = None,
+                  lineage: bool = False
                   ) -> tuple[list[str], list[str], list[str]]:
     """Render a chain of intervals -> (ctes, projection_fields, where_conditions).
 
     Aliases continue from ``alias_start`` (1-based) so set-op sides don't clash.
     ``side`` prefixes delta_map lookups for set-operation operands.
+    ``lineage`` adds row ids and participant classes to the predicate data.
     """
     slots = _slots(ivs)
     ctes: list[str] = []
@@ -693,7 +798,8 @@ def _render_chain(model: dict, ivs: list[dict], analysis_id: str, deltas: dict,
                 slot_bounds.append((ts, te))
                 slot_indices.append(first)
                 continue
-            ctes.append(_predicate_cte(alias, iv, analysis_id, audio_predicates, fps, temporal))
+            ctes.append(_predicate_cte(alias, iv, analysis_id, audio_predicates, fps, temporal,
+                                       lineage))
             alias_map[alias] = (alias, None)
             ts, te = _slot_bounds(iv)
             slot_bounds.append((ts, te))
@@ -812,12 +918,8 @@ def _render_set_operation(model: dict, analysis_id: str, deltas: dict, fps: int 
     if not right:
         raise ModelValidationError("set operation requires a 'right' side interval")
 
-    left_model = dict(model, intervals=left, set_side=None,
-                      custom_projection=model.get("left_projection"),
-                      cross_conditions=_side_cross_conditions(model, len(left), 0))
-    right_model = dict(model, intervals=right, set_side=None,
-                       custom_projection=model.get("right_projection"),
-                       cross_conditions=_side_cross_conditions(model, len(right), len(left)))
+    left_model = _side_model(model, "left")
+    right_model = _side_model(model, "right")
     left_ctes, left_fields, left_conds = _render_chain(
         left_model, left, analysis_id, deltas, side="left", fps=fps,
         audio_predicates=audio_predicates)
@@ -829,6 +931,15 @@ def _render_set_operation(model: dict, analysis_id: str, deltas: dict, fps: int 
     right_body = _build_inline(right_ctes, _pad_fields(right_fields, n), right_conds)
     sql_keyword = {"\\": "EXCEPT", "∪": "UNION", "∩": "INTERSECT"}[set_op]
     return f"{left_body}\n{sql_keyword}\n{right_body}"
+
+
+def _side_model(model: dict, side: str) -> dict:
+    """The operand model of a set side: intervals, projection and cross-conditions rebased on M1..Mn."""
+    ivs = _side_intervals(model, side)
+    offset = 0 if side == "left" else len(_side_intervals(model, "left"))
+    return dict(model, intervals=ivs, set_side=None,
+                custom_projection=model.get(f"{side}_projection"),
+                cross_conditions=_side_cross_conditions(model, len(ivs), offset))
 
 
 def _side_cross_conditions(model: dict, n_intervals: int, offset: int = 0) -> list[dict]:
@@ -1202,6 +1313,22 @@ def compile_event(model_json: str | dict, deltas: dict, analysis_id: str,
                   ) -> tuple[str, str]:
     """Compile a model to (iseql_text, sql). Raises ModelValidationError on invalid input.
 
+    Same arguments as ``compile_event_plan``, which also returns the plan.
+    """
+    ev = compile_event_plan(model_json, deltas, analysis_id, fps=fps,
+                            audio_predicates=audio_predicates,
+                            predicate_vocab=predicate_vocab, condition=condition)
+    return ev.iseql_text, ev.sql
+
+
+def compile_event_plan(model_json: str | dict, deltas: dict, analysis_id: str,
+                       fps: int | str = 1, audio_predicates: set[str] | None = None,
+                       predicate_vocab: dict[str, list[list[str]]] | None = None,
+                       condition: str | None = None,
+                       text_values: dict | None = None,
+                       lineage: bool = False) -> CompiledEvent:
+    """Compile a model to SQL and plan. Raises ModelValidationError on invalid input.
+
     ``fps`` converts authored δ/ε in seconds to frames (``delta_unit`` = seconds).
     ``audio_predicates`` is the set of predicate names that read from
     AudioPerInterval (from the configured audio taxonomy); None is not allowed
@@ -1209,6 +1336,13 @@ def compile_event(model_json: str | dict, deltas: dict, analysis_id: str,
     argument slots) is optional; when provided, predicates and their arguments
     are validated against it. ``condition`` (A/B/C) restricts the allowed
     predicate modality (visual-only / audio-only / both).
+
+    ``sql`` and ``iseql_text`` are what ``compile_event`` returns.
+    ``text_values`` maps named delta keys to the values the plan's ISEQL text
+    shows (default: ``deltas``). With ``lineage``, ``lineage_sql`` runs ``sql``
+    and adds a JSON ``lineage`` column: for every result row, the
+    interval rows that produce it (``_lineage_sql``). Form F4 has no plan
+    branches and no lineage.
     """
     if audio_predicates is None:
         raise ModelValidationError(
@@ -1233,7 +1367,14 @@ def compile_event(model_json: str | dict, deltas: dict, analysis_id: str,
     else:
         sql = _render_flat_body(model, model["intervals"], analysis_id, deltas, fps=fps,
                                 audio_predicates=audio_predicates)
-    return model.get("iseql_text") or "", sql
+    plan = _compiled_plan(model, deltas, fps, audio_predicates,
+                          deltas if text_values is None else text_values)
+    lineage_sql = None
+    if lineage and plan.lineage:
+        lineage_sql = _lineage_sql(model, plan.form, sql, analysis_id, deltas, fps,
+                                   audio_predicates)
+    return CompiledEvent(iseql_text=model.get("iseql_text") or "", sql=sql, plan=plan,
+                         lineage_sql=lineage_sql)
 
 
 # ---------------------------------------------------------------------------
@@ -1269,15 +1410,8 @@ def _render_selection(iv: dict, alias: str) -> str:
 
 def _render_operator(model: dict, ivs: list[dict], pair_idx: int, side: str | None,
                      lits: dict | None = None) -> str:
-    r = Interval(Predicate("slot", []), *_slot_bounds(ivs[pair_idx]))
-    s = Interval(Predicate("slot", []), *_slot_bounds(ivs[pair_idx + 1]))
-    res = detect_operator(r, s)
-    op = res.operator
-    for ov in model.get("operator_overrides", []):
-        if ov.get("side") in (None, "none", side) and ov.get("pair_idx") == pair_idx + 1:
-            op = ov.get("operator", op)
-            if op in ("SP", "EF"):
-                res = apply_manual_override(op, r, s)
+    op = _choose_operator(model, _slot_bounds(ivs[pair_idx]), _slot_bounds(ivs[pair_idx + 1]),
+                          pair_idx, side)[3]
     entry = _delta_entry(model, pair_idx, side)
     lits = lits or {}
 
@@ -1340,6 +1474,14 @@ def _render_projection(model: dict, ivs: list[dict]) -> str:
     return ", ".join(fields)
 
 
+def _cross_condition_text(c: dict) -> str:
+    """ISEQL text of a cross-condition (the σ of an operand)."""
+    if c.get("type") == "duration":
+        return (f"({c['left_alias']}.{c['left_attr']} \u2212 "
+                f"{c['right_alias']}.{c['right_attr']}) {c['op']} {c['value']}")
+    return f"{c['left_alias']}.{c['left_attr']}{c['op']}{c['right_alias']}.{c['right_attr']}"
+
+
 def _render_operand(model: dict, ivs: list[dict], side: str | None, offset: int,
                     lits: dict | None = None) -> str:
     body = []
@@ -1350,12 +1492,7 @@ def _render_operand(model: dict, ivs: list[dict], side: str | None, offset: int,
     proj = _render_projection(model, ivs)
     ccs = _side_cross_conditions(model, len(ivs), offset)
     if ccs:
-        def _cc_text(c):
-            if c.get("type") == "duration":
-                return (f"({c['left_alias']}.{c['left_attr']} \u2212 "
-                        f"{c['right_alias']}.{c['right_attr']}) {c['op']} {c['value']}")
-            return f"{c['left_alias']}.{c['left_attr']}{c['op']}{c['right_alias']}.{c['right_attr']}"
-        cond = " ∧ ".join(_cc_text(c) for c in ccs)
+        cond = " ∧ ".join(_cross_condition_text(c) for c in ccs)
         lines = [f"π_{{{proj}}} ("]
         lines.append(f"  σ_{{{cond}}} (")
         for line in body:
@@ -1406,3 +1543,509 @@ def render_iseql(model: dict, lits: dict | None = None) -> str:
     return _render_operand(model, ivs, None, 0, lits)
 
 
+
+# ---------------------------------------------------------------------------
+# result columns: labels and extent
+# ---------------------------------------------------------------------------
+
+def set_expression_leaves(se: dict) -> list[dict]:
+    """Leaf nodes of a set_expression tree, in left-to-right order."""
+    leaves: list[dict] = []
+
+    def _walk(node: dict) -> None:
+        if "group" in node:
+            leaves.append(node)
+        else:
+            for c in node.get("children", []):
+                _walk(c)
+
+    _walk(se)
+    return leaves
+
+
+def is_multiset(model: dict) -> bool:
+    se = model.get("set_expression")
+    return isinstance(se, dict) and "children" in se
+
+
+def result_fields(model: dict) -> list[str] | None:
+    """Full aligned projection field list matching the emitted SQL SELECT order.
+
+    Handles the flat (``custom_projection``), single-set (leaf ``projection``)
+    and multi-set (``set_expression`` branch) forms. For a multi-set expression
+    the operands are aligned by field kind (args, start, end), mirroring the
+    compiler's UNION.
+    """
+    ivs = model.get("intervals", [])
+    if not ivs:
+        return None
+    if any(iv.get("set_side") for iv in ivs):
+        return model.get("left_projection")
+    fields = model.get("custom_projection")
+    if fields:
+        return fields
+    se = model.get("set_expression")
+    if not se:
+        return None
+    if "group" in se:
+        return se.get("projection") or None
+    leaves = set_expression_leaves(se)
+    if not leaves:
+        return None
+    leaf_fields = [l.get("projection") or [] for l in leaves]
+    schema = _canonical_schema(leaf_fields)
+    by_kind: dict[str, str] = {}
+    for kinds in leaf_fields:
+        for f in kinds:
+            by_kind.setdefault(_field_kind(f), f)
+    return [by_kind.get(k, f"M1.{k}") for k in schema]
+
+
+def multimodal_labels(model: dict) -> list[str]:
+    """Result column labels for a multimodal event.
+
+    Matches the kind-aligned UNION columns: args become ``M1_<class>``, temporal
+    fields keep the audio operand's ``M1.st``/``M2.et`` names.
+    """
+    leaves = set_expression_leaves(model["set_expression"])
+    ivs_by_group: dict[str, list[dict]] = {}
+    for iv in model.get("intervals", []):
+        ivs_by_group.setdefault(iv.get("group"), []).append(iv)
+    leaf_fields = [l.get("projection") or [] for l in leaves]
+    schema = _canonical_schema(leaf_fields)
+    labels: list[str] = []
+    for kind in schema:
+        m = re.match(r"^arg(\d+)$", kind)
+        if m:
+            k = int(m.group(1))
+            cls = None
+            for l in leaves:
+                if any(_field_kind(f) == kind for f in (l.get("projection") or [])):
+                    for iv in ivs_by_group.get(l.get("group"), []):
+                        c = _interval_arg_class(iv, k)
+                        if c and c != kind:
+                            cls = c
+                            break
+                if cls:
+                    break
+            labels.append(f"M1_{cls}" if cls else kind)
+        else:
+            field = next((f for f in leaf_fields[0] if _field_kind(f) == kind), kind)
+            labels.append(field)
+    return labels
+
+
+def result_column_labels(model: dict) -> list[str] | None:
+    """Ordered result column labels for an event model's projection.
+
+    Mirrors the projection SELECT order so duplicate ``argN`` columns can be
+    renamed to class-based labels without aliasing the emitted SQL. ``sf``/``ef`` become
+    ``M1.sf``/``M1.ef``. Returns ``None`` when the projection can't be resolved.
+    """
+    ivs = model.get("intervals", [])
+    if not ivs:
+        return None
+    if is_multiset(model):
+        return multimodal_labels(model)
+    fields = result_fields(model)
+    if not fields:
+        return None
+
+    iv_by_alias: dict[str, dict] = {}
+    for i, iv in enumerate(ivs):
+        iv_by_alias[f"M{i + 1}"] = iv
+
+    labels: list[str] = []
+    counts: dict[tuple[str, str], int] = {}
+    for f in fields:
+        parts = f.split(".")
+        if len(parts) == 2 and parts[0].startswith("M"):
+            attr = parts[1]
+            iv = iv_by_alias.get(parts[0])
+            if attr in ("sf", "ef"):
+                labels.append(f"{parts[0]}.{attr}")
+                continue
+            m = re.match(r"^arg(\d+)$", attr)
+            if m and iv is not None:
+                cls = _interval_arg_class(iv, int(m.group(1)))
+                key = (parts[0], cls)
+                counts[key] = counts.get(key, 0) + 1
+                n = counts[key]
+                suffix = "" if n == 1 else str(n)
+                labels.append(f"{parts[0]}_{cls}{suffix}")
+                continue
+            labels.append(_translate_field(f))
+            continue
+        labels.append(_translate_field(f))
+    return labels
+
+
+def fields_extent(fields: list[str]) -> tuple[str | None, str | None]:
+    """Aliases of the first interval with a start and the last with an end."""
+    start_alias = end_alias = None
+    for f in fields or []:
+        parts = f.split(".")
+        if len(parts) == 2 and parts[0].startswith("M") and parts[1] in ("sf", "st", "ef", "et"):
+            if start_alias is None and parts[1] in ("sf", "st"):
+                start_alias = parts[0]
+            if parts[1] in ("ef", "et"):
+                end_alias = parts[0]
+    return start_alias, end_alias
+
+
+def result_extent(model: dict) -> tuple[str | None, str | None]:
+    """(start alias, end alias) of a detection row, e.g. ("M1", "M2"); set-side
+    events read it from the left operand."""
+    return fields_extent(result_fields(model) or [])
+
+
+# ---------------------------------------------------------------------------
+# compiled plan
+# ---------------------------------------------------------------------------
+
+_FRAME_ATTRS = ("sf", "start", "StartFrame", "ef", "end", "EndFrame")
+_TIME_ATTRS = ("st", "StartTime", "et", "EndTime")
+
+
+def _model_form(model: dict) -> str:
+    ivs = model["intervals"]
+    if any(iv.get("group_id") or iv.get("query_ref") for iv in ivs):
+        return "F4"
+    if model.get("set_expression") is not None:
+        return "F2"
+    if any(iv.get("set_side") for iv in ivs):
+        return "F3"
+    return "F1"
+
+
+def _interval_source(iv: dict, audio_predicates: set[str]) -> str:
+    """Table an interval reads (the decision ``_predicate_cte`` takes)."""
+    sel = iv.get("selection")
+    if sel:
+        branches = sel.get("branches") or [{"preds": list(sel.get("preds") or [iv["pred"]["name"]])}]
+        return _selection_source([p for b in branches for p in (b.get("preds") or [])],
+                                 audio_predicates)
+    return _predicate_source(iv["pred"]["name"], audio_predicates)
+
+
+def _cte_arg_positions(iv: dict) -> list[int]:
+    """Argument positions a predicate CTE exposes as ``argK`` columns."""
+    sel = iv.get("selection")
+    if sel:
+        branches = sel.get("branches") or [{"args": sel.get("args") or {}}]
+        return sorted({int(k) for b in branches for k in (b.get("args") or {})})
+    return list(range(1, len(iv["pred"].get("arguments", [])) + 1))
+
+
+def _selection_plan(iv: dict) -> tuple[SelectionPlan, ...]:
+    """The alternatives of a selection"""
+    pred = iv["pred"]
+    sel = iv.get("selection")
+    if sel:
+        alternatives = sel.get("branches") or [
+            {"preds": sel.get("preds") or [pred["name"]], "args": sel.get("args") or {}}]
+    else:
+        alternatives = [{"preds": [pred["name"]],
+                         "args": {str(k): [a] for k, a in enumerate(pred.get("arguments") or [], 1)}}]
+    return tuple(
+        SelectionPlan(
+            predicates=tuple(str(p) for p in a.get("preds") or []),
+            arg_classes=tuple(
+                (int(k), tuple(str(c) for c in classes))
+                for k, classes in sorted((a.get("args") or {}).items(), key=lambda kv: int(kv[0]))
+                if classes),
+        )
+        for a in alternatives)
+
+
+def _condition_plan(index: int, c: dict, alias_map: dict) -> ConditionPlan:
+    duration = c.get("type") == "duration"
+    domain = None
+    if duration:
+        attrs = {c["left_attr"], c["right_attr"]}
+        if attrs <= set(_TIME_ATTRS):
+            domain = "seconds"
+        elif attrs <= set(_FRAME_ATTRS):
+            domain = "frames"
+    return ConditionPlan(
+        index=index,
+        left=f"{c['left_alias']}.{c['left_attr']}",
+        op=str(c["op"]),
+        right=f"{c['right_alias']}.{c['right_attr']}",
+        kind="duration" if duration else "compare",
+        value=c.get("value") if duration else None,
+        domain=domain,
+        sql=_cross_condition_sql(c, alias_map),
+        text=_cross_condition_text(c),
+    )
+
+
+def _field_plan(field: str, ivs: list[dict]) -> FieldPlan:
+    kind = _field_kind(field)
+    i = _alias_index(field.split(".", 1)[0])
+    arg_class = None
+    if kind.startswith("arg") and kind[3:].isdigit() and i is not None and i < len(ivs):
+        arg_class = str(_interval_arg_class(ivs[i], int(kind[3:])))
+    return FieldPlan(field=field, kind=kind, arg_class=arg_class)
+
+
+def _branch_plan(name: str, side: str | None, branch_model: dict, ivs: list[dict],
+                 indices, conditions, projection_pointer: str, deltas: dict,
+                 fps: int | str, audio_predicates: set[str], lits: dict | None) -> BranchPlan:
+    """One operand of the rule, as ``_render_chain`` renders it"""
+    alias_map = {f"M{i + 1}": (f"M{i + 1}", None) for i in range(len(ivs))}
+    fields = branch_model.get("custom_projection") or _default_projection(branch_model, ivs, alias_map)
+    operators: tuple[OperatorPlan, ...] = ()
+    if len(ivs) > 1:
+        operators = tuple(_resolve_operators(
+            branch_model, deltas, [_slot_bounds(iv) for iv in ivs], list(range(len(ivs))),
+            side, fps, render=lambda pair: _render_operator(branch_model, ivs, pair, side, lits)))
+    return BranchPlan(
+        name=name,
+        side=side,
+        domain="seconds" if _domain_cols(branch_model) == ("st", "et") else "frames",
+        intervals=tuple(
+            IntervalPlan(index=index, alias=f"M{k + 1}",
+                         modality=_interval_source(iv, audio_predicates),
+                         selection=_selection_plan(iv), text=_render_selection(iv, f"M{k + 1}"))
+            for k, (index, iv) in enumerate(zip(indices, ivs))),
+        operators=operators,
+        conditions=tuple(_condition_plan(i, c, alias_map) for i, c in conditions),
+        projection=tuple(_field_plan(f, ivs) for f in fields),
+        projection_pointer=projection_pointer,
+        projection_text=f"π_{{{_render_projection(branch_model, ivs)}}}",
+        extent=ExtentPlan(*fields_extent(fields)),
+    )
+
+
+def _branches(model: dict, form: str, deltas: dict, fps: int | str,
+              audio_predicates: set[str], lits: dict | None):
+    """(branch plans, set-operation tree or None) of a model in form F1, F2 or F3."""
+    ccs = list(enumerate(model.get("cross_conditions") or []))
+    args = (deltas, fps, audio_predicates, lits)
+    if form == "F1":
+        ivs = model["intervals"]
+        pointer = "/custom_projection" if model.get("custom_projection") else "/intervals"
+        return [_branch_plan("main", None, model, ivs, range(len(ivs)), ccs, pointer, *args)], None
+    if form == "F3":
+        branches = []
+        for side in ("left", "right"):
+            side_model = _side_model(model, side)
+            ivs = side_model["intervals"]
+            offset = 0 if side == "left" else len(_side_intervals(model, "left"))
+            indices = [i for i, iv in enumerate(model["intervals"]) if iv.get("set_side") == side]
+            conditions = [(i, rb[0]) for i, c in ccs if (rb := _side_cross_conditions(
+                dict(model, cross_conditions=[c]), len(ivs), offset))]
+            pointer = f"/{side}_projection" if model.get(f"{side}_projection") else "/intervals"
+            branches.append(_branch_plan(side, side, side_model, ivs, indices, conditions,
+                                         pointer, *args))
+        tree = SetNode(op=model.get("set_operator") or "\\", pointer="/set_operator",
+                       children=("left", "right"))
+        return branches, tree
+    branches = []
+
+    def walk(node: dict, pointer: str):
+        if "group" in node:
+            group = node.get("group")
+            ivs = _group_intervals(model, group)
+            if not ivs:
+                raise ModelValidationError(f"set_expression references empty group {group!r}")
+            group_model = _group_model(model, group, ivs, node.get("projection"))
+            indices = [i for i, iv in enumerate(model["intervals"]) if (iv.get("group") or None) == group]
+            conditions = [(i, rb[0]) for i, c in ccs if (rb := _group_cross_conditions(
+                dict(model, cross_conditions=[c]), group))]
+            projection_pointer = f"{pointer}/projection" if node.get("projection") else pointer
+            branches.append(_branch_plan(group or "main", group, group_model, ivs, indices,
+                                         conditions, projection_pointer, *args))
+            return group or "main"
+        return SetNode(op=node["op"], pointer=pointer,
+                       children=tuple(walk(c, f"{pointer}/children/{i}")
+                                      for i, c in enumerate(node["children"])))
+
+    root = walk(model["set_expression"], "/set_expression")
+    return branches, (root if isinstance(root, SetNode) else None)
+
+
+def _positional_problem(left: list[str], right: list[str]) -> str | None:
+    """Set sides pad the shorter side with NULLs: each position must hold the same kind."""
+    for position in range(max(len(left), len(right))):
+        lk = _field_kind(left[position]) if position < len(left) else "NULL"
+        rk = _field_kind(right[position]) if position < len(right) else "NULL"
+        if lk != rk:
+            return (f"set_side rule: result column {position + 1} is {lk} in the left side "
+                    f"and {rk} in the right side (columns are aligned by position)")
+    return None
+
+
+def _columns(model: dict, form: str, multiset: bool, branches: list[BranchPlan]):
+    """(columns, problem): what each result column holds, per branch, under its label."""
+    if multiset:
+        labels = multimodal_labels(model)
+        kinds = _canonical_schema([[f.field for f in b.projection] for b in branches])
+        if len(labels) != len(kinds):
+            return None, "the column labels do not match the aligned columns"
+        columns = []
+        for position, (label, kind) in enumerate(zip(labels, kinds)):
+            fields = []
+            for b in branches:
+                field = next((f.field for f in b.projection if f.kind == kind), None)
+                if field is not None:
+                    fields.append((b.name, field))
+            arg_class = label[len("M1_"):] if kind.startswith("arg") and label.startswith("M1_") else None
+            columns.append(ColumnPlan(position=position, label=label, kind=kind,
+                                      fields=tuple(fields), arg_class=arg_class))
+        return tuple(columns), None
+    if form == "F3":
+        problem = _positional_problem([f.field for f in branches[0].projection],
+                                      [f.field for f in branches[1].projection])
+        if problem:
+            return None, problem
+    labels = result_column_labels(model)
+    reference = branches[0]
+    if labels is None or len(labels) != len(reference.projection):
+        return None, "the result columns of this rule have no labels"
+    if len(set(labels)) != len(labels):
+        return None, "two result columns have the same label"
+    return tuple(
+        ColumnPlan(position=position, label=label, kind=field.kind,
+                   fields=tuple((b.name, b.projection[position].field) for b in branches),
+                   arg_class=field.arg_class)
+        for position, (label, field) in enumerate(zip(labels, reference.projection))
+    ), None
+
+
+def _compiled_plan(model: dict, deltas: dict, fps: int | str, audio_predicates: set[str],
+                   lits: dict | None) -> CompiledPlan:
+    form = _model_form(model)
+    extent = ExtentPlan(*result_extent(model))
+    text = render_iseql(model, lits)
+    if form == "F4":
+        return CompiledPlan(
+            form="F4", branches=(), set_tree=None, columns=None,
+            columns_problem="nested groups (group_id) and query references (query_ref) "
+                            "are not described by the plan",
+            extent=extent, text=text, lineage=False)
+    branches, tree = _branches(model, form, deltas, fps, audio_predicates, lits)
+    multiset = form == "F2" and tree is not None
+    columns, problem = _columns(model, form, multiset, branches)
+    return CompiledPlan(form=form, branches=tuple(branches), set_tree=tree, columns=columns,
+                        columns_problem=problem, extent=extent, text=text, lineage=True)
+
+
+# ---------------------------------------------------------------------------
+# lineage: which interval rows produce each result row
+# ---------------------------------------------------------------------------
+
+# A lineage CTE is used by a correlated subquery: materialize it once (SQLite >= 3.35).
+_MATERIALIZED = "MATERIALIZED " if sqlite3.sqlite_version_info >= (3, 35, 0) else ""
+
+
+def _sql_text(value: str) -> str:
+    return "'" + value.replace("'", "''") + "'"
+
+
+def _operands(model: dict, form: str) -> list[tuple]:
+    """Operands of the detection SQL, left to right: (keyword before it, branch
+    name, branch model, intervals, side)"""
+    if form == "F1":
+        return [(None, "main", model, model["intervals"], None)]
+    if form == "F3":
+        keyword = _SET_SQL[model.get("set_operator") or "\\"]
+        return [(None, "left", _side_model(model, "left"), _side_intervals(model, "left"), "left"),
+                (keyword, "right", _side_model(model, "right"), _side_intervals(model, "right"),
+                 "right")]
+    out: list[tuple] = []
+
+    def walk(node: dict, keyword: str | None) -> None:
+        if "group" in node:
+            ivs = _group_intervals(model, node["group"])
+            out.append((keyword, node["group"] or "main",
+                        _group_model(model, node["group"], ivs, node.get("projection")),
+                        ivs, node["group"]))
+            return
+        for i, c in enumerate(node["children"]):
+            walk(c, keyword if i == 0 else _SET_SQL[node["op"]])
+
+    walk(model["set_expression"], None)
+    return out
+
+
+def _witness(name: str, ivs: list[dict], audio_predicates: set[str]) -> str:
+    """JSON object naming the branch and, per interval, its table, row id and participants."""
+    items = []
+    for k, iv in enumerate(ivs):
+        alias = f"M{k + 1}"
+        if _interval_source(iv, audio_predicates) == _AUDIO_SOURCE:
+            items.append(f"json_object('alias', '{alias}', 'table', 'AudioPerInterval', "
+                         f"'id', {alias}.__rid, 'args', json_array())")
+            continue
+        args = ", ".join(
+            f"json_object('position', {p}, 'class_id', {alias}.arg{p}, 'class', {alias}.__arg{p}_class)"
+            for p in _cte_arg_positions(iv))
+        items.append(f"json_object('alias', '{alias}', 'table', 'VisualPerInterval', "
+                     f"'id', {alias}.__rid, 'args', json_array({args}))")
+    return f"json_object('branch', {_sql_text(name)}, 'intervals', json_array({', '.join(items)}))"
+
+
+def _lineage_sql(model: dict, form: str, sql: str, analysis_id: str, deltas: dict,
+                 fps: int | str, audio_predicates: set[str]) -> str:
+    """The detection SQL, unchanged, plus a ``lineage`` column: the JSON array of
+    the witnesses of each row (branch and interval rows that produce it).
+
+    ``r`` is the detection SQL; ``l`` re-runs each operand with its interval ids.
+    A witness belongs to a row when its columns equal the row's. 
+    After EXCEPT or INTERSECT an operand must also keep the row
+    alive: a subtracted operand never contributes, and the row must belong to every
+    partial result from that operand on. Rows with several witnesses are
+    ambiguities of the rule.
+    """
+    operands = _operands(model, form)
+    plain, lineage = [], []
+    for _keyword, _name, branch_model, ivs, side in operands:
+        plain.append(_render_chain(branch_model, ivs, analysis_id, deltas, side=side, fps=fps,
+                                   audio_predicates=audio_predicates))
+        lineage.append(_render_chain(branch_model, ivs, analysis_id, deltas, side=side, fps=fps,
+                                     audio_predicates=audio_predicates, lineage=True))
+    fields = [p[1] for p in plain]
+    if form == "F3":
+        n = max(len(f) for f in fields)
+        aligned = [_pad_fields(f, n) for f in fields]
+    elif form == "F2" and "op" in model["set_expression"]:
+        schema = _canonical_schema(fields)
+        aligned = [_align_fields(f, schema) for f in fields]
+    else:
+        aligned = fields
+    keywords = [o[0] for o in operands]
+    bodies = [_build_inline(p[0], a, p[2]) for p, a in zip(plain, aligned)]
+    chain = bodies[0] + "".join(f"\n{keywords[j]}\n{bodies[j]}" for j in range(1, len(bodies)))
+    if chain != sql:
+        raise ModelValidationError("lineage operands do not rebuild the detection SQL")
+    n_cols = len(aligned[0])
+    names = ", ".join(f"c{i}" for i in range(n_cols))
+
+    def match(t: str) -> str:
+        return " AND ".join(f"{t}.c{i} IS r.c{i}" for i in range(n_cols))
+
+    selects = []
+    for j, ((_kw, name, _bm, ivs, _side), (ctes, _f, conds), a) in enumerate(
+            zip(operands, lineage, aligned)):
+        cols = [f"{f.split(' AS ')[0]} AS c{i}" for i, f in enumerate(a)]
+        cols += [f"{j} AS o", f"{_witness(name, ivs, audio_predicates)} AS w"]
+        selects.append(_build_inline(ctes, cols, conds))
+    where = match("l")
+    if any(k in ("EXCEPT", "INTERSECT") for k in keywords[1:]):
+        guards = []
+        for j in range(len(operands)):
+            if keywords[j] == "EXCEPT":
+                continue
+            alive = []
+            for i in range(j, len(operands) - 1):
+                prefix = bodies[0] + "".join(f"\n{keywords[m]}\n{bodies[m]}" for m in range(1, i + 1))
+                alive.append(f"EXISTS (WITH x({names}) AS (\n{prefix}\n) SELECT 1 FROM x WHERE "
+                             + match("x") + ")")
+            guards.append(f"(l.o = {j}" + "".join(f" AND {g}" for g in alive) + ")")
+        where += " AND (" + (" OR ".join(guards) or "0") + ")"
+    union = "\nUNION ALL\n".join(selects)
+    return (f"WITH r({names}) AS (\n{sql}\n),\nl AS {_MATERIALIZED}(\n{union}\n)\n"
+            f"SELECT r.*, (SELECT json_group_array(json(l.w)) FROM l WHERE {where}) AS lineage\n"
+            f"FROM r")

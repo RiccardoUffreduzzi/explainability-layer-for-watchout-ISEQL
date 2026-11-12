@@ -101,8 +101,7 @@
             "iv_a21"
           ],
           "basis": [
-            "predicate",
-            "M1.st"
+            "engine_lineage"
           ]
         },
         {
@@ -113,8 +112,7 @@
             "iv_a22"
           ],
           "basis": [
-            "predicate",
-            "M2.et"
+            "engine_lineage"
           ]
         }
       ]
@@ -134,9 +132,7 @@
       "reason": "other_branch"
     }
   ],
-  "unbound_intervals": [
-    "iv_a23"
-  ],
+  "unbound_intervals": [],
   "unmatched_readings": [],
   "notes": []
 }

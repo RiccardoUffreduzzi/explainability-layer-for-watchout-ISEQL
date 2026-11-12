@@ -1,4 +1,4 @@
-"""K1 wired to the test database, with the values that change between machines pinned.
+"""K1 wired to the test database, with the clock pinned.
 
 Imports WatchOut (through the adapter): only the tests that use the test database
 import this module, so the contract tests run without WatchOut's dependencies.
@@ -11,41 +11,25 @@ from pathlib import Path
 from typing import Any, Literal
 
 from xai.adapters.clock import FixedClock
-from xai.adapters.resource_files import load_glossary, load_pipeline_constants
+from xai.adapters.resource_files import load_glossary
 from xai.adapters.watchout.connection import open_read_only
 from xai.adapters.watchout.reader import SqliteWatchOutReader
 from xai.contract.model import Condition
-from xai.contract.primitives import SourceRef, Stage
 from xai.k1_harvester.batch import AnalysisHarvester
-from xai.k1_harvester.ports import BackendVersion
 from xai.k1_harvester.request import HarvestRequest, ParamsMode
 from xai.k1_harvester.service import StageHarvester
 from xai.tests.support import EXAMPLES_DIR, scene
 
 FIXED_TIME = datetime(2026, 10, 6, 20, 0, tzinfo=timezone.utc)
 
-PINNED_VERSION = BackendVersion(
-    text="WATCHOUT ISEQL 0.1.0",
-    source=SourceRef(
-        stage=Stage.CODE, store="backend/src/__init__.py", record_id="__app_name__, __version__", mode="read"
-    ),
-)
 
-
-class PinnedReader(SqliteWatchOutReader):
-    """The reader with WatchOut's version without the git commit, which changes at every commit."""
-
-    def backend_version(self) -> BackendVersion | None:
-        return PINNED_VERSION
-
-
-def open_reader(db: Path, config_db: Path | None = None) -> tuple[sqlite3.Connection, PinnedReader]:
+def open_reader(db: Path, config_db: Path | None = None) -> tuple[sqlite3.Connection, SqliteWatchOutReader]:
     conn = open_read_only(db, config_db)
-    return conn, PinnedReader(conn)
+    return conn, SqliteWatchOutReader(conn)
 
 
 def make_stage(reader: SqliteWatchOutReader) -> StageHarvester:
-    return StageHarvester(reader, FixedClock(FIXED_TIME), load_glossary(), load_pipeline_constants())
+    return StageHarvester(reader, FixedClock(FIXED_TIME), load_glossary())
 
 
 def make_batch(reader: SqliteWatchOutReader) -> AnalysisHarvester:

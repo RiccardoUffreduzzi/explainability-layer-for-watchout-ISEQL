@@ -8,8 +8,8 @@ from xai.contract.primitives import SourceRef, Stage
 from xai.contract.reasons import Reason
 from xai.k1_harvester.context import HarvestContext
 from xai.k1_harvester.descriptions import Window, choose_description
-from xai.k1_harvester.evidence import EvidenceHarvester, describe_entity
-from xai.k1_harvester.ports import FrameDescriptionRow, ParticipantRow
+from xai.k1_harvester.evidence import EvidenceHarvester, Participant, describe_entity
+from xai.k1_harvester.ports import FrameDescriptionRow
 from xai.k1_harvester.timebase import TimeBase
 
 S21 = "gemini_3_6_flash_qwen2_audio_s21"
@@ -137,7 +137,7 @@ def test_the_description_copies_the_row_and_points_to_it() -> None:
         "read_as": "frames",
     }
     assert description.source_ref == SourceRef(
-        stage=Stage.VLM, store="VisualPerFrame", record_id=f"{S21}:24:3:5", mode="read"
+        stage=Stage.VLM, record_id=f"VisualPerFrame/{S21}:24:3:5", mode="read"
     )
 
 
@@ -193,7 +193,7 @@ def _context(records: _Records) -> HarvestContext:
         records=records,
         analysis=SimpleNamespace(analysis_id=S21),
         timebase=TimeBase(24),
-        detection=SimpleNamespace(store=f"detection:handoff/A@{S21}"),
+        detection=SimpleNamespace(record=f"detection/handoff/A@{S21}"),
         row=SimpleNamespace(values={"M1_person": 3, "M1.st": 1.0}),
     )
     return cast(HarvestContext, stub)
@@ -201,7 +201,7 @@ def _context(records: _Records) -> HarvestContext:
 
 def test_the_entities_are_described_with_one_read() -> None:
     records = _Records([_row(24, class_id=3), _row(48, class_id=4, text="cardboard box")])
-    participants = [ParticipantRow(59, 3, "person"), ParticipantRow(59, 4, "object")]
+    participants = [Participant(59, 3, "person"), Participant(59, 4, "object")]
     windows = {3: [Window(24, 96)], 4: [Window(24, 96)]}
 
     entities = EvidenceHarvester._entities(_context(records), {3: "person"}, participants, windows, 24)
@@ -219,7 +219,7 @@ def test_an_entity_only_in_the_row_is_measured_from_the_start_of_the_event() -> 
 
     [entity] = EvidenceHarvester._entities(_context(records), {9: "vehicle"}, [], {}, 150)
 
-    assert entity.source_ref.store == f"detection:handoff/A@{S21}"
+    assert entity.source_ref.record_id.startswith(f"detection/handoff/A@{S21}/")
     assert entity.vlm_description is not None
     assert (entity.vlm_description.text, entity.vlm_description.in_evidence) == ("white van", False)
     assert entity.vlm_description.anchor.start_frame == 144
@@ -229,7 +229,7 @@ def test_an_entity_the_vlm_never_described_keeps_both_reasons() -> None:
     records = _Records([])
 
     [entity] = EvidenceHarvester._entities(
-        _context(records), {}, [ParticipantRow(59, 3, "unknown")], {3: [Window(24, 96)]}, 24
+        _context(records), {}, [Participant(59, 3, "unknown")], {3: [Window(24, 96)]}, 24
     )
 
     assert entity.vlm_description is None

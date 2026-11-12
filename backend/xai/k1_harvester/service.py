@@ -20,21 +20,19 @@ from xai.k1_harvester.meta import MetaHarvester
 from xai.k1_harvester.modality import ModalityHarvester
 from xai.k1_harvester.ports import Clock, RuleSnapshot, WatchOutReader
 from xai.k1_harvester.request import HarvestRequest, ParamsMode
-from xai.k1_harvester.resource_data import Glossary, PipelineConstants
+from xai.k1_harvester.resource_data import Glossary
 from xai.k1_harvester.result import HarvestFailure
 from xai.k1_harvester.rule.rule_harvester import RuleHarvester
 
 
 class StageHarvester:
-    def __init__(
-        self, reader: WatchOutReader, clock: Clock, glossary: Glossary, constants: PipelineConstants
-    ) -> None:
+    def __init__(self, reader: WatchOutReader, clock: Clock, glossary: Glossary) -> None:
         self.locator = EventLocator(reader)
         self.clock = clock
-        self.meta = MetaHarvester(glossary, constants)
+        self.meta = MetaHarvester(glossary)
         self.rule = RuleHarvester()
         self.modality = ModalityHarvester()
-        self.evidence = EvidenceHarvester(constants)
+        self.evidence = EvidenceHarvester()
         self.glossary = GlossaryHarvester(glossary)
 
     def harvest(self, request: HarvestRequest) -> ContractDraft:

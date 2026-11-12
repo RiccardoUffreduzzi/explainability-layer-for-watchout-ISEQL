@@ -27,12 +27,6 @@ class Reason(str, Enum):
     ANALYSIS_RECORD_MISSING = "analysis_record_missing"
     """A column of ``Analyses`` is empty."""
 
-    BACKEND_VERSION_NOT_RECORDED = "backend_version_not_recorded"
-    """Neither ``__version__`` nor git is available."""
-
-    ORIGIN_NOT_IDENTIFIABLE = "origin_not_identifiable"
-    """A condition C row matches no row of Evento_A or Evento_B."""
-
     MODALITY_RULE_ABSENT = "modality_rule_absent"
     """The event has no rule for that modality."""
 
@@ -68,10 +62,7 @@ class InputError(str, Enum):
     """The requested row is not among the rows the engine produces today."""
 
     UNSUPPORTED_CONSTRUCT = "UNSUPPORTED_CONSTRUCT"
-    """The model contains ``group_id`` or ``query_ref`` (form F4)."""
-
-    ROW_SCHEMA_AMBIGUOUS = "ROW_SCHEMA_AMBIGUOUS"
-    """Form F3 with columns that cannot be traced to a branch."""
+    """The model contains ``group_id`` or ``query_ref`` (form F4), or its rows have no start and end."""
 
 
 class CheckName(str, Enum):
@@ -88,13 +79,10 @@ class NoteCode(str, Enum):
     """
 
     SELECTION_BASIS = "selection_basis"
-    """Which intervals were reported and why (pertinence filter)."""
+    """Which intervals were reported and why (WatchOut's lineage)."""
 
     PARAMS_UNIT = "params_unit"
     """How the authored parameter values relate to the values the engine used."""
 
     SAVED_TEXT_DIVERGES_FROM_STRUCTURE = "saved_text_diverges_from_structure"
     """The saved ``iseql_text`` differs from the executed structure."""
-
-    C_LABELS_BY_KIND = "c_labels_by_kind"
-    """Condition C columns were mapped to their kind, not to their label."""

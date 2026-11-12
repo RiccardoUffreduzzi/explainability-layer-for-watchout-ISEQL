@@ -2,12 +2,7 @@
   "bindings": [
     {
       "basis": [
-        "predicate",
-        "arg_classes",
-        "M1.arg1",
-        "M1.arg2",
-        "M1.st",
-        "M1.et"
+        "engine_lineage"
       ],
       "branch": "s1",
       "interval_ids": [
@@ -21,21 +16,19 @@
     "branches": [
       "s1"
     ],
-    "contract_hash": "a751de03dfacceb247aad7ae31096718a4978970708bc6e26908ec8e1f8e9a5c",
-    "contract_version": "0.3.0-k1",
+    "contract_hash": "32b1e4ad056c2efb90836435bb4fdcae9af5c8f76bf354a7538738713a728c68",
+    "contract_version": "0.4.0-k1",
     "event_id": "ev_d966ffea748d",
     "label": "fight",
     "model_id": "fight/A",
-    "plan_hash": "978d10ea6df4d34f988fdd7aec00894f3b4b7a66bdedacc0e0bbe29c28c05484",
+    "plan_hash": "dfafd6a78861b7e66383148b73e4642f7ebd042f4697bfd988b832ca89d2a31f",
     "plan_version": "0.1.0-k4",
     "source_of_truth_version": "0.2.0-k2"
   },
   "plan_report": {
     "excluded_constructs": [],
     "notes": [],
-    "unbound_intervals": [
-      "iv_v7"
-    ],
+    "unbound_intervals": [],
     "unmatched_readings": []
   },
   "steps": [

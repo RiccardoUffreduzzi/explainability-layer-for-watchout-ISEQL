@@ -7,6 +7,7 @@
 """
 from iseql.facade import (
     compile_event,
+    compile_event_plan,
     compile_model,
     compile_query,
     render_model,
@@ -16,6 +17,7 @@ from iseql.facade import (
 
 __all__ = [
     "compile_event",
+    "compile_event_plan",
     "compile_model",
     "compile_query",
     "render_model",

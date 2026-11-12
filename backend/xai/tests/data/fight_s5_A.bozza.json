@@ -1,19 +1,10 @@
 {
   "$comment": "Caso golden: argomenti della stessa classe (args_ordered = false) e righe simmetriche (1, 2) e (2, 1). Prodotta da K1 sul database di test (tests/support.py, build_fixture_db) con i parametri di default della regola. Intervalli, partecipanti e riga sono reali (DB di ablation, scena 5); la regola è quella del seed. Il DB di ablation non ha la riga Analyses: SamplingRate=24, AudioWindow/AudioHop e provider sono ipotizzati. I testi della bozza sono in inglese.",
   "contract_meta": {
-    "contract_version": "0.3.0-k1",
+    "contract_version": "0.4.0-k1",
     "analysis_id": "gemini_3_6_flash_qwen2_audio_s5",
     "source_snapshot": {
-      "backend_version": "WATCHOUT ISEQL 0.1.0",
-      "extracted_at": "2026-10-06T20:00:00Z",
-      "sources": {
-        "backend_version": {
-          "stage": "code",
-          "store": "backend/src/__init__.py",
-          "record_id": "__app_name__, __version__",
-          "mode": "read"
-        }
-      }
+      "extracted_at": "2026-10-06T20:00:00Z"
     },
     "pipeline_config": {
       "vlm_backend": "gemini / gemini-3.6-flash",
@@ -36,26 +27,22 @@
       "sources": {
         "vlm_backend": {
           "stage": "config",
-          "store": "Analyses:gemini_3_6_flash_qwen2_audio_s5",
-          "record_id": "VLMProvider,Model",
+          "record_id": "Analyses/gemini_3_6_flash_qwen2_audio_s5/VLMProvider,Model",
           "mode": "read"
         },
         "audio_backend": {
           "stage": "config",
-          "store": "Analyses:gemini_3_6_flash_qwen2_audio_s5",
-          "record_id": "AudioProvider,AudioModel",
+          "record_id": "Analyses/gemini_3_6_flash_qwen2_audio_s5/AudioProvider,AudioModel",
           "mode": "read"
         },
         "sampling.source_fps": {
           "stage": "config",
-          "store": "Analyses:gemini_3_6_flash_qwen2_audio_s5",
-          "record_id": "SamplingRate",
+          "record_id": "Analyses/gemini_3_6_flash_qwen2_audio_s5/SamplingRate",
           "mode": "read"
         },
         "sampling.sample_every_n": {
           "stage": "code",
-          "store": "backend/src/service/impl/visual_service_impl.py",
-          "record_id": "frame_count % sampling_rate",
+          "record_id": "VisualServiceImpl.run_pipeline/frame_count % sampling_rate",
           "mode": "read"
         },
         "sampling.effective_hz": {
@@ -66,20 +53,17 @@
         },
         "audio_window": {
           "stage": "config",
-          "store": "Analyses:gemini_3_6_flash_qwen2_audio_s5",
-          "record_id": "AudioWindow,AudioHop",
+          "record_id": "Analyses/gemini_3_6_flash_qwen2_audio_s5/AudioWindow,AudioHop",
           "mode": "read"
         },
         "merge_tolerance_s": {
           "stage": "code",
-          "store": "backend/xai/resources/pipeline_constants.yaml",
-          "record_id": "merge_tolerance",
+          "record_id": "IntervalServiceImpl.merge_tolerance_samples()",
           "mode": "read"
         },
         "determinism": {
           "stage": "code",
-          "store": "backend/src/utils/vlm_client.py",
-          "record_id": "VLMClient.__init__: temperature and seed defaults",
+          "record_id": "VLMClient.generation_defaults()",
           "mode": "read"
         },
         "detection_mode": {
@@ -93,14 +77,12 @@
     "sources": {
       "glossary_version": {
         "stage": "config",
-        "store": "AppConfig",
-        "record_id": "relation_vocab.updated_at, audio_taxonomy.updated_at",
+        "record_id": "AppConfig/relation_vocab.updated_at, audio_taxonomy.updated_at",
         "mode": "read"
       },
       "params_origin": {
         "stage": "iseql",
-        "store": "EventSpec",
-        "record_id": "fight/A#/iseql_text",
+        "record_id": "EventSpec/fight/A#/iseql_text",
         "mode": "read"
       }
     }
@@ -151,8 +133,7 @@
         },
         "source_ref": {
           "stage": "iseql",
-          "store": "detection:fight/A@gemini_3_6_flash_qwen2_audio_s5",
-          "record_id": "{\"M1.et\":5.0,\"M1.st\":0.0,\"M1_person\":1,\"M1_person2\":2}",
+          "record_id": "detection/fight/A@gemini_3_6_flash_qwen2_audio_s5/{\"M1.et\":5.0,\"M1.st\":0.0,\"M1_person\":1,\"M1_person2\":2}",
           "mode": "read"
         }
       },
@@ -167,16 +148,14 @@
         },
         "source_ref": {
           "stage": "iseql",
-          "store": "detection:fight/A@gemini_3_6_flash_qwen2_audio_s5",
-          "record_id": "{\"M1.et\":5.0,\"M1.st\":0.0,\"M1_person\":2,\"M1_person2\":1}",
+          "record_id": "detection/fight/A@gemini_3_6_flash_qwen2_audio_s5/{\"M1.et\":5.0,\"M1.st\":0.0,\"M1_person\":2,\"M1_person2\":1}",
           "mode": "read"
         }
       }
     ],
     "source_ref": {
       "stage": "iseql",
-      "store": "detection:fight/A@gemini_3_6_flash_qwen2_audio_s5",
-      "record_id": "{\"M1.et\":5.0,\"M1.st\":0.0,\"M1_person\":1,\"M1_person2\":2}",
+      "record_id": "detection/fight/A@gemini_3_6_flash_qwen2_audio_s5/{\"M1.et\":5.0,\"M1.st\":0.0,\"M1_person\":1,\"M1_person2\":2}",
       "mode": "read"
     }
   },
@@ -185,8 +164,7 @@
     "expression_saved": "π_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{M1.arg1≠M1.arg2} (\n    σ_{pred=\"physical_altercation\" ∧ arg1=\"person\" ∧ arg2=\"person\"}(M1)\n  ))",
     "structure_ref": {
       "stage": "iseql",
-      "store": "EventSpec",
-      "record_id": "fight/A",
+      "record_id": "EventSpec/fight/A",
       "mode": "read"
     },
     "model_form": "F2",
@@ -208,8 +186,7 @@
         "text": "π_{M1.arg1, M1.arg2, M1.st, M1.et}",
         "source_ref": {
           "stage": "iseql",
-          "store": "EventSpec",
-          "record_id": "fight/A#/set_expression/projection",
+          "record_id": "EventSpec/fight/A#/set_expression/projection",
           "mode": "read"
         },
         "kind": "projection",
@@ -233,8 +210,7 @@
         "text": "M1.arg1≠M1.arg2",
         "source_ref": {
           "stage": "iseql",
-          "store": "EventSpec",
-          "record_id": "fight/A#/cross_conditions/0",
+          "record_id": "EventSpec/fight/A#/cross_conditions/0",
           "mode": "read"
         },
         "kind": "identity",
@@ -255,8 +231,7 @@
         "text": "σ_{pred=\"physical_altercation\" ∧ arg1=\"person\" ∧ arg2=\"person\"}(M1)",
         "source_ref": {
           "stage": "iseql",
-          "store": "EventSpec",
-          "record_id": "fight/A#/intervals/0",
+          "record_id": "EventSpec/fight/A#/intervals/0",
           "mode": "read"
         },
         "kind": "selection",
@@ -301,15 +276,13 @@
         "in_evidence": true,
         "source_ref": {
           "stage": "vlm",
-          "store": "VisualPerFrame",
-          "record_id": "gemini_3_6_flash_qwen2_audio_s5:0:1:3",
+          "record_id": "VisualPerFrame/gemini_3_6_flash_qwen2_audio_s5:0:1:3",
           "mode": "read"
         }
       },
       "source_ref": {
         "stage": "reid",
-        "store": "VisualParticipant",
-        "record_id": "6:1",
+        "record_id": "VisualParticipant/6:1",
         "mode": "read"
       },
       "unavailable": {
@@ -339,15 +312,13 @@
         "in_evidence": true,
         "source_ref": {
           "stage": "vlm",
-          "store": "VisualPerFrame",
-          "record_id": "gemini_3_6_flash_qwen2_audio_s5:0:2:4",
+          "record_id": "VisualPerFrame/gemini_3_6_flash_qwen2_audio_s5:0:2:4",
           "mode": "read"
         }
       },
       "source_ref": {
         "stage": "reid",
-        "store": "VisualParticipant",
-        "record_id": "6:2",
+        "record_id": "VisualParticipant/6:2",
         "mode": "read"
       },
       "unavailable": {
@@ -367,7 +338,7 @@
         "ent_1",
         "ent_2"
       ],
-      "args_ordered": false,
+      "args_ordered": true,
       "anchor": {
         "start_frame": 0,
         "end_frame": 120,
@@ -376,54 +347,22 @@
         "read_as": "frames"
       },
       "confidence": null,
-      "source_ref": {
-        "stage": "iad",
-        "store": "VisualPerInterval",
-        "record_id": "6",
-        "mode": "read"
-      },
-      "sources": {
-        "args": {
-          "stage": "reid",
-          "store": "VisualParticipant",
-          "record_id": "6:1,6:2",
-          "mode": "read"
+      "used_by_rule": true,
+      "bindings": [
+        {
+          "branch": "s1",
+          "variable": "M1"
         }
-      },
-      "unavailable": {
-        "confidence": {
-          "reason": "visual_confidence_not_recorded",
-          "detail": "VisualPerInterval has no confidence column"
-        }
-      }
-    },
-    {
-      "interval_id": "iv_v7",
-      "source": "VisualPerInterval",
-      "predicate": "physical_altercation",
-      "args": [
-        "ent_2"
       ],
-      "args_ordered": false,
-      "anchor": {
-        "start_frame": 96,
-        "end_frame": 96,
-        "start_s": 4.0,
-        "end_s": 4.0,
-        "read_as": "frames"
-      },
-      "confidence": null,
       "source_ref": {
         "stage": "iad",
-        "store": "VisualPerInterval",
-        "record_id": "7",
+        "record_id": "VisualPerInterval/6",
         "mode": "read"
       },
       "sources": {
         "args": {
           "stage": "reid",
-          "store": "VisualParticipant",
-          "record_id": "7:2",
+          "record_id": "VisualParticipant/6:1,6:2",
           "mode": "read"
         }
       },
@@ -445,8 +384,7 @@
       "plain_template": "{left} and {right} are different",
       "source": {
         "stage": "code",
-        "store": "backend/xai/resources/glossary.yaml",
-        "record_id": "comparisons.identity_ne",
+        "record_id": "glossary.yaml/comparisons.identity_ne",
         "mode": "read"
       }
     },
@@ -458,15 +396,13 @@
       "plain_template": "a fight",
       "source": {
         "stage": "iseql",
-        "store": "EventSpec",
-        "record_id": "fight/A#/iseql_text",
+        "record_id": "EventSpec/fight/A#/iseql_text",
         "mode": "read"
       },
       "sources": {
         "plain_template": {
           "stage": "code",
-          "store": "backend/xai/resources/glossary.yaml",
-          "record_id": "events.fight",
+          "record_id": "glossary.yaml/events.fight",
           "mode": "read"
         }
       }
@@ -479,15 +415,13 @@
       "plain_template": "{arg1} and {arg2} fight",
       "source": {
         "stage": "config",
-        "store": "AppConfig",
-        "record_id": "relation_vocab.relation_descriptions.physical_altercation",
+        "record_id": "AppConfig/relation_vocab.relation_descriptions.physical_altercation",
         "mode": "read"
       },
       "sources": {
         "plain_template": {
           "stage": "code",
-          "store": "backend/xai/resources/glossary.yaml",
-          "record_id": "predicates.physical_altercation",
+          "record_id": "glossary.yaml/predicates.physical_altercation",
           "mode": "read"
         }
       }
@@ -546,7 +480,7 @@
     "notes": [
       {
         "code": "selection_basis",
-        "detail": "pertinence_filter: predicates of branch s1 {physical_altercation} and intervals with at least one entity of the row {1, 2}"
+        "detail": "engine_lineage: 1 witness in WatchOut's lineage; s1.M1 = iv_v6"
       }
     ]
   }

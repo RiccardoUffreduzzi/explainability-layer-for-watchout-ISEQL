@@ -1,0 +1,1174 @@
+{
+ "_comment": "compile_event output before the plan existed (16 seed rules of data/analysis.seed.db). test_plan.py checks the SQL is unchanged; test_detect.py reuses rules and app_config.",
+ "audio_predicates": [
+  "engine",
+  "glass_breaking",
+  "gunshot_or_explosion",
+  "horn",
+  "impact",
+  "shout",
+  "skidding",
+  "tire_squeal"
+ ],
+ "predicate_vocab": {
+  "running": [
+   [
+    "person"
+   ]
+  ],
+  "enter_or_exit_vehicle": [
+   [
+    "person"
+   ],
+   [
+    "vehicle"
+   ]
+  ],
+  "carrying": [
+   [
+    "person"
+   ],
+   [
+    "object"
+   ]
+  ],
+  "physical_altercation": [
+   [
+    "person"
+   ],
+   [
+    "person"
+   ]
+  ],
+  "vehicle_collision": [
+   [
+    "vehicle"
+   ]
+  ],
+  "gunshot_visible": [
+   [
+    "person"
+   ]
+  ],
+  "explosion_visible": [
+   [
+    "vehicle",
+    "object"
+   ]
+  ],
+  "suspicious_near_vehicle": [
+   [
+    "person"
+   ],
+   [
+    "vehicle"
+   ]
+  ],
+  "shout": [],
+  "impact": [],
+  "gunshot_or_explosion": [],
+  "engine": [],
+  "tire_squeal": [],
+  "glass_breaking": [],
+  "horn": [],
+  "skidding": []
+ },
+ "app_config": {
+  "audio_taxonomy": {
+   "classes": [
+    "shout",
+    "impact",
+    "gunshot_or_explosion",
+    "engine",
+    "tire_squeal",
+    "glass_breaking",
+    "horn",
+    "skidding"
+   ],
+   "keywords": {
+    "shout": [
+     "shout",
+     "yell",
+     "scream"
+    ],
+    "impact": [
+     "impact",
+     "thump",
+     "thud",
+     "bang",
+     "slam",
+     "smash",
+     "crash",
+     "punch",
+     "hit"
+    ],
+    "gunshot_or_explosion": [
+     "gunshot",
+     "gunfire",
+     "artillery_fire",
+     "artillery",
+     "explosion",
+     "explosive",
+     "firework",
+     "boom",
+     "burst",
+     "pop"
+    ],
+    "engine": [
+     "engine",
+     "vehicle",
+     "car",
+     "vroom"
+    ],
+    "tire_squeal": [
+     "tire",
+     "tyre",
+     "tire_squeal",
+     "screech",
+     "squeal"
+    ],
+    "skidding": [
+     "skidding",
+     "skid"
+    ],
+    "glass_breaking": [
+     "glass",
+     "glass_breaking",
+     "shatter",
+     "shattering"
+    ],
+    "horn": [
+     "horn",
+     "honk",
+     "honking"
+    ]
+   },
+   "resolution": [
+    "direct",
+    "stem",
+    "priority",
+    "token"
+   ]
+  },
+  "relation_vocab": {
+   "relation_classids": [
+    [
+     "running",
+     "(PersonID)"
+    ],
+    [
+     "enter_or_exit_vehicle",
+     "(PersonID, VehicleID)"
+    ],
+    [
+     "carrying",
+     "(PersonID, ObjectID)"
+    ],
+    [
+     "physical_altercation",
+     "(PersonID, PersonID)"
+    ],
+    [
+     "vehicle_collision",
+     "(VehicleID)"
+    ],
+    [
+     "gunshot_visible",
+     "(PersonID)"
+    ],
+    [
+     "explosion_visible",
+     "(VehicleID∨ObjectID)"
+    ],
+    [
+     "suspicious_near_vehicle",
+     "(PersonID, VehicleID)"
+    ]
+   ],
+   "relation_descriptions": {
+    "running": "The person's body is in a running posture: legs visibly apart, arms extended away from the body, or the person is clearly moving fast. WALKING is NOT running. Look at leg and arm positions carefully.",
+    "enter_or_exit_vehicle": "The person is getting into or out of the DRIVER'S position. For a car, van, or truck this is the front-left door (driver door); for a motorcycle it is the driver seat. Report only driver-position entry/exit, NOT passengers using a rear or front-passenger door, and NOT a person merely standing near or leaning on the vehicle.",
+    "carrying": "The person is holding, carrying, or transporting any object of class 'object' (package, suitcase, bag, backpack). Report for ANY person touching or holding a transportable item, even briefly.",
+    "physical_altercation": "Two or more people are involved in aggressive behavior: fighting, pushing, hitting, punching, making aggressive gestures, or throwing objects at each other. Include IDs of all people involved.",
+    "vehicle_collision": "A vehicle has visible collision damage: broken windshield, dented hood or doors, deployed airbags, smoke from the hood, or another object embedded in the vehicle.",
+    "gunshot_visible": "A person is holding or firing a gun: visible muzzle flash, gun in hand, recoil motion, or smoke from the barrel.",
+    "explosion_visible": "A visible explosion: fireball, large smoke cloud, debris flying through the air, or shattered windows. Report the VehicleID or nearest object ID.",
+    "suspicious_near_vehicle": "A person is lingering suspiciously around a parked vehicle without entering it: peering into windows with hands cupped around the eyes, crouching near or examining the tires/body, trying door or trunk handles, or pacing/circling the vehicle while repeatedly looking around. Report only when the person is NOT entering or driving the vehicle."
+   }
+  }
+ },
+ "cases": [
+  {
+   "id": "A/fight/defaults/seconds24",
+   "condition": "A",
+   "event": "fight",
+   "model_json": "{\"event_name\": \"fight\", \"intervals\": [{\"pred\": {\"name\": \"physical_altercation\", \"arguments\": [\"person\", \"person\"]}, \"selection\": {\"preds\": [\"physical_altercation\"], \"args\": {\"1\": [\"person\"], \"2\": [\"person\"]}}, \"ts\": 0, \"te\": 100, \"group\": \"s1\"}], \"cross_conditions\": [{\"left_alias\": \"M1\", \"left_attr\": \"arg1\", \"op\": \"\\u2260\", \"right_alias\": \"M1\", \"right_attr\": \"arg2\"}], \"operator_overrides\": [], \"delta_unit\": \"seconds\", \"iseql_text\": \"\\u03c0_{M1.arg1, M1.arg2, M1.st, M1.et} (\\n  \\u03c3_{M1.arg1\\u2260M1.arg2} (\\n    \\u03c3_{pred=\\\"physical_altercation\\\" \\u2227 arg1=\\\"person\\\" \\u2227 arg2=\\\"person\\\"}(M1)\\n  ))\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.arg1\", \"M1.arg2\", \"M1.st\", \"M1.et\"]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<=",
+    "rho_visual_handoff": 0,
+    "rho_visual_vehicle_escape": 0,
+    "zeta_visual_vehicle_escape": "<=",
+    "delta_visual_handoff": null,
+    "delta_visual_vehicle_escape": 48
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{M1.arg1≠M1.arg2} (\n    σ_{pred=\"physical_altercation\" ∧ arg1=\"person\" ∧ arg2=\"person\"}(M1)\n  ))",
+   "sql": "SELECT M1.arg1, M1.arg2, M1.st, M1.et\nFROM (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID\n    WHERE ((RelationType = 'physical_altercation' AND VP_1.Class = 'person' AND VP_2.Class = 'person')) AND AnalysisID = 's1') M1\nWHERE (M1.arg1 != M1.arg2)"
+  },
+  {
+   "id": "A/gunshot_or_explosion/defaults/seconds24",
+   "condition": "A",
+   "event": "gunshot_or_explosion",
+   "model_json": "{\"event_name\": \"gunshot_or_explosion\", \"intervals\": [{\"pred\": {\"name\": \"gunshot_visible\", \"arguments\": [\"person\"]}, \"selection\": {\"branches\": [{\"preds\": [\"gunshot_visible\"], \"args\": {\"1\": [\"person\"]}}, {\"preds\": [\"explosion_visible\"], \"args\": {\"1\": [\"vehicle\", \"object\"]}}]}, \"ts\": 0, \"te\": 100, \"group\": \"s1\"}], \"cross_conditions\": [], \"operator_overrides\": [], \"delta_unit\": \"seconds\", \"iseql_text\": \"\\u03c0_{M1.arg1, M1.st, M1.et} (\\n  \\u03c3_{(pred=\\\"gunshot_visible\\\" \\u2227 arg1=\\\"person\\\") \\u2228 (pred=\\\"explosion_visible\\\" \\u2227 arg1=\\\"vehicle\\\" \\u2228 arg1=\\\"object\\\")}(M1)\\n)\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.arg1\", \"M1.st\", \"M1.et\"]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<=",
+    "rho_visual_handoff": 0,
+    "rho_visual_vehicle_escape": 0,
+    "zeta_visual_vehicle_escape": "<=",
+    "delta_visual_handoff": null,
+    "delta_visual_vehicle_escape": 48
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.arg1, M1.st, M1.et} (\n  σ_{(pred=\"gunshot_visible\" ∧ arg1=\"person\") ∨ (pred=\"explosion_visible\" ∧ arg1=\"vehicle\" ∨ arg1=\"object\")}(M1)\n)",
+   "sql": "SELECT M1.arg1, M1.st, M1.et\nFROM (    SELECT VP_1.ClassID AS arg1, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID\n    WHERE ((RelationType = 'gunshot_visible' AND VP_1.Class = 'person') OR (RelationType = 'explosion_visible' AND VP_1.Class IN ('vehicle', 'object'))) AND AnalysisID = 's1') M1"
+  },
+  {
+   "id": "A/handoff/defaults/seconds24",
+   "condition": "A",
+   "event": "handoff",
+   "model_json": "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"carrying\", \"arguments\": [\"person\", \"object\"]}, \"ts\": 0, \"te\": 100, \"group_id\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"carrying\", \"arguments\": [\"person\", \"object\"]}, \"ts\": 100, \"te\": 200, \"group_id\": null, \"group\": \"s1\"}], \"cross_conditions\": [{\"left_alias\": \"M1\", \"left_attr\": \"arg1\", \"op\": \"\\u2260\", \"right_alias\": \"M2\", \"right_attr\": \"arg1\"}, {\"left_alias\": \"M1\", \"left_attr\": \"arg2\", \"op\": \"=\", \"right_alias\": \"M2\", \"right_attr\": \"arg2\"}], \"delta_map\": {\"s1.0\": {\"delta\": \"delta_visual_handoff\", \"zeta\": \"zeta_visual_handoff\", \"rho\": \"rho_visual_handoff\"}}, \"iseql_text\": \"\\u03c0_{M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et} (\\n  \\u03c3_{M1.arg1\\u2260M2.arg1 \\u2227 M1.arg2=M2.arg2} (\\n    \\u03c3_{pred=\\\"carrying\\\" \\u2227 arg1=\\\"person\\\" \\u2227 arg2=\\\"object\\\"}(M1)\\n    Bef(\\u03b4:\\u221e; \\u03b6:<=, \\u03c1:0)\\n    \\u03c3_{pred=\\\"carrying\\\" \\u2227 arg1=\\\"person\\\" \\u2227 arg2=\\\"object\\\"}(M2)\\n  ))\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.arg1\", \"M2.arg1\", \"M1.arg2\", \"M1.st\", \"M2.et\"]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<=",
+    "rho_visual_handoff": 0,
+    "rho_visual_vehicle_escape": 0,
+    "zeta_visual_vehicle_escape": "<=",
+    "delta_visual_handoff": null,
+    "delta_visual_vehicle_escape": 48
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et} (\n  σ_{M1.arg1≠M2.arg1 ∧ M1.arg2=M2.arg2} (\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M1)\n    Bef(δ:∞; ζ:<=, ρ:0)\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M2)\n  ))",
+   "sql": "SELECT M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et\nFROM (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'person'\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID AND VP_2.Class = 'object'\n    WHERE RelationType = 'carrying' AND AnalysisID = 's1') M1, (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'person'\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID AND VP_2.Class = 'object'\n    WHERE RelationType = 'carrying' AND AnalysisID = 's1') M2\nWHERE (M1.et <= (M2.st + 0))\n  AND (M1.arg1 != M2.arg1)\n  AND (M1.arg2 = M2.arg2)"
+  },
+  {
+   "id": "A/suspicious_near_vehicle/defaults/seconds24",
+   "condition": "A",
+   "event": "suspicious_near_vehicle",
+   "model_json": "{\"event_name\": \"suspicious_near_vehicle\", \"intervals\": [{\"pred\": {\"name\": \"suspicious_near_vehicle\", \"arguments\": [\"person\", \"vehicle\"]}, \"selection\": {\"preds\": [\"suspicious_near_vehicle\"], \"args\": {\"1\": [\"person\"], \"2\": [\"vehicle\"]}}, \"ts\": 0, \"te\": 100, \"group\": \"s1\"}], \"cross_conditions\": [{\"type\": \"duration\", \"left_alias\": \"M1\", \"left_attr\": \"et\", \"right_alias\": \"M1\", \"right_attr\": \"st\", \"op\": \">=\", \"value\": 3}], \"operator_overrides\": [], \"delta_unit\": \"seconds\", \"iseql_text\": \"\\u03c0_{M1.arg1, M1.arg2, M1.st, M1.et} (\\n  \\u03c3_{(M1.et \\u2212 M1.st) \\u2265 3} (\\n    \\u03c3_{pred=\\\"suspicious_near_vehicle\\\" \\u2227 arg1=\\\"person\\\" \\u2227 arg2=\\\"vehicle\\\"}(M1)\\n  ))\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.arg1\", \"M1.arg2\", \"M1.st\", \"M1.et\"]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<=",
+    "rho_visual_handoff": 0,
+    "rho_visual_vehicle_escape": 0,
+    "zeta_visual_vehicle_escape": "<=",
+    "delta_visual_handoff": null,
+    "delta_visual_vehicle_escape": 48
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{(M1.et − M1.st) ≥ 3} (\n    σ_{pred=\"suspicious_near_vehicle\" ∧ arg1=\"person\" ∧ arg2=\"vehicle\"}(M1)\n  ))",
+   "sql": "SELECT M1.arg1, M1.arg2, M1.st, M1.et\nFROM (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID\n    WHERE ((RelationType = 'suspicious_near_vehicle' AND VP_1.Class = 'person' AND VP_2.Class = 'vehicle')) AND AnalysisID = 's1') M1\nWHERE (M1.et - M1.st) >= 3"
+  },
+  {
+   "id": "A/vehicle_collision/defaults/seconds24",
+   "condition": "A",
+   "event": "vehicle_collision",
+   "model_json": "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"vehicle_collision\", \"arguments\": [\"vehicle\"]}, \"ts\": 0, \"te\": 100, \"group_id\": null, \"group\": \"s1\"}], \"iseql_text\": \"\\u03c0_{M1.arg1, M1.st, M1.et} (\\n  \\u03c3_{pred=\\\"vehicle_collision\\\" \\u2227 arg1=\\\"vehicle\\\"}(M1)\\n)\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.arg1\", \"M1.st\", \"M1.et\"]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<=",
+    "rho_visual_handoff": 0,
+    "rho_visual_vehicle_escape": 0,
+    "zeta_visual_vehicle_escape": "<=",
+    "delta_visual_handoff": null,
+    "delta_visual_vehicle_escape": 48
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.arg1, M1.st, M1.et} (\n  σ_{pred=\"vehicle_collision\" ∧ arg1=\"vehicle\"}(M1)\n)",
+   "sql": "SELECT M1.arg1, M1.st, M1.et\nFROM (    SELECT VP_1.ClassID AS arg1, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'vehicle'\n    WHERE RelationType = 'vehicle_collision' AND AnalysisID = 's1') M1"
+  },
+  {
+   "id": "A/vehicle_escape/defaults/seconds24",
+   "condition": "A",
+   "event": "vehicle_escape",
+   "model_json": "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"running\", \"arguments\": [\"person\"]}, \"ts\": 0, \"te\": 100, \"group_id\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"enter_or_exit_vehicle\", \"arguments\": [\"person\", \"vehicle\"]}, \"ts\": 100, \"te\": 200, \"group_id\": null, \"group\": \"s1\"}], \"cross_conditions\": [{\"left_alias\": \"M1\", \"left_attr\": \"arg1\", \"op\": \"=\", \"right_alias\": \"M2\", \"right_attr\": \"arg1\"}], \"operator_overrides\": [{\"side\": \"s1\", \"pair_idx\": 1, \"operator\": \"Bef\"}], \"delta_map\": {\"s1.0\": {\"delta\": \"delta_visual_vehicle_escape\", \"zeta\": \"zeta_visual_vehicle_escape\", \"rho\": \"rho_visual_vehicle_escape\"}}, \"iseql_text\": \"\\u03c0_{M1.arg1, M2.arg2, M1.st, M2.et} (\\n  \\u03c3_{M1.arg1=M2.arg1} (\\n    \\u03c3_{pred=\\\"running\\\" \\u2227 arg1=\\\"person\\\"}(M1)\\n    Bef(\\u03b4:2; \\u03b6:<=, \\u03c1:0)\\n    \\u03c3_{pred=\\\"enter_or_exit_vehicle\\\" \\u2227 arg1=\\\"person\\\" \\u2227 arg2=\\\"vehicle\\\"}(M2)\\n  ))\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.arg1\", \"M2.arg2\", \"M1.st\", \"M2.et\"]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<=",
+    "rho_visual_handoff": 0,
+    "rho_visual_vehicle_escape": 0,
+    "zeta_visual_vehicle_escape": "<=",
+    "delta_visual_handoff": null,
+    "delta_visual_vehicle_escape": 48
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.arg1, M2.arg2, M1.st, M2.et} (\n  σ_{M1.arg1=M2.arg1} (\n    σ_{pred=\"running\" ∧ arg1=\"person\"}(M1)\n    Bef(δ:2; ζ:<=, ρ:0)\n    σ_{pred=\"enter_or_exit_vehicle\" ∧ arg1=\"person\" ∧ arg2=\"vehicle\"}(M2)\n  ))",
+   "sql": "SELECT M1.arg1, M2.arg2, M1.st, M2.et\nFROM (    SELECT VP_1.ClassID AS arg1, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'person'\n    WHERE RelationType = 'running' AND AnalysisID = 's1') M1, (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'person'\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID AND VP_2.Class = 'vehicle'\n    WHERE RelationType = 'enter_or_exit_vehicle' AND AnalysisID = 's1') M2\nWHERE (M1.et <= (M2.st + 0) AND (M2.st - M1.et) <= 48)\n  AND (M1.arg1 = M2.arg1)"
+  },
+  {
+   "id": "A/fight/strict/seconds24",
+   "condition": "A",
+   "event": "fight",
+   "model_json": "{\"event_name\": \"fight\", \"intervals\": [{\"pred\": {\"name\": \"physical_altercation\", \"arguments\": [\"person\", \"person\"]}, \"selection\": {\"preds\": [\"physical_altercation\"], \"args\": {\"1\": [\"person\"], \"2\": [\"person\"]}}, \"ts\": 0, \"te\": 100, \"group\": \"s1\"}], \"cross_conditions\": [{\"left_alias\": \"M1\", \"left_attr\": \"arg1\", \"op\": \"\\u2260\", \"right_alias\": \"M1\", \"right_attr\": \"arg2\"}], \"operator_overrides\": [], \"delta_unit\": \"seconds\", \"iseql_text\": \"\\u03c0_{M1.arg1, M1.arg2, M1.st, M1.et} (\\n  \\u03c3_{M1.arg1\\u2260M1.arg2} (\\n    \\u03c3_{pred=\\\"physical_altercation\\\" \\u2227 arg1=\\\"person\\\" \\u2227 arg2=\\\"person\\\"}(M1)\\n  ))\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.arg1\", \"M1.arg2\", \"M1.st\", \"M1.et\"]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<",
+    "rho_visual_handoff": 24,
+    "rho_visual_vehicle_escape": 24,
+    "zeta_visual_vehicle_escape": "<",
+    "delta_visual_handoff": null,
+    "delta_visual_vehicle_escape": 72
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{M1.arg1≠M1.arg2} (\n    σ_{pred=\"physical_altercation\" ∧ arg1=\"person\" ∧ arg2=\"person\"}(M1)\n  ))",
+   "sql": "SELECT M1.arg1, M1.arg2, M1.st, M1.et\nFROM (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID\n    WHERE ((RelationType = 'physical_altercation' AND VP_1.Class = 'person' AND VP_2.Class = 'person')) AND AnalysisID = 's1') M1\nWHERE (M1.arg1 != M1.arg2)"
+  },
+  {
+   "id": "A/gunshot_or_explosion/strict/seconds24",
+   "condition": "A",
+   "event": "gunshot_or_explosion",
+   "model_json": "{\"event_name\": \"gunshot_or_explosion\", \"intervals\": [{\"pred\": {\"name\": \"gunshot_visible\", \"arguments\": [\"person\"]}, \"selection\": {\"branches\": [{\"preds\": [\"gunshot_visible\"], \"args\": {\"1\": [\"person\"]}}, {\"preds\": [\"explosion_visible\"], \"args\": {\"1\": [\"vehicle\", \"object\"]}}]}, \"ts\": 0, \"te\": 100, \"group\": \"s1\"}], \"cross_conditions\": [], \"operator_overrides\": [], \"delta_unit\": \"seconds\", \"iseql_text\": \"\\u03c0_{M1.arg1, M1.st, M1.et} (\\n  \\u03c3_{(pred=\\\"gunshot_visible\\\" \\u2227 arg1=\\\"person\\\") \\u2228 (pred=\\\"explosion_visible\\\" \\u2227 arg1=\\\"vehicle\\\" \\u2228 arg1=\\\"object\\\")}(M1)\\n)\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.arg1\", \"M1.st\", \"M1.et\"]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<",
+    "rho_visual_handoff": 24,
+    "rho_visual_vehicle_escape": 24,
+    "zeta_visual_vehicle_escape": "<",
+    "delta_visual_handoff": null,
+    "delta_visual_vehicle_escape": 72
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.arg1, M1.st, M1.et} (\n  σ_{(pred=\"gunshot_visible\" ∧ arg1=\"person\") ∨ (pred=\"explosion_visible\" ∧ arg1=\"vehicle\" ∨ arg1=\"object\")}(M1)\n)",
+   "sql": "SELECT M1.arg1, M1.st, M1.et\nFROM (    SELECT VP_1.ClassID AS arg1, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID\n    WHERE ((RelationType = 'gunshot_visible' AND VP_1.Class = 'person') OR (RelationType = 'explosion_visible' AND VP_1.Class IN ('vehicle', 'object'))) AND AnalysisID = 's1') M1"
+  },
+  {
+   "id": "A/handoff/strict/seconds24",
+   "condition": "A",
+   "event": "handoff",
+   "model_json": "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"carrying\", \"arguments\": [\"person\", \"object\"]}, \"ts\": 0, \"te\": 100, \"group_id\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"carrying\", \"arguments\": [\"person\", \"object\"]}, \"ts\": 100, \"te\": 200, \"group_id\": null, \"group\": \"s1\"}], \"cross_conditions\": [{\"left_alias\": \"M1\", \"left_attr\": \"arg1\", \"op\": \"\\u2260\", \"right_alias\": \"M2\", \"right_attr\": \"arg1\"}, {\"left_alias\": \"M1\", \"left_attr\": \"arg2\", \"op\": \"=\", \"right_alias\": \"M2\", \"right_attr\": \"arg2\"}], \"delta_map\": {\"s1.0\": {\"delta\": \"delta_visual_handoff\", \"zeta\": \"zeta_visual_handoff\", \"rho\": \"rho_visual_handoff\"}}, \"iseql_text\": \"\\u03c0_{M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et} (\\n  \\u03c3_{M1.arg1\\u2260M2.arg1 \\u2227 M1.arg2=M2.arg2} (\\n    \\u03c3_{pred=\\\"carrying\\\" \\u2227 arg1=\\\"person\\\" \\u2227 arg2=\\\"object\\\"}(M1)\\n    Bef(\\u03b4:\\u221e; \\u03b6:<=, \\u03c1:0)\\n    \\u03c3_{pred=\\\"carrying\\\" \\u2227 arg1=\\\"person\\\" \\u2227 arg2=\\\"object\\\"}(M2)\\n  ))\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.arg1\", \"M2.arg1\", \"M1.arg2\", \"M1.st\", \"M2.et\"]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<",
+    "rho_visual_handoff": 24,
+    "rho_visual_vehicle_escape": 24,
+    "zeta_visual_vehicle_escape": "<",
+    "delta_visual_handoff": null,
+    "delta_visual_vehicle_escape": 72
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et} (\n  σ_{M1.arg1≠M2.arg1 ∧ M1.arg2=M2.arg2} (\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M1)\n    Bef(δ:∞; ζ:<=, ρ:0)\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M2)\n  ))",
+   "sql": "SELECT M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et\nFROM (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'person'\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID AND VP_2.Class = 'object'\n    WHERE RelationType = 'carrying' AND AnalysisID = 's1') M1, (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'person'\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID AND VP_2.Class = 'object'\n    WHERE RelationType = 'carrying' AND AnalysisID = 's1') M2\nWHERE (M1.et < (M2.st + 24))\n  AND (M1.arg1 != M2.arg1)\n  AND (M1.arg2 = M2.arg2)"
+  },
+  {
+   "id": "A/suspicious_near_vehicle/strict/seconds24",
+   "condition": "A",
+   "event": "suspicious_near_vehicle",
+   "model_json": "{\"event_name\": \"suspicious_near_vehicle\", \"intervals\": [{\"pred\": {\"name\": \"suspicious_near_vehicle\", \"arguments\": [\"person\", \"vehicle\"]}, \"selection\": {\"preds\": [\"suspicious_near_vehicle\"], \"args\": {\"1\": [\"person\"], \"2\": [\"vehicle\"]}}, \"ts\": 0, \"te\": 100, \"group\": \"s1\"}], \"cross_conditions\": [{\"type\": \"duration\", \"left_alias\": \"M1\", \"left_attr\": \"et\", \"right_alias\": \"M1\", \"right_attr\": \"st\", \"op\": \">=\", \"value\": 3}], \"operator_overrides\": [], \"delta_unit\": \"seconds\", \"iseql_text\": \"\\u03c0_{M1.arg1, M1.arg2, M1.st, M1.et} (\\n  \\u03c3_{(M1.et \\u2212 M1.st) \\u2265 3} (\\n    \\u03c3_{pred=\\\"suspicious_near_vehicle\\\" \\u2227 arg1=\\\"person\\\" \\u2227 arg2=\\\"vehicle\\\"}(M1)\\n  ))\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.arg1\", \"M1.arg2\", \"M1.st\", \"M1.et\"]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<",
+    "rho_visual_handoff": 24,
+    "rho_visual_vehicle_escape": 24,
+    "zeta_visual_vehicle_escape": "<",
+    "delta_visual_handoff": null,
+    "delta_visual_vehicle_escape": 72
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{(M1.et − M1.st) ≥ 3} (\n    σ_{pred=\"suspicious_near_vehicle\" ∧ arg1=\"person\" ∧ arg2=\"vehicle\"}(M1)\n  ))",
+   "sql": "SELECT M1.arg1, M1.arg2, M1.st, M1.et\nFROM (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID\n    WHERE ((RelationType = 'suspicious_near_vehicle' AND VP_1.Class = 'person' AND VP_2.Class = 'vehicle')) AND AnalysisID = 's1') M1\nWHERE (M1.et - M1.st) >= 3"
+  },
+  {
+   "id": "A/vehicle_collision/strict/seconds24",
+   "condition": "A",
+   "event": "vehicle_collision",
+   "model_json": "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"vehicle_collision\", \"arguments\": [\"vehicle\"]}, \"ts\": 0, \"te\": 100, \"group_id\": null, \"group\": \"s1\"}], \"iseql_text\": \"\\u03c0_{M1.arg1, M1.st, M1.et} (\\n  \\u03c3_{pred=\\\"vehicle_collision\\\" \\u2227 arg1=\\\"vehicle\\\"}(M1)\\n)\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.arg1\", \"M1.st\", \"M1.et\"]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<",
+    "rho_visual_handoff": 24,
+    "rho_visual_vehicle_escape": 24,
+    "zeta_visual_vehicle_escape": "<",
+    "delta_visual_handoff": null,
+    "delta_visual_vehicle_escape": 72
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.arg1, M1.st, M1.et} (\n  σ_{pred=\"vehicle_collision\" ∧ arg1=\"vehicle\"}(M1)\n)",
+   "sql": "SELECT M1.arg1, M1.st, M1.et\nFROM (    SELECT VP_1.ClassID AS arg1, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'vehicle'\n    WHERE RelationType = 'vehicle_collision' AND AnalysisID = 's1') M1"
+  },
+  {
+   "id": "A/vehicle_escape/strict/seconds24",
+   "condition": "A",
+   "event": "vehicle_escape",
+   "model_json": "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"running\", \"arguments\": [\"person\"]}, \"ts\": 0, \"te\": 100, \"group_id\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"enter_or_exit_vehicle\", \"arguments\": [\"person\", \"vehicle\"]}, \"ts\": 100, \"te\": 200, \"group_id\": null, \"group\": \"s1\"}], \"cross_conditions\": [{\"left_alias\": \"M1\", \"left_attr\": \"arg1\", \"op\": \"=\", \"right_alias\": \"M2\", \"right_attr\": \"arg1\"}], \"operator_overrides\": [{\"side\": \"s1\", \"pair_idx\": 1, \"operator\": \"Bef\"}], \"delta_map\": {\"s1.0\": {\"delta\": \"delta_visual_vehicle_escape\", \"zeta\": \"zeta_visual_vehicle_escape\", \"rho\": \"rho_visual_vehicle_escape\"}}, \"iseql_text\": \"\\u03c0_{M1.arg1, M2.arg2, M1.st, M2.et} (\\n  \\u03c3_{M1.arg1=M2.arg1} (\\n    \\u03c3_{pred=\\\"running\\\" \\u2227 arg1=\\\"person\\\"}(M1)\\n    Bef(\\u03b4:2; \\u03b6:<=, \\u03c1:0)\\n    \\u03c3_{pred=\\\"enter_or_exit_vehicle\\\" \\u2227 arg1=\\\"person\\\" \\u2227 arg2=\\\"vehicle\\\"}(M2)\\n  ))\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.arg1\", \"M2.arg2\", \"M1.st\", \"M2.et\"]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<",
+    "rho_visual_handoff": 24,
+    "rho_visual_vehicle_escape": 24,
+    "zeta_visual_vehicle_escape": "<",
+    "delta_visual_handoff": null,
+    "delta_visual_vehicle_escape": 72
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.arg1, M2.arg2, M1.st, M2.et} (\n  σ_{M1.arg1=M2.arg1} (\n    σ_{pred=\"running\" ∧ arg1=\"person\"}(M1)\n    Bef(δ:2; ζ:<=, ρ:0)\n    σ_{pred=\"enter_or_exit_vehicle\" ∧ arg1=\"person\" ∧ arg2=\"vehicle\"}(M2)\n  ))",
+   "sql": "SELECT M1.arg1, M2.arg2, M1.st, M2.et\nFROM (    SELECT VP_1.ClassID AS arg1, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'person'\n    WHERE RelationType = 'running' AND AnalysisID = 's1') M1, (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'person'\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID AND VP_2.Class = 'vehicle'\n    WHERE RelationType = 'enter_or_exit_vehicle' AND AnalysisID = 's1') M2\nWHERE (M1.et < (M2.st + 24) AND (M2.st - M1.et) <= 96)\n  AND (M1.arg1 = M2.arg1)"
+  },
+  {
+   "id": "A/fight/defaults/frames1",
+   "condition": "A",
+   "event": "fight",
+   "model_json": "{\"event_name\": \"fight\", \"intervals\": [{\"pred\": {\"name\": \"physical_altercation\", \"arguments\": [\"person\", \"person\"]}, \"selection\": {\"preds\": [\"physical_altercation\"], \"args\": {\"1\": [\"person\"], \"2\": [\"person\"]}}, \"ts\": 0, \"te\": 100, \"group\": \"s1\"}], \"cross_conditions\": [{\"left_alias\": \"M1\", \"left_attr\": \"arg1\", \"op\": \"\\u2260\", \"right_alias\": \"M1\", \"right_attr\": \"arg2\"}], \"operator_overrides\": [], \"delta_unit\": \"seconds\", \"iseql_text\": \"\\u03c0_{M1.arg1, M1.arg2, M1.st, M1.et} (\\n  \\u03c3_{M1.arg1\\u2260M1.arg2} (\\n    \\u03c3_{pred=\\\"physical_altercation\\\" \\u2227 arg1=\\\"person\\\" \\u2227 arg2=\\\"person\\\"}(M1)\\n  ))\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.arg1\", \"M1.arg2\", \"M1.st\", \"M1.et\"]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<=",
+    "rho_visual_handoff": 0,
+    "rho_visual_vehicle_escape": 0,
+    "zeta_visual_vehicle_escape": "<=",
+    "delta_visual_handoff": null,
+    "delta_visual_vehicle_escape": 2
+   },
+   "fps": 1,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{M1.arg1≠M1.arg2} (\n    σ_{pred=\"physical_altercation\" ∧ arg1=\"person\" ∧ arg2=\"person\"}(M1)\n  ))",
+   "sql": "SELECT M1.arg1, M1.arg2, M1.st, M1.et\nFROM (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/1 AS st, CAST(VPI.EndFrame AS REAL)/1 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID\n    WHERE ((RelationType = 'physical_altercation' AND VP_1.Class = 'person' AND VP_2.Class = 'person')) AND AnalysisID = 's1') M1\nWHERE (M1.arg1 != M1.arg2)"
+  },
+  {
+   "id": "A/gunshot_or_explosion/defaults/frames1",
+   "condition": "A",
+   "event": "gunshot_or_explosion",
+   "model_json": "{\"event_name\": \"gunshot_or_explosion\", \"intervals\": [{\"pred\": {\"name\": \"gunshot_visible\", \"arguments\": [\"person\"]}, \"selection\": {\"branches\": [{\"preds\": [\"gunshot_visible\"], \"args\": {\"1\": [\"person\"]}}, {\"preds\": [\"explosion_visible\"], \"args\": {\"1\": [\"vehicle\", \"object\"]}}]}, \"ts\": 0, \"te\": 100, \"group\": \"s1\"}], \"cross_conditions\": [], \"operator_overrides\": [], \"delta_unit\": \"seconds\", \"iseql_text\": \"\\u03c0_{M1.arg1, M1.st, M1.et} (\\n  \\u03c3_{(pred=\\\"gunshot_visible\\\" \\u2227 arg1=\\\"person\\\") \\u2228 (pred=\\\"explosion_visible\\\" \\u2227 arg1=\\\"vehicle\\\" \\u2228 arg1=\\\"object\\\")}(M1)\\n)\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.arg1\", \"M1.st\", \"M1.et\"]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<=",
+    "rho_visual_handoff": 0,
+    "rho_visual_vehicle_escape": 0,
+    "zeta_visual_vehicle_escape": "<=",
+    "delta_visual_handoff": null,
+    "delta_visual_vehicle_escape": 2
+   },
+   "fps": 1,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.arg1, M1.st, M1.et} (\n  σ_{(pred=\"gunshot_visible\" ∧ arg1=\"person\") ∨ (pred=\"explosion_visible\" ∧ arg1=\"vehicle\" ∨ arg1=\"object\")}(M1)\n)",
+   "sql": "SELECT M1.arg1, M1.st, M1.et\nFROM (    SELECT VP_1.ClassID AS arg1, CAST(VPI.StartFrame AS REAL)/1 AS st, CAST(VPI.EndFrame AS REAL)/1 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID\n    WHERE ((RelationType = 'gunshot_visible' AND VP_1.Class = 'person') OR (RelationType = 'explosion_visible' AND VP_1.Class IN ('vehicle', 'object'))) AND AnalysisID = 's1') M1"
+  },
+  {
+   "id": "A/handoff/defaults/frames1",
+   "condition": "A",
+   "event": "handoff",
+   "model_json": "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"carrying\", \"arguments\": [\"person\", \"object\"]}, \"ts\": 0, \"te\": 100, \"group_id\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"carrying\", \"arguments\": [\"person\", \"object\"]}, \"ts\": 100, \"te\": 200, \"group_id\": null, \"group\": \"s1\"}], \"cross_conditions\": [{\"left_alias\": \"M1\", \"left_attr\": \"arg1\", \"op\": \"\\u2260\", \"right_alias\": \"M2\", \"right_attr\": \"arg1\"}, {\"left_alias\": \"M1\", \"left_attr\": \"arg2\", \"op\": \"=\", \"right_alias\": \"M2\", \"right_attr\": \"arg2\"}], \"delta_map\": {\"s1.0\": {\"delta\": \"delta_visual_handoff\", \"zeta\": \"zeta_visual_handoff\", \"rho\": \"rho_visual_handoff\"}}, \"iseql_text\": \"\\u03c0_{M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et} (\\n  \\u03c3_{M1.arg1\\u2260M2.arg1 \\u2227 M1.arg2=M2.arg2} (\\n    \\u03c3_{pred=\\\"carrying\\\" \\u2227 arg1=\\\"person\\\" \\u2227 arg2=\\\"object\\\"}(M1)\\n    Bef(\\u03b4:\\u221e; \\u03b6:<=, \\u03c1:0)\\n    \\u03c3_{pred=\\\"carrying\\\" \\u2227 arg1=\\\"person\\\" \\u2227 arg2=\\\"object\\\"}(M2)\\n  ))\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.arg1\", \"M2.arg1\", \"M1.arg2\", \"M1.st\", \"M2.et\"]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<=",
+    "rho_visual_handoff": 0,
+    "rho_visual_vehicle_escape": 0,
+    "zeta_visual_vehicle_escape": "<=",
+    "delta_visual_handoff": null,
+    "delta_visual_vehicle_escape": 2
+   },
+   "fps": 1,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et} (\n  σ_{M1.arg1≠M2.arg1 ∧ M1.arg2=M2.arg2} (\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M1)\n    Bef(δ:∞; ζ:<=, ρ:0)\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M2)\n  ))",
+   "sql": "SELECT M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et\nFROM (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/1 AS st, CAST(VPI.EndFrame AS REAL)/1 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'person'\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID AND VP_2.Class = 'object'\n    WHERE RelationType = 'carrying' AND AnalysisID = 's1') M1, (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/1 AS st, CAST(VPI.EndFrame AS REAL)/1 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'person'\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID AND VP_2.Class = 'object'\n    WHERE RelationType = 'carrying' AND AnalysisID = 's1') M2\nWHERE (M1.et <= (M2.st + 0))\n  AND (M1.arg1 != M2.arg1)\n  AND (M1.arg2 = M2.arg2)"
+  },
+  {
+   "id": "A/suspicious_near_vehicle/defaults/frames1",
+   "condition": "A",
+   "event": "suspicious_near_vehicle",
+   "model_json": "{\"event_name\": \"suspicious_near_vehicle\", \"intervals\": [{\"pred\": {\"name\": \"suspicious_near_vehicle\", \"arguments\": [\"person\", \"vehicle\"]}, \"selection\": {\"preds\": [\"suspicious_near_vehicle\"], \"args\": {\"1\": [\"person\"], \"2\": [\"vehicle\"]}}, \"ts\": 0, \"te\": 100, \"group\": \"s1\"}], \"cross_conditions\": [{\"type\": \"duration\", \"left_alias\": \"M1\", \"left_attr\": \"et\", \"right_alias\": \"M1\", \"right_attr\": \"st\", \"op\": \">=\", \"value\": 3}], \"operator_overrides\": [], \"delta_unit\": \"seconds\", \"iseql_text\": \"\\u03c0_{M1.arg1, M1.arg2, M1.st, M1.et} (\\n  \\u03c3_{(M1.et \\u2212 M1.st) \\u2265 3} (\\n    \\u03c3_{pred=\\\"suspicious_near_vehicle\\\" \\u2227 arg1=\\\"person\\\" \\u2227 arg2=\\\"vehicle\\\"}(M1)\\n  ))\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.arg1\", \"M1.arg2\", \"M1.st\", \"M1.et\"]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<=",
+    "rho_visual_handoff": 0,
+    "rho_visual_vehicle_escape": 0,
+    "zeta_visual_vehicle_escape": "<=",
+    "delta_visual_handoff": null,
+    "delta_visual_vehicle_escape": 2
+   },
+   "fps": 1,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{(M1.et − M1.st) ≥ 3} (\n    σ_{pred=\"suspicious_near_vehicle\" ∧ arg1=\"person\" ∧ arg2=\"vehicle\"}(M1)\n  ))",
+   "sql": "SELECT M1.arg1, M1.arg2, M1.st, M1.et\nFROM (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/1 AS st, CAST(VPI.EndFrame AS REAL)/1 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID\n    WHERE ((RelationType = 'suspicious_near_vehicle' AND VP_1.Class = 'person' AND VP_2.Class = 'vehicle')) AND AnalysisID = 's1') M1\nWHERE (M1.et - M1.st) >= 3"
+  },
+  {
+   "id": "A/vehicle_collision/defaults/frames1",
+   "condition": "A",
+   "event": "vehicle_collision",
+   "model_json": "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"vehicle_collision\", \"arguments\": [\"vehicle\"]}, \"ts\": 0, \"te\": 100, \"group_id\": null, \"group\": \"s1\"}], \"iseql_text\": \"\\u03c0_{M1.arg1, M1.st, M1.et} (\\n  \\u03c3_{pred=\\\"vehicle_collision\\\" \\u2227 arg1=\\\"vehicle\\\"}(M1)\\n)\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.arg1\", \"M1.st\", \"M1.et\"]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<=",
+    "rho_visual_handoff": 0,
+    "rho_visual_vehicle_escape": 0,
+    "zeta_visual_vehicle_escape": "<=",
+    "delta_visual_handoff": null,
+    "delta_visual_vehicle_escape": 2
+   },
+   "fps": 1,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.arg1, M1.st, M1.et} (\n  σ_{pred=\"vehicle_collision\" ∧ arg1=\"vehicle\"}(M1)\n)",
+   "sql": "SELECT M1.arg1, M1.st, M1.et\nFROM (    SELECT VP_1.ClassID AS arg1, CAST(VPI.StartFrame AS REAL)/1 AS st, CAST(VPI.EndFrame AS REAL)/1 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'vehicle'\n    WHERE RelationType = 'vehicle_collision' AND AnalysisID = 's1') M1"
+  },
+  {
+   "id": "A/vehicle_escape/defaults/frames1",
+   "condition": "A",
+   "event": "vehicle_escape",
+   "model_json": "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"running\", \"arguments\": [\"person\"]}, \"ts\": 0, \"te\": 100, \"group_id\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"enter_or_exit_vehicle\", \"arguments\": [\"person\", \"vehicle\"]}, \"ts\": 100, \"te\": 200, \"group_id\": null, \"group\": \"s1\"}], \"cross_conditions\": [{\"left_alias\": \"M1\", \"left_attr\": \"arg1\", \"op\": \"=\", \"right_alias\": \"M2\", \"right_attr\": \"arg1\"}], \"operator_overrides\": [{\"side\": \"s1\", \"pair_idx\": 1, \"operator\": \"Bef\"}], \"delta_map\": {\"s1.0\": {\"delta\": \"delta_visual_vehicle_escape\", \"zeta\": \"zeta_visual_vehicle_escape\", \"rho\": \"rho_visual_vehicle_escape\"}}, \"iseql_text\": \"\\u03c0_{M1.arg1, M2.arg2, M1.st, M2.et} (\\n  \\u03c3_{M1.arg1=M2.arg1} (\\n    \\u03c3_{pred=\\\"running\\\" \\u2227 arg1=\\\"person\\\"}(M1)\\n    Bef(\\u03b4:2; \\u03b6:<=, \\u03c1:0)\\n    \\u03c3_{pred=\\\"enter_or_exit_vehicle\\\" \\u2227 arg1=\\\"person\\\" \\u2227 arg2=\\\"vehicle\\\"}(M2)\\n  ))\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.arg1\", \"M2.arg2\", \"M1.st\", \"M2.et\"]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<=",
+    "rho_visual_handoff": 0,
+    "rho_visual_vehicle_escape": 0,
+    "zeta_visual_vehicle_escape": "<=",
+    "delta_visual_handoff": null,
+    "delta_visual_vehicle_escape": 2
+   },
+   "fps": 1,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.arg1, M2.arg2, M1.st, M2.et} (\n  σ_{M1.arg1=M2.arg1} (\n    σ_{pred=\"running\" ∧ arg1=\"person\"}(M1)\n    Bef(δ:2; ζ:<=, ρ:0)\n    σ_{pred=\"enter_or_exit_vehicle\" ∧ arg1=\"person\" ∧ arg2=\"vehicle\"}(M2)\n  ))",
+   "sql": "SELECT M1.arg1, M2.arg2, M1.st, M2.et\nFROM (    SELECT VP_1.ClassID AS arg1, CAST(VPI.StartFrame AS REAL)/1 AS st, CAST(VPI.EndFrame AS REAL)/1 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'person'\n    WHERE RelationType = 'running' AND AnalysisID = 's1') M1, (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/1 AS st, CAST(VPI.EndFrame AS REAL)/1 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'person'\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID AND VP_2.Class = 'vehicle'\n    WHERE RelationType = 'enter_or_exit_vehicle' AND AnalysisID = 's1') M2\nWHERE (M1.et <= (M2.st + 0) AND (M2.st - M1.et) <= 2)\n  AND (M1.arg1 = M2.arg1)"
+  },
+  {
+   "id": "B/fight/defaults/seconds24",
+   "condition": "B",
+   "event": "fight",
+   "model_json": "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"shout\", \"arguments\": []}, \"ts\": 0, \"te\": 100, \"group_id\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"impact\", \"arguments\": []}, \"ts\": 100, \"te\": 200, \"group_id\": null, \"group\": \"s1\"}], \"delta_map\": {\"s1.0\": {\"delta\": 5, \"zeta\": \"zeta_audio_fight\", \"rho\": \"rho_audio_fight\"}}, \"iseql_text\": \"\\u03c0_{M1.st, M2.et} (\\n  \\u03c3_{pred=\\\"shout\\\"}(M1)\\n  Bef(\\u03b4:5; \\u03b6:<=, \\u03c1:0)\\n  \\u03c3_{pred=\\\"impact\\\"}(M2)\\n)\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.st\", \"M2.et\"]}}",
+   "deltas": {
+    "rho_audio_vehicle_collision": 0,
+    "zeta_audio_fight": "<=",
+    "zeta_audio_vehicle_escape": "<=",
+    "zeta_audio_vehicle_collision": "<=",
+    "rho_audio_fight": 0,
+    "rho_audio_vehicle_escape": 0
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.st, M2.et} (\n  σ_{pred=\"shout\"}(M1)\n  Bef(δ:5; ζ:<=, ρ:0)\n  σ_{pred=\"impact\"}(M2)\n)",
+   "sql": "SELECT M1.st, M2.et\nFROM (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE AudioClass = 'shout' AND Confidence >= 0.0 AND AnalysisID = 's1') M1, (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE AudioClass = 'impact' AND Confidence >= 0.0 AND AnalysisID = 's1') M2\nWHERE (M1.et <= (M2.st + 0) AND (M2.st - M1.et) <= 5)"
+  },
+  {
+   "id": "B/gunshot_or_explosion/defaults/seconds24",
+   "condition": "B",
+   "event": "gunshot_or_explosion",
+   "model_json": "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"gunshot_or_explosion\", \"arguments\": []}, \"ts\": 0, \"te\": 100, \"group_id\": null, \"group\": \"s1\"}], \"iseql_text\": \"\\u03c0_{M1.st, M1.et} (\\n  \\u03c3_{pred=\\\"gunshot_or_explosion\\\"}(M1)\\n)\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.st\", \"M1.et\"]}}",
+   "deltas": {
+    "rho_audio_vehicle_collision": 0,
+    "zeta_audio_fight": "<=",
+    "zeta_audio_vehicle_escape": "<=",
+    "zeta_audio_vehicle_collision": "<=",
+    "rho_audio_fight": 0,
+    "rho_audio_vehicle_escape": 0
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.st, M1.et} (\n  σ_{pred=\"gunshot_or_explosion\"}(M1)\n)",
+   "sql": "SELECT M1.st, M1.et\nFROM (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE AudioClass = 'gunshot_or_explosion' AND Confidence >= 0.0 AND AnalysisID = 's1') M1"
+  },
+  {
+   "id": "B/vehicle_collision/defaults/seconds24",
+   "condition": "B",
+   "event": "vehicle_collision",
+   "model_json": "{\"event_name\": \"vehicle_collision\", \"intervals\": [{\"pred\": {\"name\": \"horn\", \"arguments\": []}, \"selection\": {\"branches\": [{\"preds\": [\"horn\"], \"args\": {}}, {\"preds\": [\"skidding\"], \"args\": {}}]}, \"ts\": 0, \"te\": 100, \"group\": \"s1\"}, {\"pred\": {\"name\": \"impact\", \"arguments\": []}, \"selection\": {\"branches\": [{\"preds\": [\"impact\"], \"args\": {}}, {\"preds\": [\"glass_breaking\"], \"args\": {}}]}, \"ts\": 50, \"te\": 150, \"group\": \"s1\"}], \"cross_conditions\": [], \"operator_overrides\": [{\"side\": \"s1\", \"pair_idx\": 1, \"operator\": \"SP\"}], \"delta_map\": {\"s1.0\": {\"delta\": null, \"zeta\": \"zeta_audio_vehicle_collision\", \"rho\": \"rho_audio_vehicle_collision\"}}, \"delta_unit\": \"seconds\", \"iseql_text\": \"\\u03c0_{M1.st, M2.et} (\\n  \\u03c3_{(pred=\\\"horn\\\") \\u2228 (pred=\\\"skidding\\\")}(M1)\\n  SP(\\u03b4:\\u221e; \\u03b6:<=, \\u03c1:0)\\n  \\u03c3_{(pred=\\\"impact\\\") \\u2228 (pred=\\\"glass_breaking\\\")}(M2)\\n)\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.st\", \"M2.et\"]}}",
+   "deltas": {
+    "rho_audio_vehicle_collision": 0,
+    "zeta_audio_fight": "<=",
+    "zeta_audio_vehicle_escape": "<=",
+    "zeta_audio_vehicle_collision": "<=",
+    "rho_audio_fight": 0,
+    "rho_audio_vehicle_escape": 0
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.st, M2.et} (\n  σ_{(pred=\"horn\") ∨ (pred=\"skidding\")}(M1)\n  SP(δ:∞; ζ:<=, ρ:0)\n  σ_{(pred=\"impact\") ∨ (pred=\"glass_breaking\")}(M2)\n)",
+   "sql": "SELECT M1.st, M2.et\nFROM (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE ((AudioClass = 'horn') OR (AudioClass = 'skidding')) AND Confidence >= 0.0 AND AnalysisID = 's1') M1, (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE ((AudioClass = 'impact') OR (AudioClass = 'glass_breaking')) AND Confidence >= 0.0 AND AnalysisID = 's1') M2\nWHERE ((M1.st - 0) <= M2.st AND M2.st < (M1.et + 0))"
+  },
+  {
+   "id": "B/vehicle_escape/defaults/seconds24",
+   "condition": "B",
+   "event": "vehicle_escape",
+   "model_json": "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"engine\", \"arguments\": []}, \"ts\": 0, \"te\": 100, \"group_id\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"tire_squeal\", \"arguments\": []}, \"ts\": 50, \"te\": 150, \"group_id\": null, \"group\": \"s1\"}], \"operator_overrides\": [{\"side\": \"s1\", \"pair_idx\": 1, \"operator\": \"SP\"}], \"delta_map\": {\"s1.0\": {\"delta\": null, \"zeta\": \"zeta_audio_vehicle_escape\", \"rho\": \"rho_audio_vehicle_escape\"}}, \"iseql_text\": \"\\u03c0_{M1.st, M2.et} (\\n  \\u03c3_{pred=\\\"engine\\\"}(M1)\\n  SP(\\u03b4:\\u221e; \\u03b6:<=, \\u03c1:0)\\n  \\u03c3_{pred=\\\"tire_squeal\\\"}(M2)\\n)\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.st\", \"M2.et\"]}}",
+   "deltas": {
+    "rho_audio_vehicle_collision": 0,
+    "zeta_audio_fight": "<=",
+    "zeta_audio_vehicle_escape": "<=",
+    "zeta_audio_vehicle_collision": "<=",
+    "rho_audio_fight": 0,
+    "rho_audio_vehicle_escape": 0
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.st, M2.et} (\n  σ_{pred=\"engine\"}(M1)\n  SP(δ:∞; ζ:<=, ρ:0)\n  σ_{pred=\"tire_squeal\"}(M2)\n)",
+   "sql": "SELECT M1.st, M2.et\nFROM (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE AudioClass = 'engine' AND Confidence >= 0.0 AND AnalysisID = 's1') M1, (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE AudioClass = 'tire_squeal' AND Confidence >= 0.0 AND AnalysisID = 's1') M2\nWHERE ((M1.st - 0) <= M2.st AND M2.st < (M1.et + 0))"
+  },
+  {
+   "id": "B/fight/strict/seconds24",
+   "condition": "B",
+   "event": "fight",
+   "model_json": "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"shout\", \"arguments\": []}, \"ts\": 0, \"te\": 100, \"group_id\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"impact\", \"arguments\": []}, \"ts\": 100, \"te\": 200, \"group_id\": null, \"group\": \"s1\"}], \"delta_map\": {\"s1.0\": {\"delta\": 5, \"zeta\": \"zeta_audio_fight\", \"rho\": \"rho_audio_fight\"}}, \"iseql_text\": \"\\u03c0_{M1.st, M2.et} (\\n  \\u03c3_{pred=\\\"shout\\\"}(M1)\\n  Bef(\\u03b4:5; \\u03b6:<=, \\u03c1:0)\\n  \\u03c3_{pred=\\\"impact\\\"}(M2)\\n)\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.st\", \"M2.et\"]}}",
+   "deltas": {
+    "rho_audio_vehicle_collision": 24,
+    "zeta_audio_fight": "<",
+    "zeta_audio_vehicle_escape": "<",
+    "zeta_audio_vehicle_collision": "<",
+    "rho_audio_fight": 24,
+    "rho_audio_vehicle_escape": 24
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.st, M2.et} (\n  σ_{pred=\"shout\"}(M1)\n  Bef(δ:5; ζ:<=, ρ:0)\n  σ_{pred=\"impact\"}(M2)\n)",
+   "sql": "SELECT M1.st, M2.et\nFROM (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE AudioClass = 'shout' AND Confidence >= 0.0 AND AnalysisID = 's1') M1, (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE AudioClass = 'impact' AND Confidence >= 0.0 AND AnalysisID = 's1') M2\nWHERE (M1.et < (M2.st + 24) AND (M2.st - M1.et) <= 29)"
+  },
+  {
+   "id": "B/gunshot_or_explosion/strict/seconds24",
+   "condition": "B",
+   "event": "gunshot_or_explosion",
+   "model_json": "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"gunshot_or_explosion\", \"arguments\": []}, \"ts\": 0, \"te\": 100, \"group_id\": null, \"group\": \"s1\"}], \"iseql_text\": \"\\u03c0_{M1.st, M1.et} (\\n  \\u03c3_{pred=\\\"gunshot_or_explosion\\\"}(M1)\\n)\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.st\", \"M1.et\"]}}",
+   "deltas": {
+    "rho_audio_vehicle_collision": 24,
+    "zeta_audio_fight": "<",
+    "zeta_audio_vehicle_escape": "<",
+    "zeta_audio_vehicle_collision": "<",
+    "rho_audio_fight": 24,
+    "rho_audio_vehicle_escape": 24
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.st, M1.et} (\n  σ_{pred=\"gunshot_or_explosion\"}(M1)\n)",
+   "sql": "SELECT M1.st, M1.et\nFROM (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE AudioClass = 'gunshot_or_explosion' AND Confidence >= 0.0 AND AnalysisID = 's1') M1"
+  },
+  {
+   "id": "B/vehicle_collision/strict/seconds24",
+   "condition": "B",
+   "event": "vehicle_collision",
+   "model_json": "{\"event_name\": \"vehicle_collision\", \"intervals\": [{\"pred\": {\"name\": \"horn\", \"arguments\": []}, \"selection\": {\"branches\": [{\"preds\": [\"horn\"], \"args\": {}}, {\"preds\": [\"skidding\"], \"args\": {}}]}, \"ts\": 0, \"te\": 100, \"group\": \"s1\"}, {\"pred\": {\"name\": \"impact\", \"arguments\": []}, \"selection\": {\"branches\": [{\"preds\": [\"impact\"], \"args\": {}}, {\"preds\": [\"glass_breaking\"], \"args\": {}}]}, \"ts\": 50, \"te\": 150, \"group\": \"s1\"}], \"cross_conditions\": [], \"operator_overrides\": [{\"side\": \"s1\", \"pair_idx\": 1, \"operator\": \"SP\"}], \"delta_map\": {\"s1.0\": {\"delta\": null, \"zeta\": \"zeta_audio_vehicle_collision\", \"rho\": \"rho_audio_vehicle_collision\"}}, \"delta_unit\": \"seconds\", \"iseql_text\": \"\\u03c0_{M1.st, M2.et} (\\n  \\u03c3_{(pred=\\\"horn\\\") \\u2228 (pred=\\\"skidding\\\")}(M1)\\n  SP(\\u03b4:\\u221e; \\u03b6:<=, \\u03c1:0)\\n  \\u03c3_{(pred=\\\"impact\\\") \\u2228 (pred=\\\"glass_breaking\\\")}(M2)\\n)\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.st\", \"M2.et\"]}}",
+   "deltas": {
+    "rho_audio_vehicle_collision": 24,
+    "zeta_audio_fight": "<",
+    "zeta_audio_vehicle_escape": "<",
+    "zeta_audio_vehicle_collision": "<",
+    "rho_audio_fight": 24,
+    "rho_audio_vehicle_escape": 24
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.st, M2.et} (\n  σ_{(pred=\"horn\") ∨ (pred=\"skidding\")}(M1)\n  SP(δ:∞; ζ:<=, ρ:0)\n  σ_{(pred=\"impact\") ∨ (pred=\"glass_breaking\")}(M2)\n)",
+   "sql": "SELECT M1.st, M2.et\nFROM (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE ((AudioClass = 'horn') OR (AudioClass = 'skidding')) AND Confidence >= 0.0 AND AnalysisID = 's1') M1, (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE ((AudioClass = 'impact') OR (AudioClass = 'glass_breaking')) AND Confidence >= 0.0 AND AnalysisID = 's1') M2\nWHERE ((M1.st - 24) < M2.st AND M2.st < (M1.et + 24))"
+  },
+  {
+   "id": "B/vehicle_escape/strict/seconds24",
+   "condition": "B",
+   "event": "vehicle_escape",
+   "model_json": "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"engine\", \"arguments\": []}, \"ts\": 0, \"te\": 100, \"group_id\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"tire_squeal\", \"arguments\": []}, \"ts\": 50, \"te\": 150, \"group_id\": null, \"group\": \"s1\"}], \"operator_overrides\": [{\"side\": \"s1\", \"pair_idx\": 1, \"operator\": \"SP\"}], \"delta_map\": {\"s1.0\": {\"delta\": null, \"zeta\": \"zeta_audio_vehicle_escape\", \"rho\": \"rho_audio_vehicle_escape\"}}, \"iseql_text\": \"\\u03c0_{M1.st, M2.et} (\\n  \\u03c3_{pred=\\\"engine\\\"}(M1)\\n  SP(\\u03b4:\\u221e; \\u03b6:<=, \\u03c1:0)\\n  \\u03c3_{pred=\\\"tire_squeal\\\"}(M2)\\n)\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.st\", \"M2.et\"]}}",
+   "deltas": {
+    "rho_audio_vehicle_collision": 24,
+    "zeta_audio_fight": "<",
+    "zeta_audio_vehicle_escape": "<",
+    "zeta_audio_vehicle_collision": "<",
+    "rho_audio_fight": 24,
+    "rho_audio_vehicle_escape": 24
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.st, M2.et} (\n  σ_{pred=\"engine\"}(M1)\n  SP(δ:∞; ζ:<=, ρ:0)\n  σ_{pred=\"tire_squeal\"}(M2)\n)",
+   "sql": "SELECT M1.st, M2.et\nFROM (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE AudioClass = 'engine' AND Confidence >= 0.0 AND AnalysisID = 's1') M1, (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE AudioClass = 'tire_squeal' AND Confidence >= 0.0 AND AnalysisID = 's1') M2\nWHERE ((M1.st - 24) < M2.st AND M2.st < (M1.et + 24))"
+  },
+  {
+   "id": "B/fight/defaults/frames1",
+   "condition": "B",
+   "event": "fight",
+   "model_json": "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"shout\", \"arguments\": []}, \"ts\": 0, \"te\": 100, \"group_id\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"impact\", \"arguments\": []}, \"ts\": 100, \"te\": 200, \"group_id\": null, \"group\": \"s1\"}], \"delta_map\": {\"s1.0\": {\"delta\": 5, \"zeta\": \"zeta_audio_fight\", \"rho\": \"rho_audio_fight\"}}, \"iseql_text\": \"\\u03c0_{M1.st, M2.et} (\\n  \\u03c3_{pred=\\\"shout\\\"}(M1)\\n  Bef(\\u03b4:5; \\u03b6:<=, \\u03c1:0)\\n  \\u03c3_{pred=\\\"impact\\\"}(M2)\\n)\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.st\", \"M2.et\"]}}",
+   "deltas": {
+    "rho_audio_vehicle_collision": 0,
+    "zeta_audio_fight": "<=",
+    "zeta_audio_vehicle_escape": "<=",
+    "zeta_audio_vehicle_collision": "<=",
+    "rho_audio_fight": 0,
+    "rho_audio_vehicle_escape": 0
+   },
+   "fps": 1,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.st, M2.et} (\n  σ_{pred=\"shout\"}(M1)\n  Bef(δ:5; ζ:<=, ρ:0)\n  σ_{pred=\"impact\"}(M2)\n)",
+   "sql": "SELECT M1.st, M2.et\nFROM (    SELECT CAST(StartFrame AS REAL)/1 AS st, CAST(EndFrame AS REAL)/1 AS et\n    FROM AudioPerInterval API\n    WHERE AudioClass = 'shout' AND Confidence >= 0.0 AND AnalysisID = 's1') M1, (    SELECT CAST(StartFrame AS REAL)/1 AS st, CAST(EndFrame AS REAL)/1 AS et\n    FROM AudioPerInterval API\n    WHERE AudioClass = 'impact' AND Confidence >= 0.0 AND AnalysisID = 's1') M2\nWHERE (M1.et <= (M2.st + 0) AND (M2.st - M1.et) <= 5)"
+  },
+  {
+   "id": "B/gunshot_or_explosion/defaults/frames1",
+   "condition": "B",
+   "event": "gunshot_or_explosion",
+   "model_json": "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"gunshot_or_explosion\", \"arguments\": []}, \"ts\": 0, \"te\": 100, \"group_id\": null, \"group\": \"s1\"}], \"iseql_text\": \"\\u03c0_{M1.st, M1.et} (\\n  \\u03c3_{pred=\\\"gunshot_or_explosion\\\"}(M1)\\n)\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.st\", \"M1.et\"]}}",
+   "deltas": {
+    "rho_audio_vehicle_collision": 0,
+    "zeta_audio_fight": "<=",
+    "zeta_audio_vehicle_escape": "<=",
+    "zeta_audio_vehicle_collision": "<=",
+    "rho_audio_fight": 0,
+    "rho_audio_vehicle_escape": 0
+   },
+   "fps": 1,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.st, M1.et} (\n  σ_{pred=\"gunshot_or_explosion\"}(M1)\n)",
+   "sql": "SELECT M1.st, M1.et\nFROM (    SELECT CAST(StartFrame AS REAL)/1 AS st, CAST(EndFrame AS REAL)/1 AS et\n    FROM AudioPerInterval API\n    WHERE AudioClass = 'gunshot_or_explosion' AND Confidence >= 0.0 AND AnalysisID = 's1') M1"
+  },
+  {
+   "id": "B/vehicle_collision/defaults/frames1",
+   "condition": "B",
+   "event": "vehicle_collision",
+   "model_json": "{\"event_name\": \"vehicle_collision\", \"intervals\": [{\"pred\": {\"name\": \"horn\", \"arguments\": []}, \"selection\": {\"branches\": [{\"preds\": [\"horn\"], \"args\": {}}, {\"preds\": [\"skidding\"], \"args\": {}}]}, \"ts\": 0, \"te\": 100, \"group\": \"s1\"}, {\"pred\": {\"name\": \"impact\", \"arguments\": []}, \"selection\": {\"branches\": [{\"preds\": [\"impact\"], \"args\": {}}, {\"preds\": [\"glass_breaking\"], \"args\": {}}]}, \"ts\": 50, \"te\": 150, \"group\": \"s1\"}], \"cross_conditions\": [], \"operator_overrides\": [{\"side\": \"s1\", \"pair_idx\": 1, \"operator\": \"SP\"}], \"delta_map\": {\"s1.0\": {\"delta\": null, \"zeta\": \"zeta_audio_vehicle_collision\", \"rho\": \"rho_audio_vehicle_collision\"}}, \"delta_unit\": \"seconds\", \"iseql_text\": \"\\u03c0_{M1.st, M2.et} (\\n  \\u03c3_{(pred=\\\"horn\\\") \\u2228 (pred=\\\"skidding\\\")}(M1)\\n  SP(\\u03b4:\\u221e; \\u03b6:<=, \\u03c1:0)\\n  \\u03c3_{(pred=\\\"impact\\\") \\u2228 (pred=\\\"glass_breaking\\\")}(M2)\\n)\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.st\", \"M2.et\"]}}",
+   "deltas": {
+    "rho_audio_vehicle_collision": 0,
+    "zeta_audio_fight": "<=",
+    "zeta_audio_vehicle_escape": "<=",
+    "zeta_audio_vehicle_collision": "<=",
+    "rho_audio_fight": 0,
+    "rho_audio_vehicle_escape": 0
+   },
+   "fps": 1,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.st, M2.et} (\n  σ_{(pred=\"horn\") ∨ (pred=\"skidding\")}(M1)\n  SP(δ:∞; ζ:<=, ρ:0)\n  σ_{(pred=\"impact\") ∨ (pred=\"glass_breaking\")}(M2)\n)",
+   "sql": "SELECT M1.st, M2.et\nFROM (    SELECT CAST(StartFrame AS REAL)/1 AS st, CAST(EndFrame AS REAL)/1 AS et\n    FROM AudioPerInterval API\n    WHERE ((AudioClass = 'horn') OR (AudioClass = 'skidding')) AND Confidence >= 0.0 AND AnalysisID = 's1') M1, (    SELECT CAST(StartFrame AS REAL)/1 AS st, CAST(EndFrame AS REAL)/1 AS et\n    FROM AudioPerInterval API\n    WHERE ((AudioClass = 'impact') OR (AudioClass = 'glass_breaking')) AND Confidence >= 0.0 AND AnalysisID = 's1') M2\nWHERE ((M1.st - 0) <= M2.st AND M2.st < (M1.et + 0))"
+  },
+  {
+   "id": "B/vehicle_escape/defaults/frames1",
+   "condition": "B",
+   "event": "vehicle_escape",
+   "model_json": "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"engine\", \"arguments\": []}, \"ts\": 0, \"te\": 100, \"group_id\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"tire_squeal\", \"arguments\": []}, \"ts\": 50, \"te\": 150, \"group_id\": null, \"group\": \"s1\"}], \"operator_overrides\": [{\"side\": \"s1\", \"pair_idx\": 1, \"operator\": \"SP\"}], \"delta_map\": {\"s1.0\": {\"delta\": null, \"zeta\": \"zeta_audio_vehicle_escape\", \"rho\": \"rho_audio_vehicle_escape\"}}, \"iseql_text\": \"\\u03c0_{M1.st, M2.et} (\\n  \\u03c3_{pred=\\\"engine\\\"}(M1)\\n  SP(\\u03b4:\\u221e; \\u03b6:<=, \\u03c1:0)\\n  \\u03c3_{pred=\\\"tire_squeal\\\"}(M2)\\n)\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.st\", \"M2.et\"]}}",
+   "deltas": {
+    "rho_audio_vehicle_collision": 0,
+    "zeta_audio_fight": "<=",
+    "zeta_audio_vehicle_escape": "<=",
+    "zeta_audio_vehicle_collision": "<=",
+    "rho_audio_fight": 0,
+    "rho_audio_vehicle_escape": 0
+   },
+   "fps": 1,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.st, M2.et} (\n  σ_{pred=\"engine\"}(M1)\n  SP(δ:∞; ζ:<=, ρ:0)\n  σ_{pred=\"tire_squeal\"}(M2)\n)",
+   "sql": "SELECT M1.st, M2.et\nFROM (    SELECT CAST(StartFrame AS REAL)/1 AS st, CAST(EndFrame AS REAL)/1 AS et\n    FROM AudioPerInterval API\n    WHERE AudioClass = 'engine' AND Confidence >= 0.0 AND AnalysisID = 's1') M1, (    SELECT CAST(StartFrame AS REAL)/1 AS st, CAST(EndFrame AS REAL)/1 AS et\n    FROM AudioPerInterval API\n    WHERE AudioClass = 'tire_squeal' AND Confidence >= 0.0 AND AnalysisID = 's1') M2\nWHERE ((M1.st - 0) <= M2.st AND M2.st < (M1.et + 0))"
+  },
+  {
+   "id": "C/fight/defaults/seconds24",
+   "condition": "C",
+   "event": "fight",
+   "model_json": "{\"event_name\": \"fight\", \"set_operator\": null, \"intervals\": [{\"pred\": {\"name\": \"shout\", \"arguments\": []}, \"selection\": {\"preds\": [\"shout\"], \"args\": {}}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"impact\", \"arguments\": []}, \"selection\": {\"preds\": [\"impact\"], \"args\": {}}, \"ts\": 100, \"te\": 200, \"set_side\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"physical_altercation\", \"arguments\": [\"person\", \"person\"]}, \"selection\": {\"preds\": [\"physical_altercation\"], \"args\": {\"1\": [\"person\"], \"2\": [\"person\"]}}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group\": \"s2\"}], \"cross_conditions\": [{\"left_alias\": \"M3\", \"left_attr\": \"arg1\", \"op\": \"≠\", \"right_alias\": \"M3\", \"right_attr\": \"arg2\"}], \"operator_overrides\": [{\"side\": \"s1\", \"pair_idx\": 1, \"operator\": \"Bef\"}], \"delta_map\": {\"s1.0\": {\"delta\": 5, \"zeta\": \"zeta_audio_fight\", \"rho\": \"rho_audio_fight\"}}, \"delta_unit\": \"seconds\", \"iseql_text\": \"π_{M1.st, M1.et, M2.st, M2.et} (\\n  σ_{pred=\\\"shout\\\"}(M1)\\n  Bef(δ:5; ζ:<=, ρ:0)\\n  σ_{pred=\\\"impact\\\"}(M2)\\n)\\n∪\\nπ_{M1.arg1, M1.arg2, M1.st, M1.et} (\\n  σ_{M1.arg1≠M1.arg2} (\\n    σ_{pred=\\\"physical_altercation\\\" ∧ arg1=\\\"person\\\" ∧ arg2=\\\"person\\\"}(M1)\\n  ))\", \"left_projection\": null, \"right_projection\": null, \"set_expression\": {\"op\": \"∪\", \"children\": [{\"group\": \"s1\", \"projection\": [\"M1.st\", \"M2.et\"]}, {\"group\": \"s2\", \"projection\": [\"M1.arg1\", \"M1.arg2\", \"M1.st\", \"M1.et\"]}]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<=",
+    "rho_visual_handoff": 0,
+    "rho_visual_vehicle_escape": 0,
+    "zeta_visual_vehicle_escape": "<=",
+    "delta_visual_vehicle_escape": 48,
+    "delta_visual_handoff": null,
+    "zeta_audio_fight": "<=",
+    "rho_audio_vehicle_collision": 0,
+    "zeta_audio_vehicle_escape": "<=",
+    "zeta_audio_vehicle_collision": "<=",
+    "rho_audio_fight": 0,
+    "rho_audio_vehicle_escape": 0
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.st, M1.et, M2.st, M2.et} (\n  σ_{pred=\"shout\"}(M1)\n  Bef(δ:5; ζ:<=, ρ:0)\n  σ_{pred=\"impact\"}(M2)\n)\n∪\nπ_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{M1.arg1≠M1.arg2} (\n    σ_{pred=\"physical_altercation\" ∧ arg1=\"person\" ∧ arg2=\"person\"}(M1)\n  ))",
+   "sql": "SELECT NULL AS arg1, NULL AS arg2, M1.st, M2.et\nFROM (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE ((AudioClass = 'shout')) AND Confidence >= 0.0 AND AnalysisID = 's1') M1, (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE ((AudioClass = 'impact')) AND Confidence >= 0.0 AND AnalysisID = 's1') M2\nWHERE (M1.et <= (M2.st + 0) AND (M2.st - M1.et) <= 5)\nUNION\nSELECT M1.arg1, M1.arg2, M1.st, M1.et\nFROM (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID\n    WHERE ((RelationType = 'physical_altercation' AND VP_1.Class = 'person' AND VP_2.Class = 'person')) AND AnalysisID = 's1') M1\nWHERE (M1.arg1 != M1.arg2)"
+  },
+  {
+   "id": "C/gunshot_or_explosion/defaults/seconds24",
+   "condition": "C",
+   "event": "gunshot_or_explosion",
+   "model_json": "{\"event_name\": \"gunshot_or_explosion\", \"set_operator\": null, \"intervals\": [{\"pred\": {\"name\": \"gunshot_or_explosion\", \"arguments\": []}, \"selection\": {\"preds\": [\"gunshot_or_explosion\"], \"args\": {}}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"gunshot_visible\", \"arguments\": [\"person\"]}, \"selection\": {\"branches\": [{\"preds\": [\"gunshot_visible\"], \"args\": {\"1\": [\"person\"]}}, {\"preds\": [\"explosion_visible\"], \"args\": {\"1\": [\"vehicle\", \"object\"]}}]}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group\": \"s2\"}], \"cross_conditions\": [], \"operator_overrides\": [], \"delta_unit\": \"seconds\", \"iseql_text\": \"π_{M1.st, M1.et} (\\n  σ_{pred=\\\"gunshot_or_explosion\\\"}(M1)\\n)\\n∪\\nπ_{M1.arg1, M1.st, M1.et} (\\n  σ_{(pred=\\\"gunshot_visible\\\" ∧ arg1=\\\"person\\\") ∨ (pred=\\\"explosion_visible\\\" ∧ arg1=\\\"vehicle\\\" ∨ arg1=\\\"object\\\")}(M1)\\n)\", \"left_projection\": null, \"right_projection\": null, \"set_expression\": {\"op\": \"∪\", \"children\": [{\"group\": \"s1\", \"projection\": [\"M1.st\", \"M1.et\"]}, {\"group\": \"s2\", \"projection\": [\"M1.arg1\", \"M1.st\", \"M1.et\"]}]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<=",
+    "rho_visual_handoff": 0,
+    "rho_visual_vehicle_escape": 0,
+    "zeta_visual_vehicle_escape": "<=",
+    "delta_visual_vehicle_escape": 48,
+    "delta_visual_handoff": null,
+    "zeta_audio_fight": "<=",
+    "rho_audio_vehicle_collision": 0,
+    "zeta_audio_vehicle_escape": "<=",
+    "zeta_audio_vehicle_collision": "<=",
+    "rho_audio_fight": 0,
+    "rho_audio_vehicle_escape": 0
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.st, M1.et} (\n  σ_{pred=\"gunshot_or_explosion\"}(M1)\n)\n∪\nπ_{M1.arg1, M1.st, M1.et} (\n  σ_{(pred=\"gunshot_visible\" ∧ arg1=\"person\") ∨ (pred=\"explosion_visible\" ∧ arg1=\"vehicle\" ∨ arg1=\"object\")}(M1)\n)",
+   "sql": "SELECT NULL AS arg1, M1.st, M1.et\nFROM (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE ((AudioClass = 'gunshot_or_explosion')) AND Confidence >= 0.0 AND AnalysisID = 's1') M1\nUNION\nSELECT M1.arg1, M1.st, M1.et\nFROM (    SELECT VP_1.ClassID AS arg1, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID\n    WHERE ((RelationType = 'gunshot_visible' AND VP_1.Class = 'person') OR (RelationType = 'explosion_visible' AND VP_1.Class IN ('vehicle', 'object'))) AND AnalysisID = 's1') M1"
+  },
+  {
+   "id": "C/handoff/defaults/seconds24",
+   "condition": "C",
+   "event": "handoff",
+   "model_json": "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"carrying\", \"arguments\": [\"person\", \"object\"]}, \"ts\": 0, \"te\": 100, \"group_id\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"carrying\", \"arguments\": [\"person\", \"object\"]}, \"ts\": 100, \"te\": 200, \"group_id\": null, \"group\": \"s1\"}], \"cross_conditions\": [{\"left_alias\": \"M1\", \"left_attr\": \"arg1\", \"op\": \"\\u2260\", \"right_alias\": \"M2\", \"right_attr\": \"arg1\"}, {\"left_alias\": \"M1\", \"left_attr\": \"arg2\", \"op\": \"=\", \"right_alias\": \"M2\", \"right_attr\": \"arg2\"}], \"delta_map\": {\"s1.0\": {\"delta\": \"delta_visual_handoff\", \"zeta\": \"zeta_visual_handoff\", \"rho\": \"rho_visual_handoff\"}}, \"iseql_text\": \"\\u03c0_{M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et} (\\n  \\u03c3_{M1.arg1\\u2260M2.arg1 \\u2227 M1.arg2=M2.arg2} (\\n    \\u03c3_{pred=\\\"carrying\\\" \\u2227 arg1=\\\"person\\\" \\u2227 arg2=\\\"object\\\"}(M1)\\n    Bef(\\u03b4:\\u221e; \\u03b6:<=, \\u03c1:0)\\n    \\u03c3_{pred=\\\"carrying\\\" \\u2227 arg1=\\\"person\\\" \\u2227 arg2=\\\"object\\\"}(M2)\\n  ))\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.arg1\", \"M2.arg1\", \"M1.arg2\", \"M1.st\", \"M2.et\"]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<=",
+    "rho_visual_handoff": 0,
+    "rho_visual_vehicle_escape": 0,
+    "zeta_visual_vehicle_escape": "<=",
+    "delta_visual_vehicle_escape": 48,
+    "delta_visual_handoff": null,
+    "zeta_audio_fight": "<=",
+    "rho_audio_vehicle_collision": 0,
+    "zeta_audio_vehicle_escape": "<=",
+    "zeta_audio_vehicle_collision": "<=",
+    "rho_audio_fight": 0,
+    "rho_audio_vehicle_escape": 0
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et} (\n  σ_{M1.arg1≠M2.arg1 ∧ M1.arg2=M2.arg2} (\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M1)\n    Bef(δ:∞; ζ:<=, ρ:0)\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M2)\n  ))",
+   "sql": "SELECT M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et\nFROM (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'person'\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID AND VP_2.Class = 'object'\n    WHERE RelationType = 'carrying' AND AnalysisID = 's1') M1, (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'person'\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID AND VP_2.Class = 'object'\n    WHERE RelationType = 'carrying' AND AnalysisID = 's1') M2\nWHERE (M1.et <= (M2.st + 0))\n  AND (M1.arg1 != M2.arg1)\n  AND (M1.arg2 = M2.arg2)"
+  },
+  {
+   "id": "C/suspicious_near_vehicle/defaults/seconds24",
+   "condition": "C",
+   "event": "suspicious_near_vehicle",
+   "model_json": "{\"event_name\": \"suspicious_near_vehicle\", \"intervals\": [{\"pred\": {\"name\": \"suspicious_near_vehicle\", \"arguments\": [\"person\", \"vehicle\"]}, \"selection\": {\"preds\": [\"suspicious_near_vehicle\"], \"args\": {\"1\": [\"person\"], \"2\": [\"vehicle\"]}}, \"ts\": 0, \"te\": 100, \"group\": \"s1\"}], \"cross_conditions\": [{\"type\": \"duration\", \"left_alias\": \"M1\", \"left_attr\": \"et\", \"right_alias\": \"M1\", \"right_attr\": \"st\", \"op\": \">=\", \"value\": 3}], \"operator_overrides\": [], \"delta_unit\": \"seconds\", \"iseql_text\": \"\\u03c0_{M1.arg1, M1.arg2, M1.st, M1.et} (\\n  \\u03c3_{(M1.et \\u2212 M1.st) \\u2265 3} (\\n    \\u03c3_{pred=\\\"suspicious_near_vehicle\\\" \\u2227 arg1=\\\"person\\\" \\u2227 arg2=\\\"vehicle\\\"}(M1)\\n  ))\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.arg1\", \"M1.arg2\", \"M1.st\", \"M1.et\"]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<=",
+    "rho_visual_handoff": 0,
+    "rho_visual_vehicle_escape": 0,
+    "zeta_visual_vehicle_escape": "<=",
+    "delta_visual_vehicle_escape": 48,
+    "delta_visual_handoff": null,
+    "zeta_audio_fight": "<=",
+    "rho_audio_vehicle_collision": 0,
+    "zeta_audio_vehicle_escape": "<=",
+    "zeta_audio_vehicle_collision": "<=",
+    "rho_audio_fight": 0,
+    "rho_audio_vehicle_escape": 0
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{(M1.et − M1.st) ≥ 3} (\n    σ_{pred=\"suspicious_near_vehicle\" ∧ arg1=\"person\" ∧ arg2=\"vehicle\"}(M1)\n  ))",
+   "sql": "SELECT M1.arg1, M1.arg2, M1.st, M1.et\nFROM (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID\n    WHERE ((RelationType = 'suspicious_near_vehicle' AND VP_1.Class = 'person' AND VP_2.Class = 'vehicle')) AND AnalysisID = 's1') M1\nWHERE (M1.et - M1.st) >= 3"
+  },
+  {
+   "id": "C/vehicle_collision/defaults/seconds24",
+   "condition": "C",
+   "event": "vehicle_collision",
+   "model_json": "{\"event_name\": \"vehicle_collision\", \"set_operator\": null, \"intervals\": [{\"pred\": {\"name\": \"horn\", \"arguments\": []}, \"selection\": {\"branches\": [{\"preds\": [\"horn\"], \"args\": {}}, {\"preds\": [\"skidding\"], \"args\": {}}]}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"impact\", \"arguments\": []}, \"selection\": {\"branches\": [{\"preds\": [\"impact\"], \"args\": {}}, {\"preds\": [\"glass_breaking\"], \"args\": {}}]}, \"ts\": 50, \"te\": 150, \"set_side\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"vehicle_collision\", \"arguments\": [\"vehicle\"]}, \"selection\": {\"preds\": [\"vehicle_collision\"], \"args\": {\"1\": [\"vehicle\"]}}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group\": \"s2\"}], \"cross_conditions\": [], \"operator_overrides\": [{\"side\": \"s1\", \"pair_idx\": 1, \"operator\": \"SP\"}], \"delta_map\": {\"s1.0\": {\"delta\": null, \"zeta\": \"zeta_audio_vehicle_collision\", \"rho\": \"rho_audio_vehicle_collision\"}}, \"delta_unit\": \"seconds\", \"iseql_text\": \"π_{M1.st, M1.et, M2.st, M2.et} (\\n  σ_{(pred=\\\"horn\\\") ∨ (pred=\\\"skidding\\\")}(M1)\\n  SP(δ:∞; ζ:<=, ρ:0)\\n  σ_{(pred=\\\"impact\\\") ∨ (pred=\\\"glass_breaking\\\")}(M2)\\n)\\n∪\\nπ_{M1.arg1, M1.st, M1.et} (\\n  σ_{pred=\\\"vehicle_collision\\\" ∧ arg1=\\\"vehicle\\\"}(M1)\\n)\", \"left_projection\": null, \"right_projection\": null, \"set_expression\": {\"op\": \"∪\", \"children\": [{\"group\": \"s1\", \"projection\": [\"M1.st\", \"M2.et\"]}, {\"group\": \"s2\", \"projection\": [\"M1.arg1\", \"M1.st\", \"M1.et\"]}]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<=",
+    "rho_visual_handoff": 0,
+    "rho_visual_vehicle_escape": 0,
+    "zeta_visual_vehicle_escape": "<=",
+    "delta_visual_vehicle_escape": 48,
+    "delta_visual_handoff": null,
+    "zeta_audio_fight": "<=",
+    "rho_audio_vehicle_collision": 0,
+    "zeta_audio_vehicle_escape": "<=",
+    "zeta_audio_vehicle_collision": "<=",
+    "rho_audio_fight": 0,
+    "rho_audio_vehicle_escape": 0
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.st, M1.et, M2.st, M2.et} (\n  σ_{(pred=\"horn\") ∨ (pred=\"skidding\")}(M1)\n  SP(δ:∞; ζ:<=, ρ:0)\n  σ_{(pred=\"impact\") ∨ (pred=\"glass_breaking\")}(M2)\n)\n∪\nπ_{M1.arg1, M1.st, M1.et} (\n  σ_{pred=\"vehicle_collision\" ∧ arg1=\"vehicle\"}(M1)\n)",
+   "sql": "SELECT NULL AS arg1, M1.st, M2.et\nFROM (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE ((AudioClass = 'horn') OR (AudioClass = 'skidding')) AND Confidence >= 0.0 AND AnalysisID = 's1') M1, (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE ((AudioClass = 'impact') OR (AudioClass = 'glass_breaking')) AND Confidence >= 0.0 AND AnalysisID = 's1') M2\nWHERE ((M1.st - 0) <= M2.st AND M2.st < (M1.et + 0))\nUNION\nSELECT M1.arg1, M1.st, M1.et\nFROM (    SELECT VP_1.ClassID AS arg1, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID\n    WHERE ((RelationType = 'vehicle_collision' AND VP_1.Class = 'vehicle')) AND AnalysisID = 's1') M1"
+  },
+  {
+   "id": "C/vehicle_escape/defaults/seconds24",
+   "condition": "C",
+   "event": "vehicle_escape",
+   "model_json": "{\"set_operator\": null, \"intervals\": [{\"pred\": {\"name\": \"engine\", \"arguments\": []}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group_id\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"tire_squeal\", \"arguments\": []}, \"ts\": 50, \"te\": 150, \"set_side\": null, \"group_id\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"running\", \"arguments\": [\"person\"]}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group_id\": null, \"group\": \"s2\"}, {\"pred\": {\"name\": \"enter_or_exit_vehicle\", \"arguments\": [\"person\", \"vehicle\"]}, \"ts\": 100, \"te\": 200, \"set_side\": null, \"group_id\": null, \"group\": \"s2\"}], \"cross_conditions\": [{\"left_alias\": \"M3\", \"left_attr\": \"arg1\", \"op\": \"=\", \"right_alias\": \"M4\", \"right_attr\": \"arg1\"}], \"operator_overrides\": [{\"side\": \"s1\", \"pair_idx\": 1, \"operator\": \"SP\"}, {\"side\": \"s2\", \"pair_idx\": 1, \"operator\": \"Bef\"}], \"delta_map\": {\"s1.0\": {\"delta\": null, \"zeta\": \"zeta_audio_vehicle_escape\", \"rho\": \"rho_audio_vehicle_escape\"}, \"s2.0\": {\"delta\": \"delta_visual_vehicle_escape\", \"zeta\": \"zeta_visual_vehicle_escape\", \"rho\": \"rho_visual_vehicle_escape\"}}, \"delta_unit\": \"seconds\", \"iseql_text\": \"π_{M1.st, M1.et, M2.st, M2.et} (\\n  σ_{pred=\\\"engine\\\"}(M1)\\n  SP(δ:∞; ζ:<=, ρ:0)\\n  σ_{pred=\\\"tire_squeal\\\"}(M2)\\n)\\n∪\\nπ_{M1.arg1, M1.st, M1.et, M2.arg1, M2.arg2, M2.st, M2.et} (\\n  σ_{M1.arg1=M2.arg1} (\\n    σ_{pred=\\\"running\\\" ∧ arg1=\\\"person\\\"}(M1)\\n    Bef(δ:2; ζ:<=, ρ:0)\\n    σ_{pred=\\\"enter_or_exit_vehicle\\\" ∧ arg1=\\\"person\\\" ∧ arg2=\\\"vehicle\\\"}(M2)\\n  ))\", \"left_projection\": null, \"right_projection\": null, \"set_expression\": {\"op\": \"∪\", \"children\": [{\"group\": \"s1\", \"projection\": [\"M1.st\", \"M2.et\"]}, {\"group\": \"s2\", \"projection\": [\"M1.arg1\", \"M2.arg2\", \"M1.st\", \"M2.et\"]}]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<=",
+    "rho_visual_handoff": 0,
+    "rho_visual_vehicle_escape": 0,
+    "zeta_visual_vehicle_escape": "<=",
+    "delta_visual_vehicle_escape": 48,
+    "delta_visual_handoff": null,
+    "zeta_audio_fight": "<=",
+    "rho_audio_vehicle_collision": 0,
+    "zeta_audio_vehicle_escape": "<=",
+    "zeta_audio_vehicle_collision": "<=",
+    "rho_audio_fight": 0,
+    "rho_audio_vehicle_escape": 0
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.st, M1.et, M2.st, M2.et} (\n  σ_{pred=\"engine\"}(M1)\n  SP(δ:∞; ζ:<=, ρ:0)\n  σ_{pred=\"tire_squeal\"}(M2)\n)\n∪\nπ_{M1.arg1, M1.st, M1.et, M2.arg1, M2.arg2, M2.st, M2.et} (\n  σ_{M1.arg1=M2.arg1} (\n    σ_{pred=\"running\" ∧ arg1=\"person\"}(M1)\n    Bef(δ:2; ζ:<=, ρ:0)\n    σ_{pred=\"enter_or_exit_vehicle\" ∧ arg1=\"person\" ∧ arg2=\"vehicle\"}(M2)\n  ))",
+   "sql": "SELECT NULL AS arg1, NULL AS arg2, M1.st, M2.et\nFROM (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE AudioClass = 'engine' AND Confidence >= 0.0 AND AnalysisID = 's1') M1, (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE AudioClass = 'tire_squeal' AND Confidence >= 0.0 AND AnalysisID = 's1') M2\nWHERE ((M1.st - 0) <= M2.st AND M2.st < (M1.et + 0))\nUNION\nSELECT M1.arg1, M2.arg2, M1.st, M2.et\nFROM (    SELECT VP_1.ClassID AS arg1, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'person'\n    WHERE RelationType = 'running' AND AnalysisID = 's1') M1, (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'person'\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID AND VP_2.Class = 'vehicle'\n    WHERE RelationType = 'enter_or_exit_vehicle' AND AnalysisID = 's1') M2\nWHERE (M1.et <= (M2.st + 0) AND (M2.st - M1.et) <= 48)\n  AND (M1.arg1 = M2.arg1)"
+  },
+  {
+   "id": "C/fight/strict/seconds24",
+   "condition": "C",
+   "event": "fight",
+   "model_json": "{\"event_name\": \"fight\", \"set_operator\": null, \"intervals\": [{\"pred\": {\"name\": \"shout\", \"arguments\": []}, \"selection\": {\"preds\": [\"shout\"], \"args\": {}}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"impact\", \"arguments\": []}, \"selection\": {\"preds\": [\"impact\"], \"args\": {}}, \"ts\": 100, \"te\": 200, \"set_side\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"physical_altercation\", \"arguments\": [\"person\", \"person\"]}, \"selection\": {\"preds\": [\"physical_altercation\"], \"args\": {\"1\": [\"person\"], \"2\": [\"person\"]}}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group\": \"s2\"}], \"cross_conditions\": [{\"left_alias\": \"M3\", \"left_attr\": \"arg1\", \"op\": \"≠\", \"right_alias\": \"M3\", \"right_attr\": \"arg2\"}], \"operator_overrides\": [{\"side\": \"s1\", \"pair_idx\": 1, \"operator\": \"Bef\"}], \"delta_map\": {\"s1.0\": {\"delta\": 5, \"zeta\": \"zeta_audio_fight\", \"rho\": \"rho_audio_fight\"}}, \"delta_unit\": \"seconds\", \"iseql_text\": \"π_{M1.st, M1.et, M2.st, M2.et} (\\n  σ_{pred=\\\"shout\\\"}(M1)\\n  Bef(δ:5; ζ:<=, ρ:0)\\n  σ_{pred=\\\"impact\\\"}(M2)\\n)\\n∪\\nπ_{M1.arg1, M1.arg2, M1.st, M1.et} (\\n  σ_{M1.arg1≠M1.arg2} (\\n    σ_{pred=\\\"physical_altercation\\\" ∧ arg1=\\\"person\\\" ∧ arg2=\\\"person\\\"}(M1)\\n  ))\", \"left_projection\": null, \"right_projection\": null, \"set_expression\": {\"op\": \"∪\", \"children\": [{\"group\": \"s1\", \"projection\": [\"M1.st\", \"M2.et\"]}, {\"group\": \"s2\", \"projection\": [\"M1.arg1\", \"M1.arg2\", \"M1.st\", \"M1.et\"]}]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<",
+    "rho_visual_handoff": 24,
+    "rho_visual_vehicle_escape": 24,
+    "zeta_visual_vehicle_escape": "<",
+    "delta_visual_vehicle_escape": 72,
+    "delta_visual_handoff": null,
+    "zeta_audio_fight": "<",
+    "rho_audio_vehicle_collision": 24,
+    "zeta_audio_vehicle_escape": "<",
+    "zeta_audio_vehicle_collision": "<",
+    "rho_audio_fight": 24,
+    "rho_audio_vehicle_escape": 24
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.st, M1.et, M2.st, M2.et} (\n  σ_{pred=\"shout\"}(M1)\n  Bef(δ:5; ζ:<=, ρ:0)\n  σ_{pred=\"impact\"}(M2)\n)\n∪\nπ_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{M1.arg1≠M1.arg2} (\n    σ_{pred=\"physical_altercation\" ∧ arg1=\"person\" ∧ arg2=\"person\"}(M1)\n  ))",
+   "sql": "SELECT NULL AS arg1, NULL AS arg2, M1.st, M2.et\nFROM (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE ((AudioClass = 'shout')) AND Confidence >= 0.0 AND AnalysisID = 's1') M1, (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE ((AudioClass = 'impact')) AND Confidence >= 0.0 AND AnalysisID = 's1') M2\nWHERE (M1.et < (M2.st + 24) AND (M2.st - M1.et) <= 29)\nUNION\nSELECT M1.arg1, M1.arg2, M1.st, M1.et\nFROM (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID\n    WHERE ((RelationType = 'physical_altercation' AND VP_1.Class = 'person' AND VP_2.Class = 'person')) AND AnalysisID = 's1') M1\nWHERE (M1.arg1 != M1.arg2)"
+  },
+  {
+   "id": "C/gunshot_or_explosion/strict/seconds24",
+   "condition": "C",
+   "event": "gunshot_or_explosion",
+   "model_json": "{\"event_name\": \"gunshot_or_explosion\", \"set_operator\": null, \"intervals\": [{\"pred\": {\"name\": \"gunshot_or_explosion\", \"arguments\": []}, \"selection\": {\"preds\": [\"gunshot_or_explosion\"], \"args\": {}}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"gunshot_visible\", \"arguments\": [\"person\"]}, \"selection\": {\"branches\": [{\"preds\": [\"gunshot_visible\"], \"args\": {\"1\": [\"person\"]}}, {\"preds\": [\"explosion_visible\"], \"args\": {\"1\": [\"vehicle\", \"object\"]}}]}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group\": \"s2\"}], \"cross_conditions\": [], \"operator_overrides\": [], \"delta_unit\": \"seconds\", \"iseql_text\": \"π_{M1.st, M1.et} (\\n  σ_{pred=\\\"gunshot_or_explosion\\\"}(M1)\\n)\\n∪\\nπ_{M1.arg1, M1.st, M1.et} (\\n  σ_{(pred=\\\"gunshot_visible\\\" ∧ arg1=\\\"person\\\") ∨ (pred=\\\"explosion_visible\\\" ∧ arg1=\\\"vehicle\\\" ∨ arg1=\\\"object\\\")}(M1)\\n)\", \"left_projection\": null, \"right_projection\": null, \"set_expression\": {\"op\": \"∪\", \"children\": [{\"group\": \"s1\", \"projection\": [\"M1.st\", \"M1.et\"]}, {\"group\": \"s2\", \"projection\": [\"M1.arg1\", \"M1.st\", \"M1.et\"]}]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<",
+    "rho_visual_handoff": 24,
+    "rho_visual_vehicle_escape": 24,
+    "zeta_visual_vehicle_escape": "<",
+    "delta_visual_vehicle_escape": 72,
+    "delta_visual_handoff": null,
+    "zeta_audio_fight": "<",
+    "rho_audio_vehicle_collision": 24,
+    "zeta_audio_vehicle_escape": "<",
+    "zeta_audio_vehicle_collision": "<",
+    "rho_audio_fight": 24,
+    "rho_audio_vehicle_escape": 24
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.st, M1.et} (\n  σ_{pred=\"gunshot_or_explosion\"}(M1)\n)\n∪\nπ_{M1.arg1, M1.st, M1.et} (\n  σ_{(pred=\"gunshot_visible\" ∧ arg1=\"person\") ∨ (pred=\"explosion_visible\" ∧ arg1=\"vehicle\" ∨ arg1=\"object\")}(M1)\n)",
+   "sql": "SELECT NULL AS arg1, M1.st, M1.et\nFROM (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE ((AudioClass = 'gunshot_or_explosion')) AND Confidence >= 0.0 AND AnalysisID = 's1') M1\nUNION\nSELECT M1.arg1, M1.st, M1.et\nFROM (    SELECT VP_1.ClassID AS arg1, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID\n    WHERE ((RelationType = 'gunshot_visible' AND VP_1.Class = 'person') OR (RelationType = 'explosion_visible' AND VP_1.Class IN ('vehicle', 'object'))) AND AnalysisID = 's1') M1"
+  },
+  {
+   "id": "C/handoff/strict/seconds24",
+   "condition": "C",
+   "event": "handoff",
+   "model_json": "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"carrying\", \"arguments\": [\"person\", \"object\"]}, \"ts\": 0, \"te\": 100, \"group_id\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"carrying\", \"arguments\": [\"person\", \"object\"]}, \"ts\": 100, \"te\": 200, \"group_id\": null, \"group\": \"s1\"}], \"cross_conditions\": [{\"left_alias\": \"M1\", \"left_attr\": \"arg1\", \"op\": \"\\u2260\", \"right_alias\": \"M2\", \"right_attr\": \"arg1\"}, {\"left_alias\": \"M1\", \"left_attr\": \"arg2\", \"op\": \"=\", \"right_alias\": \"M2\", \"right_attr\": \"arg2\"}], \"delta_map\": {\"s1.0\": {\"delta\": \"delta_visual_handoff\", \"zeta\": \"zeta_visual_handoff\", \"rho\": \"rho_visual_handoff\"}}, \"iseql_text\": \"\\u03c0_{M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et} (\\n  \\u03c3_{M1.arg1\\u2260M2.arg1 \\u2227 M1.arg2=M2.arg2} (\\n    \\u03c3_{pred=\\\"carrying\\\" \\u2227 arg1=\\\"person\\\" \\u2227 arg2=\\\"object\\\"}(M1)\\n    Bef(\\u03b4:\\u221e; \\u03b6:<=, \\u03c1:0)\\n    \\u03c3_{pred=\\\"carrying\\\" \\u2227 arg1=\\\"person\\\" \\u2227 arg2=\\\"object\\\"}(M2)\\n  ))\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.arg1\", \"M2.arg1\", \"M1.arg2\", \"M1.st\", \"M2.et\"]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<",
+    "rho_visual_handoff": 24,
+    "rho_visual_vehicle_escape": 24,
+    "zeta_visual_vehicle_escape": "<",
+    "delta_visual_vehicle_escape": 72,
+    "delta_visual_handoff": null,
+    "zeta_audio_fight": "<",
+    "rho_audio_vehicle_collision": 24,
+    "zeta_audio_vehicle_escape": "<",
+    "zeta_audio_vehicle_collision": "<",
+    "rho_audio_fight": 24,
+    "rho_audio_vehicle_escape": 24
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et} (\n  σ_{M1.arg1≠M2.arg1 ∧ M1.arg2=M2.arg2} (\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M1)\n    Bef(δ:∞; ζ:<=, ρ:0)\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M2)\n  ))",
+   "sql": "SELECT M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et\nFROM (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'person'\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID AND VP_2.Class = 'object'\n    WHERE RelationType = 'carrying' AND AnalysisID = 's1') M1, (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'person'\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID AND VP_2.Class = 'object'\n    WHERE RelationType = 'carrying' AND AnalysisID = 's1') M2\nWHERE (M1.et < (M2.st + 24))\n  AND (M1.arg1 != M2.arg1)\n  AND (M1.arg2 = M2.arg2)"
+  },
+  {
+   "id": "C/suspicious_near_vehicle/strict/seconds24",
+   "condition": "C",
+   "event": "suspicious_near_vehicle",
+   "model_json": "{\"event_name\": \"suspicious_near_vehicle\", \"intervals\": [{\"pred\": {\"name\": \"suspicious_near_vehicle\", \"arguments\": [\"person\", \"vehicle\"]}, \"selection\": {\"preds\": [\"suspicious_near_vehicle\"], \"args\": {\"1\": [\"person\"], \"2\": [\"vehicle\"]}}, \"ts\": 0, \"te\": 100, \"group\": \"s1\"}], \"cross_conditions\": [{\"type\": \"duration\", \"left_alias\": \"M1\", \"left_attr\": \"et\", \"right_alias\": \"M1\", \"right_attr\": \"st\", \"op\": \">=\", \"value\": 3}], \"operator_overrides\": [], \"delta_unit\": \"seconds\", \"iseql_text\": \"\\u03c0_{M1.arg1, M1.arg2, M1.st, M1.et} (\\n  \\u03c3_{(M1.et \\u2212 M1.st) \\u2265 3} (\\n    \\u03c3_{pred=\\\"suspicious_near_vehicle\\\" \\u2227 arg1=\\\"person\\\" \\u2227 arg2=\\\"vehicle\\\"}(M1)\\n  ))\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.arg1\", \"M1.arg2\", \"M1.st\", \"M1.et\"]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<",
+    "rho_visual_handoff": 24,
+    "rho_visual_vehicle_escape": 24,
+    "zeta_visual_vehicle_escape": "<",
+    "delta_visual_vehicle_escape": 72,
+    "delta_visual_handoff": null,
+    "zeta_audio_fight": "<",
+    "rho_audio_vehicle_collision": 24,
+    "zeta_audio_vehicle_escape": "<",
+    "zeta_audio_vehicle_collision": "<",
+    "rho_audio_fight": 24,
+    "rho_audio_vehicle_escape": 24
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{(M1.et − M1.st) ≥ 3} (\n    σ_{pred=\"suspicious_near_vehicle\" ∧ arg1=\"person\" ∧ arg2=\"vehicle\"}(M1)\n  ))",
+   "sql": "SELECT M1.arg1, M1.arg2, M1.st, M1.et\nFROM (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID\n    WHERE ((RelationType = 'suspicious_near_vehicle' AND VP_1.Class = 'person' AND VP_2.Class = 'vehicle')) AND AnalysisID = 's1') M1\nWHERE (M1.et - M1.st) >= 3"
+  },
+  {
+   "id": "C/vehicle_collision/strict/seconds24",
+   "condition": "C",
+   "event": "vehicle_collision",
+   "model_json": "{\"event_name\": \"vehicle_collision\", \"set_operator\": null, \"intervals\": [{\"pred\": {\"name\": \"horn\", \"arguments\": []}, \"selection\": {\"branches\": [{\"preds\": [\"horn\"], \"args\": {}}, {\"preds\": [\"skidding\"], \"args\": {}}]}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"impact\", \"arguments\": []}, \"selection\": {\"branches\": [{\"preds\": [\"impact\"], \"args\": {}}, {\"preds\": [\"glass_breaking\"], \"args\": {}}]}, \"ts\": 50, \"te\": 150, \"set_side\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"vehicle_collision\", \"arguments\": [\"vehicle\"]}, \"selection\": {\"preds\": [\"vehicle_collision\"], \"args\": {\"1\": [\"vehicle\"]}}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group\": \"s2\"}], \"cross_conditions\": [], \"operator_overrides\": [{\"side\": \"s1\", \"pair_idx\": 1, \"operator\": \"SP\"}], \"delta_map\": {\"s1.0\": {\"delta\": null, \"zeta\": \"zeta_audio_vehicle_collision\", \"rho\": \"rho_audio_vehicle_collision\"}}, \"delta_unit\": \"seconds\", \"iseql_text\": \"π_{M1.st, M1.et, M2.st, M2.et} (\\n  σ_{(pred=\\\"horn\\\") ∨ (pred=\\\"skidding\\\")}(M1)\\n  SP(δ:∞; ζ:<=, ρ:0)\\n  σ_{(pred=\\\"impact\\\") ∨ (pred=\\\"glass_breaking\\\")}(M2)\\n)\\n∪\\nπ_{M1.arg1, M1.st, M1.et} (\\n  σ_{pred=\\\"vehicle_collision\\\" ∧ arg1=\\\"vehicle\\\"}(M1)\\n)\", \"left_projection\": null, \"right_projection\": null, \"set_expression\": {\"op\": \"∪\", \"children\": [{\"group\": \"s1\", \"projection\": [\"M1.st\", \"M2.et\"]}, {\"group\": \"s2\", \"projection\": [\"M1.arg1\", \"M1.st\", \"M1.et\"]}]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<",
+    "rho_visual_handoff": 24,
+    "rho_visual_vehicle_escape": 24,
+    "zeta_visual_vehicle_escape": "<",
+    "delta_visual_vehicle_escape": 72,
+    "delta_visual_handoff": null,
+    "zeta_audio_fight": "<",
+    "rho_audio_vehicle_collision": 24,
+    "zeta_audio_vehicle_escape": "<",
+    "zeta_audio_vehicle_collision": "<",
+    "rho_audio_fight": 24,
+    "rho_audio_vehicle_escape": 24
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.st, M1.et, M2.st, M2.et} (\n  σ_{(pred=\"horn\") ∨ (pred=\"skidding\")}(M1)\n  SP(δ:∞; ζ:<=, ρ:0)\n  σ_{(pred=\"impact\") ∨ (pred=\"glass_breaking\")}(M2)\n)\n∪\nπ_{M1.arg1, M1.st, M1.et} (\n  σ_{pred=\"vehicle_collision\" ∧ arg1=\"vehicle\"}(M1)\n)",
+   "sql": "SELECT NULL AS arg1, M1.st, M2.et\nFROM (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE ((AudioClass = 'horn') OR (AudioClass = 'skidding')) AND Confidence >= 0.0 AND AnalysisID = 's1') M1, (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE ((AudioClass = 'impact') OR (AudioClass = 'glass_breaking')) AND Confidence >= 0.0 AND AnalysisID = 's1') M2\nWHERE ((M1.st - 24) < M2.st AND M2.st < (M1.et + 24))\nUNION\nSELECT M1.arg1, M1.st, M1.et\nFROM (    SELECT VP_1.ClassID AS arg1, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID\n    WHERE ((RelationType = 'vehicle_collision' AND VP_1.Class = 'vehicle')) AND AnalysisID = 's1') M1"
+  },
+  {
+   "id": "C/vehicle_escape/strict/seconds24",
+   "condition": "C",
+   "event": "vehicle_escape",
+   "model_json": "{\"set_operator\": null, \"intervals\": [{\"pred\": {\"name\": \"engine\", \"arguments\": []}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group_id\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"tire_squeal\", \"arguments\": []}, \"ts\": 50, \"te\": 150, \"set_side\": null, \"group_id\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"running\", \"arguments\": [\"person\"]}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group_id\": null, \"group\": \"s2\"}, {\"pred\": {\"name\": \"enter_or_exit_vehicle\", \"arguments\": [\"person\", \"vehicle\"]}, \"ts\": 100, \"te\": 200, \"set_side\": null, \"group_id\": null, \"group\": \"s2\"}], \"cross_conditions\": [{\"left_alias\": \"M3\", \"left_attr\": \"arg1\", \"op\": \"=\", \"right_alias\": \"M4\", \"right_attr\": \"arg1\"}], \"operator_overrides\": [{\"side\": \"s1\", \"pair_idx\": 1, \"operator\": \"SP\"}, {\"side\": \"s2\", \"pair_idx\": 1, \"operator\": \"Bef\"}], \"delta_map\": {\"s1.0\": {\"delta\": null, \"zeta\": \"zeta_audio_vehicle_escape\", \"rho\": \"rho_audio_vehicle_escape\"}, \"s2.0\": {\"delta\": \"delta_visual_vehicle_escape\", \"zeta\": \"zeta_visual_vehicle_escape\", \"rho\": \"rho_visual_vehicle_escape\"}}, \"delta_unit\": \"seconds\", \"iseql_text\": \"π_{M1.st, M1.et, M2.st, M2.et} (\\n  σ_{pred=\\\"engine\\\"}(M1)\\n  SP(δ:∞; ζ:<=, ρ:0)\\n  σ_{pred=\\\"tire_squeal\\\"}(M2)\\n)\\n∪\\nπ_{M1.arg1, M1.st, M1.et, M2.arg1, M2.arg2, M2.st, M2.et} (\\n  σ_{M1.arg1=M2.arg1} (\\n    σ_{pred=\\\"running\\\" ∧ arg1=\\\"person\\\"}(M1)\\n    Bef(δ:2; ζ:<=, ρ:0)\\n    σ_{pred=\\\"enter_or_exit_vehicle\\\" ∧ arg1=\\\"person\\\" ∧ arg2=\\\"vehicle\\\"}(M2)\\n  ))\", \"left_projection\": null, \"right_projection\": null, \"set_expression\": {\"op\": \"∪\", \"children\": [{\"group\": \"s1\", \"projection\": [\"M1.st\", \"M2.et\"]}, {\"group\": \"s2\", \"projection\": [\"M1.arg1\", \"M2.arg2\", \"M1.st\", \"M2.et\"]}]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<",
+    "rho_visual_handoff": 24,
+    "rho_visual_vehicle_escape": 24,
+    "zeta_visual_vehicle_escape": "<",
+    "delta_visual_vehicle_escape": 72,
+    "delta_visual_handoff": null,
+    "zeta_audio_fight": "<",
+    "rho_audio_vehicle_collision": 24,
+    "zeta_audio_vehicle_escape": "<",
+    "zeta_audio_vehicle_collision": "<",
+    "rho_audio_fight": 24,
+    "rho_audio_vehicle_escape": 24
+   },
+   "fps": 24,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.st, M1.et, M2.st, M2.et} (\n  σ_{pred=\"engine\"}(M1)\n  SP(δ:∞; ζ:<=, ρ:0)\n  σ_{pred=\"tire_squeal\"}(M2)\n)\n∪\nπ_{M1.arg1, M1.st, M1.et, M2.arg1, M2.arg2, M2.st, M2.et} (\n  σ_{M1.arg1=M2.arg1} (\n    σ_{pred=\"running\" ∧ arg1=\"person\"}(M1)\n    Bef(δ:2; ζ:<=, ρ:0)\n    σ_{pred=\"enter_or_exit_vehicle\" ∧ arg1=\"person\" ∧ arg2=\"vehicle\"}(M2)\n  ))",
+   "sql": "SELECT NULL AS arg1, NULL AS arg2, M1.st, M2.et\nFROM (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE AudioClass = 'engine' AND Confidence >= 0.0 AND AnalysisID = 's1') M1, (    SELECT CAST(StartFrame AS REAL)/24 AS st, CAST(EndFrame AS REAL)/24 AS et\n    FROM AudioPerInterval API\n    WHERE AudioClass = 'tire_squeal' AND Confidence >= 0.0 AND AnalysisID = 's1') M2\nWHERE ((M1.st - 24) < M2.st AND M2.st < (M1.et + 24))\nUNION\nSELECT M1.arg1, M2.arg2, M1.st, M2.et\nFROM (    SELECT VP_1.ClassID AS arg1, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'person'\n    WHERE RelationType = 'running' AND AnalysisID = 's1') M1, (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/24 AS st, CAST(VPI.EndFrame AS REAL)/24 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'person'\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID AND VP_2.Class = 'vehicle'\n    WHERE RelationType = 'enter_or_exit_vehicle' AND AnalysisID = 's1') M2\nWHERE (M1.et < (M2.st + 24) AND (M2.st - M1.et) <= 96)\n  AND (M1.arg1 = M2.arg1)"
+  },
+  {
+   "id": "C/fight/defaults/frames1",
+   "condition": "C",
+   "event": "fight",
+   "model_json": "{\"event_name\": \"fight\", \"set_operator\": null, \"intervals\": [{\"pred\": {\"name\": \"shout\", \"arguments\": []}, \"selection\": {\"preds\": [\"shout\"], \"args\": {}}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"impact\", \"arguments\": []}, \"selection\": {\"preds\": [\"impact\"], \"args\": {}}, \"ts\": 100, \"te\": 200, \"set_side\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"physical_altercation\", \"arguments\": [\"person\", \"person\"]}, \"selection\": {\"preds\": [\"physical_altercation\"], \"args\": {\"1\": [\"person\"], \"2\": [\"person\"]}}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group\": \"s2\"}], \"cross_conditions\": [{\"left_alias\": \"M3\", \"left_attr\": \"arg1\", \"op\": \"≠\", \"right_alias\": \"M3\", \"right_attr\": \"arg2\"}], \"operator_overrides\": [{\"side\": \"s1\", \"pair_idx\": 1, \"operator\": \"Bef\"}], \"delta_map\": {\"s1.0\": {\"delta\": 5, \"zeta\": \"zeta_audio_fight\", \"rho\": \"rho_audio_fight\"}}, \"delta_unit\": \"seconds\", \"iseql_text\": \"π_{M1.st, M1.et, M2.st, M2.et} (\\n  σ_{pred=\\\"shout\\\"}(M1)\\n  Bef(δ:5; ζ:<=, ρ:0)\\n  σ_{pred=\\\"impact\\\"}(M2)\\n)\\n∪\\nπ_{M1.arg1, M1.arg2, M1.st, M1.et} (\\n  σ_{M1.arg1≠M1.arg2} (\\n    σ_{pred=\\\"physical_altercation\\\" ∧ arg1=\\\"person\\\" ∧ arg2=\\\"person\\\"}(M1)\\n  ))\", \"left_projection\": null, \"right_projection\": null, \"set_expression\": {\"op\": \"∪\", \"children\": [{\"group\": \"s1\", \"projection\": [\"M1.st\", \"M2.et\"]}, {\"group\": \"s2\", \"projection\": [\"M1.arg1\", \"M1.arg2\", \"M1.st\", \"M1.et\"]}]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<=",
+    "rho_visual_handoff": 0,
+    "rho_visual_vehicle_escape": 0,
+    "zeta_visual_vehicle_escape": "<=",
+    "delta_visual_vehicle_escape": 2,
+    "delta_visual_handoff": null,
+    "zeta_audio_fight": "<=",
+    "rho_audio_vehicle_collision": 0,
+    "zeta_audio_vehicle_escape": "<=",
+    "zeta_audio_vehicle_collision": "<=",
+    "rho_audio_fight": 0,
+    "rho_audio_vehicle_escape": 0
+   },
+   "fps": 1,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.st, M1.et, M2.st, M2.et} (\n  σ_{pred=\"shout\"}(M1)\n  Bef(δ:5; ζ:<=, ρ:0)\n  σ_{pred=\"impact\"}(M2)\n)\n∪\nπ_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{M1.arg1≠M1.arg2} (\n    σ_{pred=\"physical_altercation\" ∧ arg1=\"person\" ∧ arg2=\"person\"}(M1)\n  ))",
+   "sql": "SELECT NULL AS arg1, NULL AS arg2, M1.st, M2.et\nFROM (    SELECT CAST(StartFrame AS REAL)/1 AS st, CAST(EndFrame AS REAL)/1 AS et\n    FROM AudioPerInterval API\n    WHERE ((AudioClass = 'shout')) AND Confidence >= 0.0 AND AnalysisID = 's1') M1, (    SELECT CAST(StartFrame AS REAL)/1 AS st, CAST(EndFrame AS REAL)/1 AS et\n    FROM AudioPerInterval API\n    WHERE ((AudioClass = 'impact')) AND Confidence >= 0.0 AND AnalysisID = 's1') M2\nWHERE (M1.et <= (M2.st + 0) AND (M2.st - M1.et) <= 5)\nUNION\nSELECT M1.arg1, M1.arg2, M1.st, M1.et\nFROM (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/1 AS st, CAST(VPI.EndFrame AS REAL)/1 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID\n    WHERE ((RelationType = 'physical_altercation' AND VP_1.Class = 'person' AND VP_2.Class = 'person')) AND AnalysisID = 's1') M1\nWHERE (M1.arg1 != M1.arg2)"
+  },
+  {
+   "id": "C/gunshot_or_explosion/defaults/frames1",
+   "condition": "C",
+   "event": "gunshot_or_explosion",
+   "model_json": "{\"event_name\": \"gunshot_or_explosion\", \"set_operator\": null, \"intervals\": [{\"pred\": {\"name\": \"gunshot_or_explosion\", \"arguments\": []}, \"selection\": {\"preds\": [\"gunshot_or_explosion\"], \"args\": {}}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"gunshot_visible\", \"arguments\": [\"person\"]}, \"selection\": {\"branches\": [{\"preds\": [\"gunshot_visible\"], \"args\": {\"1\": [\"person\"]}}, {\"preds\": [\"explosion_visible\"], \"args\": {\"1\": [\"vehicle\", \"object\"]}}]}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group\": \"s2\"}], \"cross_conditions\": [], \"operator_overrides\": [], \"delta_unit\": \"seconds\", \"iseql_text\": \"π_{M1.st, M1.et} (\\n  σ_{pred=\\\"gunshot_or_explosion\\\"}(M1)\\n)\\n∪\\nπ_{M1.arg1, M1.st, M1.et} (\\n  σ_{(pred=\\\"gunshot_visible\\\" ∧ arg1=\\\"person\\\") ∨ (pred=\\\"explosion_visible\\\" ∧ arg1=\\\"vehicle\\\" ∨ arg1=\\\"object\\\")}(M1)\\n)\", \"left_projection\": null, \"right_projection\": null, \"set_expression\": {\"op\": \"∪\", \"children\": [{\"group\": \"s1\", \"projection\": [\"M1.st\", \"M1.et\"]}, {\"group\": \"s2\", \"projection\": [\"M1.arg1\", \"M1.st\", \"M1.et\"]}]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<=",
+    "rho_visual_handoff": 0,
+    "rho_visual_vehicle_escape": 0,
+    "zeta_visual_vehicle_escape": "<=",
+    "delta_visual_vehicle_escape": 2,
+    "delta_visual_handoff": null,
+    "zeta_audio_fight": "<=",
+    "rho_audio_vehicle_collision": 0,
+    "zeta_audio_vehicle_escape": "<=",
+    "zeta_audio_vehicle_collision": "<=",
+    "rho_audio_fight": 0,
+    "rho_audio_vehicle_escape": 0
+   },
+   "fps": 1,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.st, M1.et} (\n  σ_{pred=\"gunshot_or_explosion\"}(M1)\n)\n∪\nπ_{M1.arg1, M1.st, M1.et} (\n  σ_{(pred=\"gunshot_visible\" ∧ arg1=\"person\") ∨ (pred=\"explosion_visible\" ∧ arg1=\"vehicle\" ∨ arg1=\"object\")}(M1)\n)",
+   "sql": "SELECT NULL AS arg1, M1.st, M1.et\nFROM (    SELECT CAST(StartFrame AS REAL)/1 AS st, CAST(EndFrame AS REAL)/1 AS et\n    FROM AudioPerInterval API\n    WHERE ((AudioClass = 'gunshot_or_explosion')) AND Confidence >= 0.0 AND AnalysisID = 's1') M1\nUNION\nSELECT M1.arg1, M1.st, M1.et\nFROM (    SELECT VP_1.ClassID AS arg1, CAST(VPI.StartFrame AS REAL)/1 AS st, CAST(VPI.EndFrame AS REAL)/1 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID\n    WHERE ((RelationType = 'gunshot_visible' AND VP_1.Class = 'person') OR (RelationType = 'explosion_visible' AND VP_1.Class IN ('vehicle', 'object'))) AND AnalysisID = 's1') M1"
+  },
+  {
+   "id": "C/handoff/defaults/frames1",
+   "condition": "C",
+   "event": "handoff",
+   "model_json": "{\"delta_unit\": \"seconds\", \"intervals\": [{\"pred\": {\"name\": \"carrying\", \"arguments\": [\"person\", \"object\"]}, \"ts\": 0, \"te\": 100, \"group_id\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"carrying\", \"arguments\": [\"person\", \"object\"]}, \"ts\": 100, \"te\": 200, \"group_id\": null, \"group\": \"s1\"}], \"cross_conditions\": [{\"left_alias\": \"M1\", \"left_attr\": \"arg1\", \"op\": \"\\u2260\", \"right_alias\": \"M2\", \"right_attr\": \"arg1\"}, {\"left_alias\": \"M1\", \"left_attr\": \"arg2\", \"op\": \"=\", \"right_alias\": \"M2\", \"right_attr\": \"arg2\"}], \"delta_map\": {\"s1.0\": {\"delta\": \"delta_visual_handoff\", \"zeta\": \"zeta_visual_handoff\", \"rho\": \"rho_visual_handoff\"}}, \"iseql_text\": \"\\u03c0_{M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et} (\\n  \\u03c3_{M1.arg1\\u2260M2.arg1 \\u2227 M1.arg2=M2.arg2} (\\n    \\u03c3_{pred=\\\"carrying\\\" \\u2227 arg1=\\\"person\\\" \\u2227 arg2=\\\"object\\\"}(M1)\\n    Bef(\\u03b4:\\u221e; \\u03b6:<=, \\u03c1:0)\\n    \\u03c3_{pred=\\\"carrying\\\" \\u2227 arg1=\\\"person\\\" \\u2227 arg2=\\\"object\\\"}(M2)\\n  ))\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.arg1\", \"M2.arg1\", \"M1.arg2\", \"M1.st\", \"M2.et\"]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<=",
+    "rho_visual_handoff": 0,
+    "rho_visual_vehicle_escape": 0,
+    "zeta_visual_vehicle_escape": "<=",
+    "delta_visual_vehicle_escape": 2,
+    "delta_visual_handoff": null,
+    "zeta_audio_fight": "<=",
+    "rho_audio_vehicle_collision": 0,
+    "zeta_audio_vehicle_escape": "<=",
+    "zeta_audio_vehicle_collision": "<=",
+    "rho_audio_fight": 0,
+    "rho_audio_vehicle_escape": 0
+   },
+   "fps": 1,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et} (\n  σ_{M1.arg1≠M2.arg1 ∧ M1.arg2=M2.arg2} (\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M1)\n    Bef(δ:∞; ζ:<=, ρ:0)\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M2)\n  ))",
+   "sql": "SELECT M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et\nFROM (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/1 AS st, CAST(VPI.EndFrame AS REAL)/1 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'person'\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID AND VP_2.Class = 'object'\n    WHERE RelationType = 'carrying' AND AnalysisID = 's1') M1, (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/1 AS st, CAST(VPI.EndFrame AS REAL)/1 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'person'\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID AND VP_2.Class = 'object'\n    WHERE RelationType = 'carrying' AND AnalysisID = 's1') M2\nWHERE (M1.et <= (M2.st + 0))\n  AND (M1.arg1 != M2.arg1)\n  AND (M1.arg2 = M2.arg2)"
+  },
+  {
+   "id": "C/suspicious_near_vehicle/defaults/frames1",
+   "condition": "C",
+   "event": "suspicious_near_vehicle",
+   "model_json": "{\"event_name\": \"suspicious_near_vehicle\", \"intervals\": [{\"pred\": {\"name\": \"suspicious_near_vehicle\", \"arguments\": [\"person\", \"vehicle\"]}, \"selection\": {\"preds\": [\"suspicious_near_vehicle\"], \"args\": {\"1\": [\"person\"], \"2\": [\"vehicle\"]}}, \"ts\": 0, \"te\": 100, \"group\": \"s1\"}], \"cross_conditions\": [{\"type\": \"duration\", \"left_alias\": \"M1\", \"left_attr\": \"et\", \"right_alias\": \"M1\", \"right_attr\": \"st\", \"op\": \">=\", \"value\": 3}], \"operator_overrides\": [], \"delta_unit\": \"seconds\", \"iseql_text\": \"\\u03c0_{M1.arg1, M1.arg2, M1.st, M1.et} (\\n  \\u03c3_{(M1.et \\u2212 M1.st) \\u2265 3} (\\n    \\u03c3_{pred=\\\"suspicious_near_vehicle\\\" \\u2227 arg1=\\\"person\\\" \\u2227 arg2=\\\"vehicle\\\"}(M1)\\n  ))\", \"set_expression\": {\"group\": \"s1\", \"projection\": [\"M1.arg1\", \"M1.arg2\", \"M1.st\", \"M1.et\"]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<=",
+    "rho_visual_handoff": 0,
+    "rho_visual_vehicle_escape": 0,
+    "zeta_visual_vehicle_escape": "<=",
+    "delta_visual_vehicle_escape": 2,
+    "delta_visual_handoff": null,
+    "zeta_audio_fight": "<=",
+    "rho_audio_vehicle_collision": 0,
+    "zeta_audio_vehicle_escape": "<=",
+    "zeta_audio_vehicle_collision": "<=",
+    "rho_audio_fight": 0,
+    "rho_audio_vehicle_escape": 0
+   },
+   "fps": 1,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{(M1.et − M1.st) ≥ 3} (\n    σ_{pred=\"suspicious_near_vehicle\" ∧ arg1=\"person\" ∧ arg2=\"vehicle\"}(M1)\n  ))",
+   "sql": "SELECT M1.arg1, M1.arg2, M1.st, M1.et\nFROM (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/1 AS st, CAST(VPI.EndFrame AS REAL)/1 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID\n    WHERE ((RelationType = 'suspicious_near_vehicle' AND VP_1.Class = 'person' AND VP_2.Class = 'vehicle')) AND AnalysisID = 's1') M1\nWHERE (M1.et - M1.st) >= 3"
+  },
+  {
+   "id": "C/vehicle_collision/defaults/frames1",
+   "condition": "C",
+   "event": "vehicle_collision",
+   "model_json": "{\"event_name\": \"vehicle_collision\", \"set_operator\": null, \"intervals\": [{\"pred\": {\"name\": \"horn\", \"arguments\": []}, \"selection\": {\"branches\": [{\"preds\": [\"horn\"], \"args\": {}}, {\"preds\": [\"skidding\"], \"args\": {}}]}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"impact\", \"arguments\": []}, \"selection\": {\"branches\": [{\"preds\": [\"impact\"], \"args\": {}}, {\"preds\": [\"glass_breaking\"], \"args\": {}}]}, \"ts\": 50, \"te\": 150, \"set_side\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"vehicle_collision\", \"arguments\": [\"vehicle\"]}, \"selection\": {\"preds\": [\"vehicle_collision\"], \"args\": {\"1\": [\"vehicle\"]}}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group\": \"s2\"}], \"cross_conditions\": [], \"operator_overrides\": [{\"side\": \"s1\", \"pair_idx\": 1, \"operator\": \"SP\"}], \"delta_map\": {\"s1.0\": {\"delta\": null, \"zeta\": \"zeta_audio_vehicle_collision\", \"rho\": \"rho_audio_vehicle_collision\"}}, \"delta_unit\": \"seconds\", \"iseql_text\": \"π_{M1.st, M1.et, M2.st, M2.et} (\\n  σ_{(pred=\\\"horn\\\") ∨ (pred=\\\"skidding\\\")}(M1)\\n  SP(δ:∞; ζ:<=, ρ:0)\\n  σ_{(pred=\\\"impact\\\") ∨ (pred=\\\"glass_breaking\\\")}(M2)\\n)\\n∪\\nπ_{M1.arg1, M1.st, M1.et} (\\n  σ_{pred=\\\"vehicle_collision\\\" ∧ arg1=\\\"vehicle\\\"}(M1)\\n)\", \"left_projection\": null, \"right_projection\": null, \"set_expression\": {\"op\": \"∪\", \"children\": [{\"group\": \"s1\", \"projection\": [\"M1.st\", \"M2.et\"]}, {\"group\": \"s2\", \"projection\": [\"M1.arg1\", \"M1.st\", \"M1.et\"]}]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<=",
+    "rho_visual_handoff": 0,
+    "rho_visual_vehicle_escape": 0,
+    "zeta_visual_vehicle_escape": "<=",
+    "delta_visual_vehicle_escape": 2,
+    "delta_visual_handoff": null,
+    "zeta_audio_fight": "<=",
+    "rho_audio_vehicle_collision": 0,
+    "zeta_audio_vehicle_escape": "<=",
+    "zeta_audio_vehicle_collision": "<=",
+    "rho_audio_fight": 0,
+    "rho_audio_vehicle_escape": 0
+   },
+   "fps": 1,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.st, M1.et, M2.st, M2.et} (\n  σ_{(pred=\"horn\") ∨ (pred=\"skidding\")}(M1)\n  SP(δ:∞; ζ:<=, ρ:0)\n  σ_{(pred=\"impact\") ∨ (pred=\"glass_breaking\")}(M2)\n)\n∪\nπ_{M1.arg1, M1.st, M1.et} (\n  σ_{pred=\"vehicle_collision\" ∧ arg1=\"vehicle\"}(M1)\n)",
+   "sql": "SELECT NULL AS arg1, M1.st, M2.et\nFROM (    SELECT CAST(StartFrame AS REAL)/1 AS st, CAST(EndFrame AS REAL)/1 AS et\n    FROM AudioPerInterval API\n    WHERE ((AudioClass = 'horn') OR (AudioClass = 'skidding')) AND Confidence >= 0.0 AND AnalysisID = 's1') M1, (    SELECT CAST(StartFrame AS REAL)/1 AS st, CAST(EndFrame AS REAL)/1 AS et\n    FROM AudioPerInterval API\n    WHERE ((AudioClass = 'impact') OR (AudioClass = 'glass_breaking')) AND Confidence >= 0.0 AND AnalysisID = 's1') M2\nWHERE ((M1.st - 0) <= M2.st AND M2.st < (M1.et + 0))\nUNION\nSELECT M1.arg1, M1.st, M1.et\nFROM (    SELECT VP_1.ClassID AS arg1, CAST(VPI.StartFrame AS REAL)/1 AS st, CAST(VPI.EndFrame AS REAL)/1 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID\n    WHERE ((RelationType = 'vehicle_collision' AND VP_1.Class = 'vehicle')) AND AnalysisID = 's1') M1"
+  },
+  {
+   "id": "C/vehicle_escape/defaults/frames1",
+   "condition": "C",
+   "event": "vehicle_escape",
+   "model_json": "{\"set_operator\": null, \"intervals\": [{\"pred\": {\"name\": \"engine\", \"arguments\": []}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group_id\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"tire_squeal\", \"arguments\": []}, \"ts\": 50, \"te\": 150, \"set_side\": null, \"group_id\": null, \"group\": \"s1\"}, {\"pred\": {\"name\": \"running\", \"arguments\": [\"person\"]}, \"ts\": 0, \"te\": 100, \"set_side\": null, \"group_id\": null, \"group\": \"s2\"}, {\"pred\": {\"name\": \"enter_or_exit_vehicle\", \"arguments\": [\"person\", \"vehicle\"]}, \"ts\": 100, \"te\": 200, \"set_side\": null, \"group_id\": null, \"group\": \"s2\"}], \"cross_conditions\": [{\"left_alias\": \"M3\", \"left_attr\": \"arg1\", \"op\": \"=\", \"right_alias\": \"M4\", \"right_attr\": \"arg1\"}], \"operator_overrides\": [{\"side\": \"s1\", \"pair_idx\": 1, \"operator\": \"SP\"}, {\"side\": \"s2\", \"pair_idx\": 1, \"operator\": \"Bef\"}], \"delta_map\": {\"s1.0\": {\"delta\": null, \"zeta\": \"zeta_audio_vehicle_escape\", \"rho\": \"rho_audio_vehicle_escape\"}, \"s2.0\": {\"delta\": \"delta_visual_vehicle_escape\", \"zeta\": \"zeta_visual_vehicle_escape\", \"rho\": \"rho_visual_vehicle_escape\"}}, \"delta_unit\": \"seconds\", \"iseql_text\": \"π_{M1.st, M1.et, M2.st, M2.et} (\\n  σ_{pred=\\\"engine\\\"}(M1)\\n  SP(δ:∞; ζ:<=, ρ:0)\\n  σ_{pred=\\\"tire_squeal\\\"}(M2)\\n)\\n∪\\nπ_{M1.arg1, M1.st, M1.et, M2.arg1, M2.arg2, M2.st, M2.et} (\\n  σ_{M1.arg1=M2.arg1} (\\n    σ_{pred=\\\"running\\\" ∧ arg1=\\\"person\\\"}(M1)\\n    Bef(δ:2; ζ:<=, ρ:0)\\n    σ_{pred=\\\"enter_or_exit_vehicle\\\" ∧ arg1=\\\"person\\\" ∧ arg2=\\\"vehicle\\\"}(M2)\\n  ))\", \"left_projection\": null, \"right_projection\": null, \"set_expression\": {\"op\": \"∪\", \"children\": [{\"group\": \"s1\", \"projection\": [\"M1.st\", \"M2.et\"]}, {\"group\": \"s2\", \"projection\": [\"M1.arg1\", \"M2.arg2\", \"M1.st\", \"M2.et\"]}]}}",
+   "deltas": {
+    "zeta_visual_handoff": "<=",
+    "rho_visual_handoff": 0,
+    "rho_visual_vehicle_escape": 0,
+    "zeta_visual_vehicle_escape": "<=",
+    "delta_visual_vehicle_escape": 2,
+    "delta_visual_handoff": null,
+    "zeta_audio_fight": "<=",
+    "rho_audio_vehicle_collision": 0,
+    "zeta_audio_vehicle_escape": "<=",
+    "zeta_audio_vehicle_collision": "<=",
+    "rho_audio_fight": 0,
+    "rho_audio_vehicle_escape": 0
+   },
+   "fps": 1,
+   "analysis_id": "s1",
+   "iseql_text": "π_{M1.st, M1.et, M2.st, M2.et} (\n  σ_{pred=\"engine\"}(M1)\n  SP(δ:∞; ζ:<=, ρ:0)\n  σ_{pred=\"tire_squeal\"}(M2)\n)\n∪\nπ_{M1.arg1, M1.st, M1.et, M2.arg1, M2.arg2, M2.st, M2.et} (\n  σ_{M1.arg1=M2.arg1} (\n    σ_{pred=\"running\" ∧ arg1=\"person\"}(M1)\n    Bef(δ:2; ζ:<=, ρ:0)\n    σ_{pred=\"enter_or_exit_vehicle\" ∧ arg1=\"person\" ∧ arg2=\"vehicle\"}(M2)\n  ))",
+   "sql": "SELECT NULL AS arg1, NULL AS arg2, M1.st, M2.et\nFROM (    SELECT CAST(StartFrame AS REAL)/1 AS st, CAST(EndFrame AS REAL)/1 AS et\n    FROM AudioPerInterval API\n    WHERE AudioClass = 'engine' AND Confidence >= 0.0 AND AnalysisID = 's1') M1, (    SELECT CAST(StartFrame AS REAL)/1 AS st, CAST(EndFrame AS REAL)/1 AS et\n    FROM AudioPerInterval API\n    WHERE AudioClass = 'tire_squeal' AND Confidence >= 0.0 AND AnalysisID = 's1') M2\nWHERE ((M1.st - 0) <= M2.st AND M2.st < (M1.et + 0))\nUNION\nSELECT M1.arg1, M2.arg2, M1.st, M2.et\nFROM (    SELECT VP_1.ClassID AS arg1, CAST(VPI.StartFrame AS REAL)/1 AS st, CAST(VPI.EndFrame AS REAL)/1 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'person'\n    WHERE RelationType = 'running' AND AnalysisID = 's1') M1, (    SELECT VP_1.ClassID AS arg1, VP_2.ClassID AS arg2, CAST(VPI.StartFrame AS REAL)/1 AS st, CAST(VPI.EndFrame AS REAL)/1 AS et\n    FROM VisualPerInterval VPI\n    JOIN VisualParticipant VP_1 ON VPI.RelationID = VP_1.RelationID AND VP_1.Class = 'person'\n    JOIN VisualParticipant VP_2 ON VPI.RelationID = VP_2.RelationID AND VP_2.Class = 'vehicle'\n    WHERE RelationType = 'enter_or_exit_vehicle' AND AnalysisID = 's1') M2\nWHERE (M1.et <= (M2.st + 0) AND (M2.st - M1.et) <= 2)\n  AND (M1.arg1 = M2.arg1)"
+  }
+ ]
+}

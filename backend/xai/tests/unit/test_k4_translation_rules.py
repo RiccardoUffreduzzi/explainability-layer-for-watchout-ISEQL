@@ -31,6 +31,12 @@ def _context(
     )
 
 
+def _interval(data: dict[str, Any], interval_id: str) -> dict[str, Any]:
+    """An interval of draft data, to change it."""
+    interval: dict[str, Any] = next(i for i in data["intervals"] if i["interval_id"] == interval_id)
+    return interval
+
+
 def _result(view: SourceOfTruthView, constraint_id: str, ctx: RuleContext) -> RuleResult:
     node = view.node(constraint_id)
     return RULES[node.kind].translate(node, ctx)
@@ -139,7 +145,7 @@ def test_fight_identity_on_one_variable_is_a_condition() -> None:
     observation = _step(view, "c_s1_sel1", ctx)
     condition = _step(view, "c_s1_cc1", ctx)
 
-    assert observation["slots"] == {"arg1": "ent_1", "arg2": "ent_2"}  # iv_v6 is unordered: from the row
+    assert observation["slots"] == {"arg1": "ent_1", "arg2": "ent_2"}  # the argument positions of iv_v6
     assert (condition["type"], condition["term"], condition["depends_on"]) == (
         "condition",
         "g_comparison_identity_ne",
@@ -174,23 +180,28 @@ def test_a_disjunction_names_the_alternative_seen() -> None:
 
 
 def test_an_observation_without_interval_cites_only_the_alternatives() -> None:
-    def no_end(data: dict[str, Any]) -> None:  # the row's end no longer picks iv_a22
-        data["event"]["interval"].update(end_frame=999, end_s=41.625)
+    def unbound(data: dict[str, Any]) -> None:  # no interval of the draft satisfied M2 of s1
+        _interval(data, "iv_a22")["bindings"] = [{"branch": "s9", "variable": "M2"}]
 
-    view = view_of("vehicle_collision_s15_C_audio", no_end)
+    view = view_of("vehicle_collision_s15_C_audio", unbound)
     step = _step(view, "c_s1_sel2", _context(view))
 
     assert "term" not in step
     assert step["refs"] == ["c_s1_sel2", "g_audio_class_impact", "g_audio_class_glass_breaking"]
-    assert (step["t_order"], step["t_order_basis"]) == (None, "none")  # no candidate ends at frame 999
+    assert (step["t_order"], step["t_order_basis"]) == (None, "none")  # no candidate
 
 
 def test_an_ambiguous_observation_takes_its_time_from_the_first_candidate() -> None:
-    def no_row_values(data: dict[str, Any]) -> None:  # M1 and M2 both stay between iv_v59 and iv_v60
+    def two_witnesses(data: dict[str, Any]) -> None:  # M1 and M2 both between iv_v59 and iv_v60
         data["event"]["arguments"] = []
         node_data(data, "c_s1_proj")["payload"]["fields"] = ["M1.st", "M1.et", "M2.st", "M2.et"]
+        for interval_id in ("iv_v59", "iv_v60"):
+            _interval(data, interval_id)["bindings"] = [
+                {"branch": "s1", "variable": "M1"},
+                {"branch": "s1", "variable": "M2"},
+            ]
 
-    view = view_of("handoff_s21_A", no_row_values)
+    view = view_of("handoff_s21_A", two_witnesses)
     step = _step(view, "c_s1_sel1", _context(view))
 
     assert step["term"] == "g_predicate_carrying"  # the only predicate of the selection
@@ -202,6 +213,7 @@ def test_an_ambiguous_observation_takes_its_time_from_the_first_candidate() -> N
 def test_the_order_of_an_unordered_interval_names_no_one() -> None:
     def no_arguments(data: dict[str, Any]) -> None:  # iv_v6 is still the only candidate
         data["event"]["arguments"] = []
+        _interval(data, "iv_v6")["args_ordered"] = False
 
     view = view_of("fight_s5_A", no_arguments)
     step = _step(view, "c_s1_sel1", _context(view))
@@ -244,6 +256,7 @@ def test_an_attribute_comparison_cites_a_side_without_id_by_pointer() -> None:
 def test_an_attribute_comparison_leaves_an_unknown_argument_null() -> None:
     def attribute(data: dict[str, Any]) -> None:  # no row values, and iv_v6 has no argument order
         data["event"]["arguments"] = []
+        _interval(data, "iv_v6")["args_ordered"] = False
         node = node_data(data, "c_s1_cc1")
         node.update(kind="attribute_comparison")
         node["payload"] = {"left": "M1.arg1", "op": "<", "right": "M1.st"}

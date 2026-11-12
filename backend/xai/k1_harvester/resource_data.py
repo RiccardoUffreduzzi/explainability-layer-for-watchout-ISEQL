@@ -1,10 +1,9 @@
-"""Data that K1 receives as values: glossary and pipeline constants"""
+"""Data that K1 receives as values: the glossary"""
 
 from collections.abc import Mapping
 from dataclasses import dataclass
 
-GLOSSARY_STORE = "backend/xai/resources/glossary.yaml"
-CONSTANTS_STORE = "backend/xai/resources/pipeline_constants.yaml"
+GLOSSARY_FILE = "glossary.yaml"
 
 
 @dataclass(frozen=True)
@@ -35,38 +34,10 @@ class Glossary:
     events: Mapping[str, GlossaryText]
     comparisons: Mapping[str, GlossaryText]
     """Conditions between variables, by ``comparison_term``"""
-    store: str = GLOSSARY_STORE
+    file: str = GLOSSARY_FILE
+    """``record_id`` prefix of the SourceRefs pointing to an entry."""
 
     @property
     def label(self) -> str:
         """Version part of ``contract_meta.glossary_version``."""
         return f"glossary.yaml@{self.version}#{self.sha12}"
-
-
-@dataclass(frozen=True)
-class MergeTolerance:
-    """``merge_threshold = <value> * sampling_rate`` frames in WatchOut."""
-
-    samples: int
-    origin_file: str
-    origin_symbol: str
-
-
-@dataclass(frozen=True)
-class ConstantAudioConfidence:
-    """The audio providers that write a fixed confidence instead of a model score."""
-
-    value: float
-    providers: tuple[str, ...]
-    origin_file: str
-    origin_symbol: str
-
-
-@dataclass(frozen=True)
-class PipelineConstants:
-    """``pipeline_constants.yaml``: WatchOut values that K1 cannot read from code."""
-
-    version: int
-    merge_tolerance: MergeTolerance
-    constant_audio_confidence: ConstantAudioConfidence
-    store: str = CONSTANTS_STORE

@@ -48,6 +48,16 @@ def compile_event(model_json: str | dict, deltas: dict, analysis_id: str,
                     audio_predicates=audio_predicates)
 
 
+def compile_event_plan(model_json: str | dict, deltas: dict, analysis_id: str,
+                       fps: int | str = 1, audio_predicates: set[str] | None = None,
+                       text_values: dict | None = None, lineage: bool = False):
+    """Compile a model to its SQL, its plan and, with ``lineage``, the query that also returns the interval rows behind each row."""
+    from iseql.compiler import compile_event_plan as _compile_plan
+    return _compile_plan(model_json, deltas, analysis_id, fps=fps,
+                         audio_predicates=audio_predicates, text_values=text_values,
+                         lineage=lineage)
+
+
 def validate_model(model_json: str | dict) -> dict:
     from iseql.compiler import validate_model as _validate
     return _validate(model_json)

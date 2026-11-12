@@ -2,11 +2,7 @@
   "bindings": [
     {
       "basis": [
-        "predicate",
-        "arg_classes",
-        "M1.arg1",
-        "M1.arg2",
-        "M1.st"
+        "engine_lineage"
       ],
       "branch": "s1",
       "interval_ids": [
@@ -17,10 +13,7 @@
     },
     {
       "basis": [
-        "predicate",
-        "arg_classes",
-        "M2.arg1",
-        "M2.et"
+        "engine_lineage"
       ],
       "branch": "s1",
       "interval_ids": [
@@ -34,12 +27,12 @@
     "branches": [
       "s1"
     ],
-    "contract_hash": "5755dc7ce40eead5c96c9d923792bf6f0960858fff7a792f373204608cdd028c",
-    "contract_version": "0.3.0-k1",
+    "contract_hash": "c6a86d1a012892abad138321f213da1929329e45fde71b12401b29a82b2f8036",
+    "contract_version": "0.4.0-k1",
     "event_id": "ev_beffcb6f2a6e",
     "label": "handoff",
     "model_id": "handoff/A",
-    "plan_hash": "5b1ac68c843e2e10bdd379995e4bb12e1932c293a276b13ee2d1223d5f30f538",
+    "plan_hash": "08ba794d4db0c3652e17ec09d0e74f372ca586ebdb96ee9b206ef57f4820f50b",
     "plan_version": "0.1.0-k4",
     "source_of_truth_version": "0.2.0-k2"
   },

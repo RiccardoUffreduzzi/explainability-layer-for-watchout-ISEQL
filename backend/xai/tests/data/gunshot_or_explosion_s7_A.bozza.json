@@ -1,19 +1,10 @@
 {
   "$comment": "Caso golden: disgiunzione con classi diverse per alternativa; la colonna si chiama M1_person ma l'entità 4 è un veicolo, e l'argomento prende la classe dell'entità. Prodotta da K1 sul database di test (tests/support.py, build_fixture_db) con i parametri di default della regola. Intervalli, partecipanti e riga sono reali (DB di ablation, scena 7); la regola è quella del seed. Il DB di ablation non ha la riga Analyses: SamplingRate=24, AudioWindow/AudioHop e provider sono ipotizzati. I testi della bozza sono in inglese.",
   "contract_meta": {
-    "contract_version": "0.3.0-k1",
+    "contract_version": "0.4.0-k1",
     "analysis_id": "gemini_3_6_flash_qwen2_audio_s7",
     "source_snapshot": {
-      "backend_version": "WATCHOUT ISEQL 0.1.0",
-      "extracted_at": "2026-10-06T20:00:00Z",
-      "sources": {
-        "backend_version": {
-          "stage": "code",
-          "store": "backend/src/__init__.py",
-          "record_id": "__app_name__, __version__",
-          "mode": "read"
-        }
-      }
+      "extracted_at": "2026-10-06T20:00:00Z"
     },
     "pipeline_config": {
       "vlm_backend": "gemini / gemini-3.6-flash",
@@ -36,26 +27,22 @@
       "sources": {
         "vlm_backend": {
           "stage": "config",
-          "store": "Analyses:gemini_3_6_flash_qwen2_audio_s7",
-          "record_id": "VLMProvider,Model",
+          "record_id": "Analyses/gemini_3_6_flash_qwen2_audio_s7/VLMProvider,Model",
           "mode": "read"
         },
         "audio_backend": {
           "stage": "config",
-          "store": "Analyses:gemini_3_6_flash_qwen2_audio_s7",
-          "record_id": "AudioProvider,AudioModel",
+          "record_id": "Analyses/gemini_3_6_flash_qwen2_audio_s7/AudioProvider,AudioModel",
           "mode": "read"
         },
         "sampling.source_fps": {
           "stage": "config",
-          "store": "Analyses:gemini_3_6_flash_qwen2_audio_s7",
-          "record_id": "SamplingRate",
+          "record_id": "Analyses/gemini_3_6_flash_qwen2_audio_s7/SamplingRate",
           "mode": "read"
         },
         "sampling.sample_every_n": {
           "stage": "code",
-          "store": "backend/src/service/impl/visual_service_impl.py",
-          "record_id": "frame_count % sampling_rate",
+          "record_id": "VisualServiceImpl.run_pipeline/frame_count % sampling_rate",
           "mode": "read"
         },
         "sampling.effective_hz": {
@@ -66,20 +53,17 @@
         },
         "audio_window": {
           "stage": "config",
-          "store": "Analyses:gemini_3_6_flash_qwen2_audio_s7",
-          "record_id": "AudioWindow,AudioHop",
+          "record_id": "Analyses/gemini_3_6_flash_qwen2_audio_s7/AudioWindow,AudioHop",
           "mode": "read"
         },
         "merge_tolerance_s": {
           "stage": "code",
-          "store": "backend/xai/resources/pipeline_constants.yaml",
-          "record_id": "merge_tolerance",
+          "record_id": "IntervalServiceImpl.merge_tolerance_samples()",
           "mode": "read"
         },
         "determinism": {
           "stage": "code",
-          "store": "backend/src/utils/vlm_client.py",
-          "record_id": "VLMClient.__init__: temperature and seed defaults",
+          "record_id": "VLMClient.generation_defaults()",
           "mode": "read"
         },
         "detection_mode": {
@@ -93,14 +77,12 @@
     "sources": {
       "glossary_version": {
         "stage": "config",
-        "store": "AppConfig",
-        "record_id": "relation_vocab.updated_at, audio_taxonomy.updated_at",
+        "record_id": "AppConfig/relation_vocab.updated_at, audio_taxonomy.updated_at",
         "mode": "read"
       },
       "params_origin": {
         "stage": "iseql",
-        "store": "EventSpec",
-        "record_id": "gunshot_or_explosion/A#/iseql_text",
+        "record_id": "EventSpec/gunshot_or_explosion/A#/iseql_text",
         "mode": "read"
       }
     }
@@ -145,8 +127,7 @@
         },
         "source_ref": {
           "stage": "iseql",
-          "store": "detection:gunshot_or_explosion/A@gemini_3_6_flash_qwen2_audio_s7",
-          "record_id": "{\"M1.et\":10.0,\"M1.st\":5.0,\"M1_person\":4}",
+          "record_id": "detection/gunshot_or_explosion/A@gemini_3_6_flash_qwen2_audio_s7/{\"M1.et\":10.0,\"M1.st\":5.0,\"M1_person\":4}",
           "mode": "read"
         }
       },
@@ -161,16 +142,14 @@
         },
         "source_ref": {
           "stage": "iseql",
-          "store": "detection:gunshot_or_explosion/A@gemini_3_6_flash_qwen2_audio_s7",
-          "record_id": "{\"M1.et\":4.0,\"M1.st\":0.0,\"M1_person\":1}",
+          "record_id": "detection/gunshot_or_explosion/A@gemini_3_6_flash_qwen2_audio_s7/{\"M1.et\":4.0,\"M1.st\":0.0,\"M1_person\":1}",
           "mode": "read"
         }
       }
     ],
     "source_ref": {
       "stage": "iseql",
-      "store": "detection:gunshot_or_explosion/A@gemini_3_6_flash_qwen2_audio_s7",
-      "record_id": "{\"M1.et\":10.0,\"M1.st\":5.0,\"M1_person\":4}",
+      "record_id": "detection/gunshot_or_explosion/A@gemini_3_6_flash_qwen2_audio_s7/{\"M1.et\":10.0,\"M1.st\":5.0,\"M1_person\":4}",
       "mode": "read"
     }
   },
@@ -179,8 +158,7 @@
     "expression_saved": "π_{M1.arg1, M1.st, M1.et} (\n  σ_{(pred=\"gunshot_visible\" ∧ arg1=\"person\") ∨ (pred=\"explosion_visible\" ∧ arg1=\"vehicle\" ∨ arg1=\"object\")}(M1)\n)",
     "structure_ref": {
       "stage": "iseql",
-      "store": "EventSpec",
-      "record_id": "gunshot_or_explosion/A",
+      "record_id": "EventSpec/gunshot_or_explosion/A",
       "mode": "read"
     },
     "model_form": "F2",
@@ -201,8 +179,7 @@
         "text": "π_{M1.arg1, M1.st, M1.et}",
         "source_ref": {
           "stage": "iseql",
-          "store": "EventSpec",
-          "record_id": "gunshot_or_explosion/A#/set_expression/projection",
+          "record_id": "EventSpec/gunshot_or_explosion/A#/set_expression/projection",
           "mode": "read"
         },
         "kind": "projection",
@@ -225,8 +202,7 @@
         "text": "σ_{(pred=\"gunshot_visible\" ∧ arg1=\"person\") ∨ (pred=\"explosion_visible\" ∧ (arg1=\"vehicle\" ∨ arg1=\"object\"))}(M1)",
         "source_ref": {
           "stage": "iseql",
-          "store": "EventSpec",
-          "record_id": "gunshot_or_explosion/A#/intervals/0",
+          "record_id": "EventSpec/gunshot_or_explosion/A#/intervals/0",
           "mode": "read"
         },
         "kind": "selection",
@@ -279,15 +255,13 @@
         "in_evidence": true,
         "source_ref": {
           "stage": "vlm",
-          "store": "VisualPerFrame",
-          "record_id": "gemini_3_6_flash_qwen2_audio_s7:120:4:2",
+          "record_id": "VisualPerFrame/gemini_3_6_flash_qwen2_audio_s7:120:4:2",
           "mode": "read"
         }
       },
       "source_ref": {
         "stage": "reid",
-        "store": "VisualParticipant",
-        "record_id": "11:4",
+        "record_id": "VisualParticipant/11:4",
         "mode": "read"
       },
       "unavailable": {
@@ -315,23 +289,22 @@
         "read_as": "frames"
       },
       "confidence": null,
+      "used_by_rule": true,
+      "bindings": [
+        {
+          "branch": "s1",
+          "variable": "M1"
+        }
+      ],
       "source_ref": {
         "stage": "iad",
-        "store": "VisualPerInterval",
-        "record_id": "11",
+        "record_id": "VisualPerInterval/11",
         "mode": "read"
       },
       "sources": {
         "args": {
           "stage": "reid",
-          "store": "VisualParticipant",
-          "record_id": "11:4",
-          "mode": "read"
-        },
-        "args_order": {
-          "stage": "config",
-          "store": "AppConfig",
-          "record_id": "relation_vocab.relation_classids[explosion_visible] = (VehicleID∨ObjectID)",
+          "record_id": "VisualParticipant/11:4",
           "mode": "read"
         }
       },
@@ -353,15 +326,13 @@
       "plain_template": "a gunshot or an explosion",
       "source": {
         "stage": "iseql",
-        "store": "EventSpec",
-        "record_id": "gunshot_or_explosion/A#/iseql_text",
+        "record_id": "EventSpec/gunshot_or_explosion/A#/iseql_text",
         "mode": "read"
       },
       "sources": {
         "plain_template": {
           "stage": "code",
-          "store": "backend/xai/resources/glossary.yaml",
-          "record_id": "events.gunshot_or_explosion",
+          "record_id": "glossary.yaml/events.gunshot_or_explosion",
           "mode": "read"
         }
       }
@@ -374,15 +345,13 @@
       "plain_template": "an explosion is visible at {arg1}",
       "source": {
         "stage": "config",
-        "store": "AppConfig",
-        "record_id": "relation_vocab.relation_descriptions.explosion_visible",
+        "record_id": "AppConfig/relation_vocab.relation_descriptions.explosion_visible",
         "mode": "read"
       },
       "sources": {
         "plain_template": {
           "stage": "code",
-          "store": "backend/xai/resources/glossary.yaml",
-          "record_id": "predicates.explosion_visible",
+          "record_id": "glossary.yaml/predicates.explosion_visible",
           "mode": "read"
         }
       }
@@ -395,15 +364,13 @@
       "plain_template": "{arg1} holds or fires a gun",
       "source": {
         "stage": "config",
-        "store": "AppConfig",
-        "record_id": "relation_vocab.relation_descriptions.gunshot_visible",
+        "record_id": "AppConfig/relation_vocab.relation_descriptions.gunshot_visible",
         "mode": "read"
       },
       "sources": {
         "plain_template": {
           "stage": "code",
-          "store": "backend/xai/resources/glossary.yaml",
-          "record_id": "predicates.gunshot_visible",
+          "record_id": "glossary.yaml/predicates.gunshot_visible",
           "mode": "read"
         }
       }
@@ -461,7 +428,7 @@
     "notes": [
       {
         "code": "selection_basis",
-        "detail": "pertinence_filter: predicates of branch s1 {gunshot_visible, explosion_visible} and intervals with at least one entity of the row {4}"
+        "detail": "engine_lineage: 1 witness in WatchOut's lineage; s1.M1 = iv_v11"
       },
       {
         "code": "saved_text_diverges_from_structure",

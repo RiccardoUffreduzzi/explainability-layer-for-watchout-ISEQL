@@ -2,8 +2,7 @@
   "bindings": [
     {
       "basis": [
-        "predicate",
-        "M1.st"
+        "engine_lineage"
       ],
       "branch": "s1",
       "interval_ids": [
@@ -14,8 +13,7 @@
     },
     {
       "basis": [
-        "predicate",
-        "M2.et"
+        "engine_lineage"
       ],
       "branch": "s1",
       "interval_ids": [
@@ -29,12 +27,12 @@
     "branches": [
       "s1"
     ],
-    "contract_hash": "611a30a23bea36fc07ff2e474b242907575dca24aa871bb69bd96459b81fd9c8",
-    "contract_version": "0.3.0-k1",
+    "contract_hash": "148250684a7e3a5feaa5ee008d6cd0feda165d2b0300900b7558b9681c7a9ffd",
+    "contract_version": "0.4.0-k1",
     "event_id": "ev_cb96ebb2235a",
     "label": "vehicle_collision",
     "model_id": "vehicle_collision/C",
-    "plan_hash": "1dc502a4aee28c87e7fdc9ec2dec1d2cb87dd1e5c2167eee41d11bcecc5d6501",
+    "plan_hash": "97ff6ae474d27b1f89cb9ddd38adf0e237c2bb1a9183665220cfc3b4652b2263",
     "plan_version": "0.1.0-k4",
     "source_of_truth_version": "0.2.0-k2"
   },
@@ -54,9 +52,7 @@
       }
     ],
     "notes": [],
-    "unbound_intervals": [
-      "iv_a23"
-    ],
+    "unbound_intervals": [],
     "unmatched_readings": []
   },
   "steps": [
@@ -304,8 +300,7 @@
       "in_report2": false,
       "refs": [
         "iv_a21",
-        "iv_a22",
-        "iv_a23"
+        "iv_a22"
       ],
       "role": "context",
       "step_id": "s_prov_confidences",

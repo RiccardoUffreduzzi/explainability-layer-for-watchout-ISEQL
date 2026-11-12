@@ -16,31 +16,28 @@ from xai.contract.model import (
 from xai.contract.primitives import DerivedSource, RequestSource, Source, SourceRef, Stage, Unavailable
 from xai.contract.reasons import Reason
 from xai.k1_harvester.context import HarvestContext
-from xai.k1_harvester.resource_data import Glossary, PipelineConstants
+from xai.k1_harvester.resource_data import Glossary
 
 DetectionMode = Literal["visual", "audio", "multimodal"]
 DETECTION_MODES: dict[Condition, DetectionMode] = {"A": "visual", "B": "audio", "C": "multimodal"}
 
 SAMPLING_STRIDE = SourceRef(
     stage=Stage.CODE,
-    store="backend/src/service/impl/visual_service_impl.py",
-    record_id="frame_count % sampling_rate",
+    record_id="VisualServiceImpl.run_pipeline/frame_count % sampling_rate",
     mode="read",
 )
 """``SamplingRate`` is also the stride of the frame sampling."""
 
-VLM_DEFAULTS = SourceRef(
-    stage=Stage.CODE,
-    store="backend/src/utils/vlm_client.py",
-    record_id="VLMClient.__init__: temperature and seed defaults",
-    mode="read",
+VLM_DEFAULTS = SourceRef(stage=Stage.CODE, record_id="VLMClient.generation_defaults()", mode="read")
+
+MERGE_TOLERANCE = SourceRef(
+    stage=Stage.CODE, record_id="IntervalServiceImpl.merge_tolerance_samples()", mode="read"
 )
 
 
 class MetaHarvester:
-    def __init__(self, glossary: Glossary, constants: PipelineConstants) -> None:
+    def __init__(self, glossary: Glossary) -> None:
         self.glossary = glossary
-        self.constants = constants
 
     def harvest(self, ctx: HarvestContext) -> ContractMeta:
         analysis = ctx.analysis
@@ -59,47 +56,28 @@ class MetaHarvester:
             sources={
                 "glossary_version": SourceRef(
                     stage=Stage.CONFIG,
-                    store="AppConfig",
-                    record_id="relation_vocab.updated_at, audio_taxonomy.updated_at",
+                    record_id="AppConfig/relation_vocab.updated_at, audio_taxonomy.updated_at",
                     mode="read",
                 ),
                 "params_origin": ctx.params.origin_source(ctx.rule.ref),
             },
         )
 
-    def _snapshot(self, ctx: HarvestContext) -> SourceSnapshot:
-        version = ctx.readings.backend_version()
-        if version is None:
-            return SourceSnapshot(
-                backend_version=None,
-                extracted_at=ctx.extracted_at,
-                unavailable={
-                    "backend_version": Unavailable(
-                        reason=Reason.BACKEND_VERSION_NOT_RECORDED,
-                        detail=(
-                            "backend/src/__init__.py has no __version__ "
-                            "and the folder is not a git repository"
-                        ),
-                    )
-                },
-            )
-        return SourceSnapshot(
-            backend_version=version.text,
-            extracted_at=ctx.extracted_at,
-            sources={"backend_version": version.source},
-        )
+    @staticmethod
+    def _snapshot(ctx: HarvestContext) -> SourceSnapshot:
+        return SourceSnapshot(extracted_at=ctx.extracted_at)
 
     def _pipeline_config(self, ctx: HarvestContext) -> PipelineConfig:
         analysis = ctx.analysis
-        store = analysis.store
+        record = analysis.record
         sources: dict[str, Source] = {}
         unavailable: dict[str, Unavailable] = {}
 
         def config(record_id: str) -> SourceRef:
-            return SourceRef(stage=Stage.CONFIG, store=store, record_id=record_id, mode="read")
+            return SourceRef(stage=Stage.CONFIG, record_id=f"{record}/{record_id}", mode="read")
 
         def missing(columns: str) -> Unavailable:
-            return Unavailable(reason=Reason.ANALYSIS_RECORD_MISSING, detail=f"{store} has no {columns}")
+            return Unavailable(reason=Reason.ANALYSIS_RECORD_MISSING, detail=f"{record} has no {columns}")
 
         vlm_backend, vlm_columns = _joined(VLMProvider=analysis.vlm_provider, Model=analysis.model)
         if vlm_backend is None:
@@ -119,7 +97,9 @@ class MetaHarvester:
 
         fps = analysis.fps
         if fps is None:
-            no_fps = Unavailable(reason=Reason.FPS_NOT_RECORDED, detail=f"{store} has no SamplingRate (or 0)")
+            no_fps = Unavailable(
+                reason=Reason.FPS_NOT_RECORDED, detail=f"{record} has no SamplingRate (or 0)"
+            )
             for name in ("sampling.source_fps", "sampling.sample_every_n", "sampling.effective_hz"):
                 unavailable[name] = no_fps
             sampling = Sampling(source_fps=None, sample_every_n=None, effective_hz=None)
@@ -138,16 +118,14 @@ class MetaHarvester:
             audio_window = AudioWindow(window_s=analysis.audio_window, hop_s=analysis.audio_hop)
             sources["audio_window"] = config("AudioWindow,AudioHop")
 
-        merge_tolerance_s = ctx.timebase.seconds_of(self.constants.merge_tolerance.samples, fps or 0)
+        merge_tolerance_s = ctx.timebase.seconds_of(ctx.readings.facts.merge_tolerance_samples(), fps or 0)
         if merge_tolerance_s is None:
             unavailable["merge_tolerance_s"] = Unavailable(
                 reason=Reason.FPS_NOT_RECORDED,
                 detail="the merge tolerance is a number of samples: seconds need SamplingRate",
             )
         else:
-            sources["merge_tolerance_s"] = SourceRef(
-                stage=Stage.CODE, store=self.constants.store, record_id="merge_tolerance", mode="read"
-            )
+            sources["merge_tolerance_s"] = MERGE_TOLERANCE
 
         defaults = ctx.readings.vlm_defaults()
         sources["determinism"] = VLM_DEFAULTS
@@ -168,7 +146,7 @@ class MetaHarvester:
 def _joined(**columns: str | None) -> tuple[str | None, str]:
     """The values of the columns joined with `` / ``, and the names of the columns used.
 
-    Empty values and ``none`` (WatchOut's default ``AudioQuantization``: no quantization)
+    Empty values and ``none`` (default ``AudioQuantization``: no quantization)
     are left out; the value is None when no column has one.
     """
     used = {name: value for name, value in columns.items() if value and value != "none"}

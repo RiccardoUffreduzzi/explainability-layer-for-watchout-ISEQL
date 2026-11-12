@@ -38,7 +38,7 @@ from xai.contract.primitives import (
 )
 from xai.contract.reasons import CheckName, NoteCode, Reason
 
-ContractVersion = Literal["0.3.0-k1"]
+ContractVersion = Literal["0.4.0-k1"]
 CONTRACT_VERSION: Final[str] = get_args(ContractVersion)[0]
 """Version of the draft format; the JSON schema is bound to it (``$id`` and ``const``)."""
 
@@ -92,9 +92,8 @@ TimeUnit = Literal["seconds", "frames"]
 
 
 class SourceSnapshot(ContractModel):
-    """Which state of WatchOut was read, and when."""
+    """When WatchOut was read."""
 
-    backend_version: str | None
     extracted_at: Timestamp
     sources: SourceMap | None = absent_if_none()
     unavailable: UnavailableMap | None = absent_if_none()
@@ -393,7 +392,7 @@ class VlmDescription(ContractModel):
     in_evidence: bool
     """True when the frame lies in a visual interval of the draft that has the entity among its args."""
     source_ref: SourceRef
-    """Stage ``vlm``, store ``VisualPerFrame``, record_id ``<AnalysisID>:<Frame>:<ClassID>:<Block>``."""
+    """Stage ``vlm``, record_id ``VisualPerFrame/<AnalysisID>:<Frame>:<ClassID>:<Block>``."""
 
 
 class Entity(ContractModel):
@@ -406,16 +405,31 @@ class Entity(ContractModel):
     unavailable: UnavailableMap | None = absent_if_none()
 
 
+class IntervalBinding(ContractModel):
+    """A variable of a branch of the rule that the interval satisfied."""
+
+    branch: NonEmptyStr
+    variable: NonEmptyStr
+    """``M1``, ``M2``... as the branch names its intervals."""
+
+
 class IntervalRecord(ContractModel):
+    """An interval row that produces the event row, as WatchOut's lineage query returns it"""
+
     interval_id: IntervalId
     source: Literal["VisualPerInterval", "AudioPerInterval"]
     """Table the interval comes from; its provenance is ``source_ref``."""
     predicate: NonEmptyStr
     args: list[EntityId]
+    """The entities in the argument positions the rule reads, in that order"""
     args_ordered: bool
-    """True when the signature classes differ, so the order of ``args`` is meaningful."""
+    """True: ``args`` follow the argument positions of the rule."""
     anchor: Anchor
     confidence: float | None
+    used_by_rule: bool
+    """True: the interval is in a witness of the row"""
+    bindings: Annotated[list[IntervalBinding], Field(min_length=1)]
+    """The variables the interval satisfied, branch by branch, in rule order."""
     source_ref: SourceRef
     sources: SourceMap | None = absent_if_none()
     unavailable: UnavailableMap | None = absent_if_none()

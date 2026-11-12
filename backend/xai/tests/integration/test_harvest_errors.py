@@ -11,6 +11,7 @@ import pytest
 from xai.cli import k1 as k1_cli
 from xai.contract.model import Violation
 from xai.contract.reasons import CheckName, InputError
+from xai.k1_harvester.ports import EngineError
 from xai.k1_harvester.request import HarvestRequest
 from xai.k1_harvester.result import HarvestFailure
 from xai.k1_harvester.service import StageHarvester
@@ -19,6 +20,8 @@ from xai.tests.support import scene
 
 HANDOFF = GOLDEN_CASES[0]
 assert HANDOFF.name == "handoff_s21_A"
+GUNSHOT = GOLDEN_CASES[5]
+assert GUNSHOT.name == "gunshot_or_explosion_s7_A"
 S21 = scene(21)
 
 
@@ -74,25 +77,38 @@ def test_an_analysis_not_done_is_not_ready(watchout_db_copy: Path, stage_value: 
     assert _refusal(lambda: _harvest_on(watchout_db_copy, HANDOFF.request)) == InputError.ANALYSIS_NOT_READY
 
 
-def test_a_grouped_rule_is_unsupported(watchout_db_copy: Path) -> None:
-    conn = sqlite3.connect(watchout_db_copy)
+def _group_first_interval(db: Path, event_type: str) -> None:
+    """Give the first interval of the A rule a ``group_id``: the rule becomes of form F4."""
+    conn = sqlite3.connect(db)
     (model_json,) = conn.execute(
-        "SELECT model_json FROM EventSpec WHERE id = 'handoff' AND condition = 'A'"
+        "SELECT model_json FROM EventSpec WHERE id = ? AND condition = 'A'", (event_type,)
     ).fetchone()
     conn.close()
     model = json.loads(model_json)
-    model["intervals"][0]["group_id"] = "g1"  # form F4
+    model["intervals"][0]["group_id"] = "g1"
     _change(
-        watchout_db_copy,
+        db,
         (
-            "UPDATE EventSpec SET model_json = ? WHERE id = 'handoff' AND condition = 'A'",
-            (json.dumps(model),),
+            "UPDATE EventSpec SET model_json = ? WHERE id = ? AND condition = 'A'",
+            (json.dumps(model), event_type),
         ),
     )
 
+
+def test_a_grouped_rule_is_unsupported(watchout_db_copy: Path) -> None:
+    _group_first_interval(watchout_db_copy, GUNSHOT.event_type)
+
     assert (
-        _refusal(lambda: _harvest_on(watchout_db_copy, HANDOFF.request)) == InputError.UNSUPPORTED_CONSTRUCT
+        _refusal(lambda: _harvest_on(watchout_db_copy, GUNSHOT.request)) == InputError.UNSUPPORTED_CONSTRUCT
     )
+
+
+def test_a_grouped_rule_watchout_cannot_run_is_an_engine_error(watchout_db_copy: Path) -> None:
+    # WatchOut's own detection fails on it (its SQL names M1.M1_arg1): K1 reports that failure.
+    _group_first_interval(watchout_db_copy, HANDOFF.event_type)
+
+    with pytest.raises(EngineError, match="executing query"):
+        _harvest_on(watchout_db_copy, HANDOFF.request)
 
 
 def test_without_the_configuration_k1_stops(watchout_db_copy: Path) -> None:
@@ -131,7 +147,7 @@ def test_saved_parameters_are_used_and_cited(watchout_db_copy: Path) -> None:
         if p.origin == "named_key"
     ]
     assert sources
-    assert {s.store for s in sources} == {f"Analyses:{S21}#DeltasJson"}
+    assert all(s.record_id.startswith(f"Analyses/{S21}/DeltasJson/deltas.") for s in sources)
 
 
 # ----------------------------------------------------------------------------- the command

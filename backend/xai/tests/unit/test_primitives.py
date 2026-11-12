@@ -14,12 +14,17 @@ def test_source_ref_stages_include_config_and_code() -> None:
 
 def test_source_ref_rejects_an_unknown_stage() -> None:
     with pytest.raises(ValidationError, match="stage"):
-        from_json_data(SourceRef, {"stage": "gui", "store": "x", "record_id": "1", "mode": "read"})
+        from_json_data(SourceRef, {"stage": "gui", "record_id": "x/1", "mode": "read"})
 
 
-def test_source_ref_needs_store_and_record() -> None:
+def test_source_ref_needs_a_record() -> None:
     with pytest.raises(ValidationError):
-        from_json_data(SourceRef, {"stage": "iad", "store": "", "record_id": "1", "mode": "read"})
+        from_json_data(SourceRef, {"stage": "iad", "record_id": "", "mode": "read"})
+
+
+def test_source_ref_has_no_store() -> None:
+    with pytest.raises(ValidationError, match="store"):
+        from_json_data(SourceRef, {"stage": "iad", "store": "x", "record_id": "x/1", "mode": "read"})
 
 
 def test_unavailable_needs_a_catalog_reason_and_a_detail() -> None:

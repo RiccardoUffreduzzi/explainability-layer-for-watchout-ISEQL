@@ -11,7 +11,8 @@ def test_event_id_reproduces_the_examples(example: dict[str, Any]) -> None:
     # The ID is computed on the row as the engine returns it (event.source_ref), not as
     # the request wrote it: a row copied from the GUI gets the same ID.
     request = example["harvest_report"]["request"]
-    row = json.loads(example["event"]["source_ref"]["record_id"])
+    record_id = example["event"]["source_ref"]["record_id"]
+    row = json.loads(record_id[record_id.index("/{") + 1 :])
 
     computed = ids.event_id(request["analysis_id"], request["event_type"], request["condition"], row)
 
@@ -43,9 +44,10 @@ def test_event_id_rejects_names_that_would_be_ambiguous(bad: str) -> None:
 
 
 def test_detection_row_reference_is_the_canonical_row(example: dict[str, Any]) -> None:
-    row = example["harvest_report"]["request"]["row"]
+    request = example["harvest_report"]["request"]
+    detection = f"detection/{request['event_type']}/{request['condition']}@{request['analysis_id']}"
 
-    assert ids.canonical_row(row) == example["event"]["source_ref"]["record_id"]
+    assert example["event"]["source_ref"]["record_id"] == f"{detection}/{ids.canonical_row(request['row'])}"
 
 
 def test_record_ids() -> None:

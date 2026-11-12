@@ -21,7 +21,7 @@ def _outcome() -> AnalysisOutcome:
     draft = load_draft(json.dumps(data, ensure_ascii=False))
     row = data["harvest_report"]["request"]["row"]
     ev_id = draft.event.event_id
-    failure = HarvestFailure.input(InputError.ROW_SCHEMA_AMBIGUOUS, "columns not traceable")
+    failure = HarvestFailure.input(InputError.UNSUPPORTED_CONSTRUCT, "form F4")
     return AnalysisOutcome(
         analysis_id=ANALYSIS,
         condition="A",
@@ -70,7 +70,7 @@ def test_the_index_has_every_rule_and_row() -> None:
     rows = index["events"][1]["rows"]
     assert [(r["status"], r["duplicate_of"]) for r in rows] == [("draft", None), ("duplicate", 0)]
     assert rows[0]["draft"] == f"handoff/{rows[0]['event_id']}.json"
-    assert index["events"][2]["failure"]["code"] == "ROW_SCHEMA_AMBIGUOUS"
+    assert index["events"][2]["failure"]["code"] == "UNSUPPORTED_CONSTRUCT"
     assert index["summary"] == {
         "events": 3,
         "events_failed": 2,

@@ -9,10 +9,11 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
+from xai.adapters.watchout.reader import SqliteWatchOutReader
 from xai.contract.model import ContractDraft, Entity
 from xai.contract.reasons import Reason
 from xai.k1_harvester.ports import FrameDescriptionRow
-from xai.tests.harness import GOLDEN_CASES, PinnedReader, make_stage, open_reader
+from xai.tests.harness import GOLDEN_CASES, make_stage, open_reader
 from xai.tests.support import FIXTURE_PATH, scene
 
 HANDOFF = GOLDEN_CASES[0]
@@ -57,7 +58,7 @@ def _texts(draft: ContractDraft) -> dict[str, str | None]:
 # ----------------------------------------------------------------------------- the reader
 
 
-def test_the_reader_gives_the_rows_of_the_subjects_in_order(reader: PinnedReader) -> None:
+def test_the_reader_gives_the_rows_of_the_subjects_in_order(reader: SqliteWatchOutReader) -> None:
     rows = reader.frame_descriptions(S21, [5, 3])
 
     assert rows == _fixture_rows(S21, {3, 5})
@@ -67,7 +68,7 @@ def test_the_reader_gives_the_rows_of_the_subjects_in_order(reader: PinnedReader
     )
 
 
-def test_the_reader_keeps_to_the_analysis_and_the_subjects(reader: PinnedReader) -> None:
+def test_the_reader_keeps_to_the_analysis_and_the_subjects(reader: SqliteWatchOutReader) -> None:
     assert reader.frame_descriptions(S21, []) == []
     assert reader.frame_descriptions(S21, [999]) == []
     assert reader.frame_descriptions("no_such_analysis", [3]) == []
@@ -124,7 +125,7 @@ def test_each_entity_has_the_description_of_its_first_frame_in_the_evidence(watc
         assert frame is not None
         assert frame == min(w.start_frame for w in windows if w.start_frame is not None)
         number = entity.entity_id.removeprefix("ent_")
-        assert description.source_ref.record_id.startswith(f"{S21}:{frame}:{number}:")
+        assert description.source_ref.record_id.startswith(f"VisualPerFrame/{S21}:{frame}:{number}:")
 
 
 def test_without_a_row_in_the_evidence_the_nearest_one_is_copied(watchout_db_copy: Path) -> None:
@@ -143,7 +144,7 @@ def test_without_a_row_in_the_evidence_the_nearest_one_is_copied(watchout_db_cop
     assert description is not None
     assert (description.text, description.in_evidence) == ("man in grey jacket", False)
     assert description.anchor.start_frame == 96
-    assert description.source_ref.record_id == f"{S21}:96:5:3"
+    assert description.source_ref.record_id == f"VisualPerFrame/{S21}:96:5:3"
     assert all(check.passed for check in draft.harvest_report.checks)
     assert not [m for m in draft.harvest_report.missing_fields if "vlm_description" in m.path]
 

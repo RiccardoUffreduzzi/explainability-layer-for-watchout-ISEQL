@@ -161,7 +161,8 @@ def test_a_description_is_one_frame_read_from_the_vlm_table(described_example: d
         assert isinstance(description, VlmDescription)
         assert description.anchor.read_as == "frames"
         assert description.anchor.start_frame == description.anchor.end_frame
-        assert (description.source_ref.stage.value, description.source_ref.store) == ("vlm", "VisualPerFrame")
+        assert description.source_ref.stage.value == "vlm"
+        assert description.source_ref.record_id.startswith("VisualPerFrame/")
 
 
 def test_the_description_key_cannot_be_left_out(described_example: dict[str, Any]) -> None:
@@ -206,7 +207,7 @@ def _param(**changes: object) -> dict[str, object]:
         "engine_value": 48,
         "compare_domain": "seconds",
         "origin": "literal",
-        "source_ref": {"stage": "iseql", "store": "EventSpec", "record_id": "x/A", "mode": "read"},
+        "source_ref": {"stage": "iseql", "record_id": "EventSpec/x/A", "mode": "read"},
     }
     base.update(changes)
     return base
@@ -247,12 +248,12 @@ def test_numbers_are_not_read_from_text(example: dict[str, Any]) -> None:
         from_json_data(ContractDraft, data)
 
 
-@pytest.mark.parametrize("version", ["0.2.0", "0.2.0-k1"], ids=["no suffix", "the previous format"])
+@pytest.mark.parametrize("version", ["0.3.0", "0.3.0-k1"], ids=["no suffix", "the previous format"])
 def test_contract_version_is_the_current_one(example: dict[str, Any], version: str) -> None:
     data = copy.deepcopy(example)
     data["contract_meta"]["contract_version"] = version
 
-    assert CONTRACT_VERSION == "0.3.0-k1"
+    assert CONTRACT_VERSION == "0.4.0-k1"
     assert from_json_data(ContractDraft, example).contract_meta.contract_version == CONTRACT_VERSION
     with pytest.raises(ValidationError, match="contract_version"):
         from_json_data(ContractDraft, data)

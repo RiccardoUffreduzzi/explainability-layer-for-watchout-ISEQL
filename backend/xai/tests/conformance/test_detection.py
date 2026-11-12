@@ -38,7 +38,7 @@ def test_rows_equal_those_of_detect_event(watchout_db_copy: Path, monkeypatch: p
                         unit="seconds",
                     )["rows"]
                     try:
-                        ours = [dict(r.gui_values) for r in reader.detect(rule, analysis, params).rows]
+                        ours = [dict(r.gui_values) for r in reader.detection(rule, analysis, params).rows]
                     except EngineError:
                         # detect_event drops the engine's ERROR lines: the GUI shows no rows.
                         engine_errors.append(f"{rule.ref}@{analysis_id}")

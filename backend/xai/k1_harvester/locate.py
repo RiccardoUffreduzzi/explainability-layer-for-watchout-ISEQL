@@ -1,7 +1,7 @@
 """``EventLocator``: from a request to the located detection row.
 
 It reads the analysis, the configuration, the parameters and the rule, re-obtains
-the rows from WatchOut's engine on the read-only connection and finds the requested
+the rows from WatchOut's detection on the read-only connection and finds the requested
 one. Every refusal is a ``HarvestFailure`` of stage ``input`` with its code.
 """
 
@@ -13,21 +13,19 @@ from xai.contract.ids import event_id
 from xai.contract.model import Condition, RowMatch
 from xai.contract.reasons import InputError
 from xai.k1_harvester.context import AnalysisReadings, HarvestContext, PreparedRule
-from xai.k1_harvester.modality import OriginResolver
+from xai.k1_harvester.modality import resolve_origin
 from xai.k1_harvester.ports import (
     DetectedRow,
     DetectionNotPossible,
     ParamsMissing,
     ParamsSnapshot,
-    RowColumns,
-    RowNotReadable,
-    RuleLayout,
+    RuleNotSupported,
     RuleSnapshot,
     WatchOutReader,
 )
 from xai.k1_harvester.request import HarvestRequest, ParamsMode
 from xai.k1_harvester.result import HarvestFailure
-from xai.k1_harvester.rows import extent_anchor, row_matches
+from xai.k1_harvester.rows import extent_anchor, row_columns, row_matches
 
 CONDITIONS: tuple[Condition, ...] = ("A", "B", "C")
 DONE = "done"
@@ -38,7 +36,6 @@ T = TypeVar("T")
 class EventLocator:
     def __init__(self, reader: WatchOutReader) -> None:
         self.reader = reader
-        self.origins = OriginResolver()
 
     # analysis level
 
@@ -97,15 +94,8 @@ class EventLocator:
         return rule
 
     def prepare(self, readings: AnalysisReadings, rule: RuleSnapshot) -> PreparedRule:
-        """The rule's form and layout, and its detection with the analysis parameters."""
-        form, layout = readings.layout(rule)
-        if layout.columns is None and not layout.side_columns:
-            raise HarvestFailure.input(
-                InputError.ROW_SCHEMA_AMBIGUOUS,
-                f"{rule.ref}: {layout.columns_problem or 'columns not traceable'}",
-            )
-        detection = self._engine(lambda: readings.detection(rule), rule.ref)
-        return PreparedRule(rule, form, layout, detection)
+        """The rule's detection with the analysis parameters"""
+        return PreparedRule(rule, self._engine(lambda: readings.detection(rule), rule.ref))
 
     # row level
 
@@ -135,26 +125,23 @@ class EventLocator:
         extracted_at: datetime,
     ) -> HarvestContext:
         """The context of a row already found: ``matches`` are its index and those of its copies."""
-        rule, layout, detection = prepared.rule, prepared.layout, prepared.detection
+        rule, detection = prepared.rule, prepared.detection
         row: DetectedRow = detection.rows[matches[0]]
-        columns = self.row_columns(rule.ref, layout, row)
+        columns = row_columns(detection.layout, row)
         interval = extent_anchor(row.values, columns.extent, readings.timebase, "interval")
         if interval is None:
             raise HarvestFailure.input(
-                InputError.ROW_SCHEMA_AMBIGUOUS,
-                f"{rule.ref}: the start and end of the row cannot be read from its columns",
+                InputError.UNSUPPORTED_CONSTRUCT,
+                f"{rule.ref}: the rows have no start and end column, so the event has no interval",
             )
         origin = self._engine(
-            lambda: self.origins.resolve(readings, rule, layout, detection, row, columns),
-            f"{rule.event_type} (rules A and B)",
+            lambda: resolve_origin(readings, detection, row), f"{rule.event_type} (rules A and B)"
         )
         return HarvestContext(
             request=request,
             condition=rule.condition,
             readings=readings,
             rule=rule,
-            form=prepared.form,
-            layout=layout,
             detection=detection,
             row=row,
             row_columns=columns,
@@ -167,16 +154,9 @@ class EventLocator:
             extracted_at=extracted_at,
         )
 
-    def row_columns(self, rule_ref: str, layout: RuleLayout, row: DetectedRow) -> RowColumns:
-        """What each column of the row holds, as the engine aligns the rule's columns."""
-        try:
-            return self.reader.row_columns(layout, row)
-        except RowNotReadable as exc:
-            raise HarvestFailure.input(InputError.ROW_SCHEMA_AMBIGUOUS, f"{rule_ref}: {exc}") from exc
-
     @staticmethod
     def _engine(call: Callable[[], T], what: str) -> T:
-        """Run a detection; the parameter problems the engine meets become input errors."""
+        """Run a detection; the problems WatchOut meets with the request become input errors."""
         try:
             return call()
         except ParamsMissing as exc:
@@ -186,3 +166,5 @@ class EventLocator:
             ) from exc
         except DetectionNotPossible as exc:
             raise HarvestFailure.input(InputError.EVENT_NOT_REPRODUCIBLE, f"{what}: {exc}") from exc
+        except RuleNotSupported as exc:
+            raise HarvestFailure.input(InputError.UNSUPPORTED_CONSTRUCT, str(exc)) from exc

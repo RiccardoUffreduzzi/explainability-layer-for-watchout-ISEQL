@@ -22,7 +22,7 @@ from xai.k1_harvester.service import StageHarvester
 class RuleOutcome:
     """What the batch made of one rule: its rows, or why it has none.
 
-    ``failure`` (an input error such as ``ROW_SCHEMA_AMBIGUOUS``) or ``engine_error``
+    ``failure`` (an input error such as ``UNSUPPORTED_CONSTRUCT``) or ``engine_error``
     (WatchOut's engine failed on the rule) is set when the rule could not be harvested.
     """
 

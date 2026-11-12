@@ -1,15 +1,16 @@
 """The ``rule`` section: text, structure and nodes of the executed rule.
 
-The nodes are those of the saved model as the compiler executes them
+The nodes are those of the saved model as the compiler executes them; ``expression`` is
+the text WatchOut renders for the detection, with the params it used.
 """
 
 import difflib
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 
 from xai.contract.model import ConstraintNode, Note, RuleRecord, TemporalOperatorNode
 from xai.contract.reasons import NoteCode
 from xai.k1_harvester.context import HarvestContext
-from xai.k1_harvester.ports import ParamsSnapshot
+from xai.k1_harvester.ports import ParamValue
 from xai.k1_harvester.rule.readers import DEFAULT_READERS, NodeReader
 from xai.k1_harvester.rule.readers.set_operation import projection_parents
 from xai.k1_harvester.rule.scope import RuleScope
@@ -21,11 +22,11 @@ class RuleHarvester:
 
     def harvest(self, ctx: HarvestContext) -> tuple[RuleRecord, list[Note]]:
         nodes = self.nodes(ctx)
-        expression = ctx.engine.render_rule(ctx.rule, ctx.params)
+        expression = ctx.detection.text
         saved = ctx.rule.model.get("iseql_text")
         notes = []
         if isinstance(saved, str) and saved.strip():
-            structural = ctx.engine.render_rule(ctx.rule, self._own_defaults(ctx))
+            structural = ctx.readings.reader.rule_text(ctx.rule, self._own_defaults(ctx))
             if structural != saved:
                 notes.append(
                     Note(
@@ -62,13 +63,10 @@ class RuleHarvester:
         return [node for scope in scopes for reader in self.readers for node in reader.read(scope)]
 
     @staticmethod
-    def _own_defaults(ctx: HarvestContext) -> ParamsSnapshot:
+    def _own_defaults(ctx: HarvestContext) -> Mapping[str, ParamValue]:
         """The rule's own defaults: the values its saved text shows."""
         defaults = ctx.readings.default_params()
-        own = defaults.rule_defaults.get(ctx.rule.ref)
-        if own is None:
-            return defaults
-        return ParamsSnapshot(origin="rule_defaults", unit=defaults.unit, values=own)
+        return defaults.rule_defaults.get(ctx.rule.ref, defaults.values)
 
 
 def _divergence(saved: str, structural: str) -> str:

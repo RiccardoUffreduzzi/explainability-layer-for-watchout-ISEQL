@@ -79,21 +79,14 @@
             "iv_v6"
           ],
           "basis": [
-            "predicate",
-            "arg_classes",
-            "M1.arg1",
-            "M1.arg2",
-            "M1.st",
-            "M1.et"
+            "engine_lineage"
           ]
         }
       ]
     }
   ],
   "excluded": [],
-  "unbound_intervals": [
-    "iv_v7"
-  ],
+  "unbound_intervals": [],
   "unmatched_readings": [],
   "notes": []
 }

@@ -3,7 +3,7 @@
 WatchOut computes seconds as ``StartFrame / fps`` (``compiler.py``) and the GUI
 derives frames as ``round(seconds * fps)`` (``detect_event``). ``TimeBase`` applies
 the same two formulas with ``fps = Analyses.SamplingRate`` and writes seconds
-rounded to the millisecond, as ``_format_time`` shows them.
+rounded to the millisecond, as ``format_time`` (``events_service_impl.py``) shows them.
 """
 
 from dataclasses import dataclass

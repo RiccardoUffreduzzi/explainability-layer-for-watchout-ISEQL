@@ -120,8 +120,8 @@ class ContractModel(BaseModel):
 class Stage(str, Enum):
     """WatchOut stage a ``SourceRef`` points to.
 
-    ``config`` is ``Analyses`` or ``AppConfig``; ``code`` is a value of WatchOut's code
-    or of ``pipeline_constants.yaml``.
+    ``config`` is ``Analyses`` or ``AppConfig``; ``code`` is a value of WatchOut's code,
+    read through the method that returns it, or an entry of ``glossary.yaml``.
     """
 
     SAMPLING = "sampling"
@@ -140,10 +140,10 @@ class SourceRef(ContractModel):
     """The WatchOut record a fact was read from. Never contains line numbers."""
 
     stage: Stage
-    store: NonEmptyStr
-    """File or table read, e.g. ``VisualPerInterval`` or ``Analyses:<id>``."""
     record_id: NonEmptyStr
-    """String that finds the record again, e.g. ``59`` or ``handoff/A#/intervals/0``."""
+    """The table or file before the first ``/``, then the record, e.g. ``VisualPerInterval/59``,
+    ``Analyses/<id>/SamplingRate`` or ``EventSpec/handoff/A#/intervals/0``. A value of WatchOut's
+    code names the method that returns it, e.g. ``VLMClient.generation_defaults()``."""
     mode: Literal["read", "not_available"]
     """``not_available``: the fact is in the draft but no WatchOut record holds it."""
 

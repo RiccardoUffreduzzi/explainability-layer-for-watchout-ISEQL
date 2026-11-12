@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:watchout-xai:contract-draft:0.3.0-k1",
+  "$id": "urn:watchout-xai:contract-draft:0.4.0-k1",
   "$defs": {
     "Anchor": {
       "additionalProperties": false,
@@ -311,7 +311,7 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "0.3.0-k1",
+          "const": "0.4.0-k1",
           "type": "string"
         },
         "analysis_id": {
@@ -794,6 +794,26 @@
       "title": "IdentityNode",
       "type": "object"
     },
+    "IntervalBinding": {
+      "additionalProperties": false,
+      "description": "A variable of a branch of the rule that the interval satisfied.",
+      "properties": {
+        "branch": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "variable": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "branch",
+        "variable"
+      ],
+      "title": "IntervalBinding",
+      "type": "object"
+    },
     "IntervalId": {
       "description": "ID of an interval: iv_v<VisualPerInterval id> or iv_a<AudioPerInterval id>.",
       "pattern": "^iv_[va][0-9]+$",
@@ -801,6 +821,7 @@
     },
     "IntervalRecord": {
       "additionalProperties": false,
+      "description": "An interval row that produces the event row, as WatchOut's lineage query returns it.",
       "properties": {
         "interval_id": {
           "$ref": "#/$defs/IntervalId"
@@ -838,6 +859,16 @@
             }
           ]
         },
+        "used_by_rule": {
+          "type": "boolean"
+        },
+        "bindings": {
+          "items": {
+            "$ref": "#/$defs/IntervalBinding"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
         "source_ref": {
           "$ref": "#/$defs/SourceRef"
         },
@@ -856,6 +887,8 @@
         "args_ordered",
         "anchor",
         "confidence",
+        "used_by_rule",
+        "bindings",
         "source_ref"
       ],
       "title": "IntervalRecord",
@@ -963,8 +996,7 @@
       "enum": [
         "selection_basis",
         "params_unit",
-        "saved_text_diverges_from_structure",
-        "c_labels_by_kind"
+        "saved_text_diverges_from_structure"
       ],
       "title": "NoteCode",
       "type": "string"
@@ -1327,8 +1359,6 @@
         "visual_confidence_not_recorded",
         "fps_not_recorded",
         "analysis_record_missing",
-        "backend_version_not_recorded",
-        "origin_not_identifiable",
         "modality_rule_absent",
         "glossary_definition_not_in_system",
         "conflicting_records",
@@ -1881,10 +1911,6 @@
         "stage": {
           "$ref": "#/$defs/Stage"
         },
-        "store": {
-          "minLength": 1,
-          "type": "string"
-        },
         "record_id": {
           "minLength": 1,
           "type": "string"
@@ -1899,7 +1925,6 @@
       },
       "required": [
         "stage",
-        "store",
         "record_id",
         "mode"
       ],
@@ -1908,18 +1933,8 @@
     },
     "SourceSnapshot": {
       "additionalProperties": false,
-      "description": "Which state of WatchOut was read, and when.",
+      "description": "When WatchOut was read.",
       "properties": {
-        "backend_version": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
         "extracted_at": {
           "$ref": "#/$defs/Timestamp"
         },
@@ -1931,14 +1946,13 @@
         }
       },
       "required": [
-        "backend_version",
         "extracted_at"
       ],
       "title": "SourceSnapshot",
       "type": "object"
     },
     "Stage": {
-      "description": "WatchOut stage a ``SourceRef`` points to.\n\n``config`` is ``Analyses`` or ``AppConfig``; ``code`` is a value of WatchOut's code\nor of ``pipeline_constants.yaml``.",
+      "description": "WatchOut stage a ``SourceRef`` points to.\n\n``config`` is ``Analyses`` or ``AppConfig``; ``code`` is a value of WatchOut's code,\nread through the method that returns it, or an entry of ``glossary.yaml``.",
       "enum": [
         "sampling",
         "vlm",

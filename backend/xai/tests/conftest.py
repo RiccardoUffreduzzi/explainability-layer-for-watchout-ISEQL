@@ -15,8 +15,8 @@ from xai.tests.support import (
 )
 
 if TYPE_CHECKING:
+    from xai.adapters.watchout.reader import SqliteWatchOutReader
     from xai.k1_harvester.service import StageHarvester
-    from xai.tests.harness import PinnedReader
 
 
 @pytest.fixture(params=EXAMPLE_PATHS, ids=[p.name for p in EXAMPLE_PATHS])
@@ -81,7 +81,7 @@ def watchout_db_copy(watchout_db: Path, tmp_path: Path) -> Path:
 
 
 @pytest.fixture
-def reader(watchout_db: Path) -> Iterator["PinnedReader"]:
+def reader(watchout_db: Path) -> Iterator["SqliteWatchOutReader"]:
     from xai.tests.harness import open_reader
 
     conn, pinned = open_reader(watchout_db)
@@ -90,7 +90,7 @@ def reader(watchout_db: Path) -> Iterator["PinnedReader"]:
 
 
 @pytest.fixture
-def stage(reader: "PinnedReader") -> "StageHarvester":
+def stage(reader: "SqliteWatchOutReader") -> "StageHarvester":
     from xai.tests.harness import make_stage
 
     return make_stage(reader)
