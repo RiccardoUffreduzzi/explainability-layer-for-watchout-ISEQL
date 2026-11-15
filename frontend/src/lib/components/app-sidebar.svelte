@@ -3,19 +3,20 @@
   import Separator from '$lib/components/ui/separator.svelte';
   import Badge from '$lib/components/ui/badge.svelte';
   import Button from '$lib/components/ui/button.svelte';
+  import ThemeToggle from '$lib/components/ui/theme-toggle.svelte';
   import type { BadgeVariant } from '$lib/components/ui/badge';
   import { cn } from '$lib/utils';
   import { Clock, FileVideo, Trash2, Database, DatabaseZap, PanelLeftClose, PanelLeftOpen } from 'lucide-svelte';
   import type { AnalysisRecord } from '$lib/types';
 
   const STAGE_VARIANT: Record<string, BadgeVariant> = {
-    done: 'default',
+    done: 'success',
     failed: 'destructive',
   };
   const CONDITION_COLORS: Record<string, string> = {
-    A: 'bg-sky-500/10 text-sky-300 border-sky-500/30',
-    B: 'bg-amber-500/10 text-amber-300 border-amber-500/30',
-    C: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30',
+    A: 'bg-info/10 text-info border-info/30',
+    B: 'bg-warning/10 text-warning border-warning/30',
+    C: 'bg-success/10 text-success border-success/30',
   };
 
   type Props = {
@@ -62,6 +63,7 @@
       </span>
       <PanelLeftOpen class="hidden size-4 text-muted-foreground group-hover:block group-hover:text-foreground" />
     </button>
+    <ThemeToggle class="mt-2 size-8 border-0 bg-transparent shadow-none" />
     <div class="mt-auto flex w-full flex-col items-center gap-1.5 px-1" title={`Status: ${currentStage}`}>
       <span class="text-xs tracking-wide text-muted-foreground">Status</span>
       <Badge variant={STAGE_VARIANT[currentStage] || 'secondary'} class="max-w-10 truncate text-[10px]">
@@ -76,13 +78,16 @@
       <h1 class="text-xl font-bold tracking-tight">{APP_NAME}</h1>
       <p class="text-xs text-muted-foreground">{APP_TAGLINE}</p>
     </div>
-    <button
-      class="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-      title="Hide sidebar"
-      onclick={onToggle}
-    >
-      <PanelLeftClose class="size-4" />
-    </button>
+    <div class="flex shrink-0 items-center gap-1">
+      <ThemeToggle />
+      <button
+        class="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        title="Hide sidebar"
+        onclick={onToggle}
+      >
+        <PanelLeftClose class="size-4" />
+      </button>
+    </div>
   </div>
   <Separator />
   <div class="flex-1 overflow-y-auto px-3 py-3">
@@ -113,8 +118,8 @@
                   </span>
                   <span class={cn(
                     'rounded px-1 py-px text-[10px]',
-                    item.stage === 'done' && 'bg-emerald-500/15 text-emerald-300',
-                    item.stage === 'failed' && 'bg-red-500/15 text-red-300',
+                    item.stage === 'done' && 'bg-success/15 text-success',
+                    item.stage === 'failed' && 'bg-destructive/15 text-destructive',
                     item.stage !== 'done' && item.stage !== 'failed' && 'bg-muted text-muted-foreground',
                   )}>
                     {item.stage}

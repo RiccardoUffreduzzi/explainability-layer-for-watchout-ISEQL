@@ -31,7 +31,7 @@
 
   const hasIntervals = $derived(flatIntervals.length > 0);
 
-  const sel = 'h-7 rounded border bg-background px-1 py-0 font-mono text-xs';
+  const sel = 'h-7 rounded-lg border bg-card px-1 py-0 font-mono text-xs';
 
   function patch(i: number, p: Partial<CrossCondition>) {
     onChange(crossConditions.map((c, k) => (k === i ? { ...c, ...p } : c)));
@@ -100,7 +100,7 @@
             <select class={sel + ' w-16'} value={c.op} onchange={(e) => patch(i, { op: selectValue(e, '=') })}>
               {#each CC_OPS as o (o)}<option value={o}>{o}</option>{/each}
             </select>
-            <input class="h-7 w-16 rounded border bg-background px-1 py-0 font-mono text-xs" type="number" value={c.value ?? 0} onchange={(e) => patch(i, { value: inputInt(e, 0) })} />
+            <input class="h-7 w-16 rounded-lg border bg-card px-1 py-0 font-mono text-xs" type="number" value={c.value ?? 0} onchange={(e) => patch(i, { value: inputInt(e, 0) })} />
           </div>
         {:else}
           <div class="flex flex-wrap items-center gap-1">

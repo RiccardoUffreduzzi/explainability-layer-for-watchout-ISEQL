@@ -125,7 +125,7 @@
 
 <div class="rounded-md border border-border bg-muted/30 p-3 text-xs mb-4">
   <p class="flex items-center gap-1 font-medium text-foreground">
-    <Database class="size-3.5 text-sky-500" /> All events auto-detected via ISEQL SQL queries
+    <Database class="size-3.5 text-info" /> All events auto-detected via ISEQL SQL queries
   </p>
 </div>
 

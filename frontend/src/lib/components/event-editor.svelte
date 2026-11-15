@@ -479,7 +479,7 @@
   }
 
   const textareaClass =
-    'h-full w-full resize-none rounded-md border border-input bg-background p-2 font-mono text-xs leading-relaxed ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+    'h-full w-full resize-none rounded-lg border border-input bg-card p-2 font-mono text-xs leading-relaxed ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 </script>
 
 <div class="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden">
@@ -510,12 +510,12 @@
   </div>
 
   {#if error}
-    <div class="flex shrink-0 items-start gap-2.5 rounded-md border border-red-500/50 bg-red-500/10 px-3 py-2.5" role="alert">
-      <AlertTriangle class="mt-0.5 size-4 shrink-0 text-red-400" />
-      <p class="min-w-0 flex-1 break-words text-xs leading-relaxed text-red-300">{error}</p>
+    <div class="flex shrink-0 items-start gap-2.5 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5" role="alert">
+      <AlertTriangle class="mt-0.5 size-4 shrink-0 text-destructive" />
+      <p class="min-w-0 flex-1 break-words text-xs leading-relaxed text-destructive">{error}</p>
       <button
         type="button"
-        class="shrink-0 rounded px-1 text-red-400 transition-colors hover:text-red-200"
+        class="shrink-0 rounded px-1 text-destructive transition-colors hover:text-destructive/80"
         title="Dismiss"
         aria-label="Dismiss error"
         onclick={() => (error = null)}
@@ -523,9 +523,9 @@
     </div>
   {/if}
   {#if status}
-    <div class="flex shrink-0 items-start gap-2.5 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-2.5" role="status">
-      <CircleCheck class="mt-0.5 size-4 shrink-0 text-emerald-400" />
-      <p class="min-w-0 flex-1 break-words text-xs leading-relaxed text-emerald-300">{status}</p>
+    <div class="flex shrink-0 items-start gap-2.5 rounded-lg border border-success/40 bg-success/10 px-3 py-2.5" role="status">
+      <CircleCheck class="mt-0.5 size-4 shrink-0 text-success" />
+      <p class="min-w-0 flex-1 break-words text-xs leading-relaxed text-success">{status}</p>
     </div>
   {/if}
 
@@ -566,7 +566,7 @@
             onblur={() => setTimeout(() => (menu = null), 150)}
           ></textarea>
           {#if menu}
-            <div bind:this={menuEl} class="absolute z-20 max-h-56 w-72 overflow-y-auto rounded-md border bg-background py-1 shadow-lg" style="left: {menuPos.left}px; top: {menuPos.top}px;">
+            <div bind:this={menuEl} class="absolute z-20 max-h-56 w-72 overflow-y-auto rounded-xl border bg-popover py-1 shadow-float" style="left: {menuPos.left}px; top: {menuPos.top}px;">
               {#each menu.items as item, i (`${item.label}-${i}`)}
                 <button
                   type="button"

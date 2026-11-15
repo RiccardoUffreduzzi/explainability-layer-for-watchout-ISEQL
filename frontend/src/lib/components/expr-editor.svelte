@@ -84,9 +84,9 @@
   function tokenHtml(t: EditorToken): string {
     switch (t.type) {
       case 'item':
-        return `<span contenteditable="false" draggable="false" data-item="${esc(t.name)}" class="mx-0.5 inline-flex select-none touch-none align-middle"><button type="button" class="rounded border border-sky-400/40 bg-sky-400/10 px-1.5 py-0.5 font-mono text-xs">${esc(display(t.name))}</button></span>`;
+        return `<span contenteditable="false" draggable="false" data-item="${esc(t.name)}" class="mx-0.5 inline-flex select-none touch-none align-middle"><button type="button" class="rounded border border-primary/40 bg-primary/10 px-1.5 py-0.5 font-mono text-xs">${esc(display(t.name))}</button></span>`;
       case 'op':
-        return `<select contenteditable="false" class="mx-0.5 h-6 rounded border bg-background px-0.5 py-0 align-middle font-mono text-xs">${operators.map((o) => `<option${o === t.op ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+        return `<select contenteditable="false" class="mx-0.5 h-6 rounded-md border bg-card px-0.5 py-0 align-middle font-mono text-xs">${operators.map((o) => `<option${o === t.op ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
       case 'open':
         return '<span class="text-muted-foreground">(</span>';
       case 'close':
@@ -115,8 +115,8 @@
     if (!el) return;
     const chips = [...el.querySelectorAll('[data-item]')];
     const op = operators[0] ?? '';
-    const chip = `<span contenteditable="false" draggable="false" data-item="${esc(name)}" class="mx-0.5 inline-flex select-none touch-none align-middle"><button type="button" class="rounded border border-sky-400/40 bg-sky-400/10 px-1.5 py-0.5 font-mono text-xs">${esc(display(name))}</button></span>`;
-    const opHtml = `<select contenteditable="false" class="mx-0.5 h-6 rounded border bg-background px-0.5 py-0 align-middle font-mono text-xs">${operators.map((o) => `<option>${esc(o)}</option>`).join('')}</select>`;
+    const chip = `<span contenteditable="false" draggable="false" data-item="${esc(name)}" class="mx-0.5 inline-flex select-none touch-none align-middle"><button type="button" class="rounded border border-primary/40 bg-primary/10 px-1.5 py-0.5 font-mono text-xs">${esc(display(name))}</button></span>`;
+    const opHtml = `<select contenteditable="false" class="mx-0.5 h-6 rounded-md border bg-card px-0.5 py-0 align-middle font-mono text-xs">${operators.map((o) => `<option>${esc(o)}</option>`).join('')}</select>`;
     const hasContent = extractText(el).trim().length > 0;
     if (!hasContent) {
       el.innerHTML = chip;
@@ -304,7 +304,7 @@
     aria-multiline="false"
     tabindex="0"
     class={[
-      'min-h-9 w-full rounded border border-dashed bg-background px-2 py-1 font-mono text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring',
+      'min-h-9 w-full rounded-lg border border-dashed bg-card px-2 py-1 font-mono text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring',
       dragging?.type === 'insert' ? 'ring-1 ring-primary' : '',
     ].join(' ')}
     oninput={onInput}
@@ -322,7 +322,7 @@
   <input
     type="text"
     placeholder="Search…"
-    class="h-6 w-full rounded border bg-background px-1.5 text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring"
+    class="h-6 w-full rounded-lg border bg-card px-1.5 text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring"
     bind:value={search}
   />
   <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -337,7 +337,7 @@
       <button
         type="button"
         data-palette-item={name}
-        class="inline-flex cursor-grab touch-none items-center rounded border border-sky-400/40 bg-sky-400/10 px-2 py-0.5 font-mono text-xs"
+        class="inline-flex cursor-grab touch-none items-center rounded border border-primary/40 bg-primary/10 px-2 py-0.5 font-mono text-xs"
         title="Drag into the expression · click to configure"
         onclick={() => onOpen(name)}
         onmouseenter={() => onHover([name])}
@@ -356,7 +356,7 @@
     onclick={() => (menu = null)}
     oncontextmenu={(e) => { e.preventDefault(); menu = null; }}
   ></div>
-  <div class="fixed z-50 w-44 rounded-md border bg-background py-1 text-xs shadow-lg" style="left: {menu.x}px; top: {menu.y}px">
+  <div class="fixed z-50 w-44 rounded-xl border bg-popover py-1 text-xs shadow-float" style="left: {menu.x}px; top: {menu.y}px">
     <button
       type="button"
       class="block w-full px-3 py-1 text-left hover:bg-muted"

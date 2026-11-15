@@ -128,7 +128,7 @@
 {#if open}
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4" role="presentation" onkeydown={(e) => { if (e.key === 'Escape') onClose(); }}>
     <div class="absolute inset-0 bg-black/40" onclick={onClose} role="presentation"></div>
-    <div class="relative z-10 w-full max-w-md rounded-lg border bg-background p-4 shadow-lg" role="dialog" aria-modal="true" tabindex="-1">
+    <div class="relative z-10 w-full max-w-md rounded-2xl border bg-card p-5 shadow-float" role="dialog" aria-modal="true" tabindex="-1">
       <div class="mb-3 flex items-center justify-between">
         <div class="text-sm font-semibold">Interval</div>
       </div>
@@ -165,7 +165,7 @@
 {#if confirm}
   <div class="fixed inset-0 z-[60] flex items-center justify-center p-4" role="presentation" onkeydown={(e) => { if (e.key === 'Escape') confirm = null; }}>
     <div class="absolute inset-0 bg-black/40" onclick={() => (confirm = null)} role="presentation"></div>
-    <div class="relative z-10 w-full max-w-sm rounded-lg border bg-background p-4 shadow-lg" role="dialog" aria-modal="true" tabindex="-1">
+    <div class="relative z-10 w-full max-w-sm rounded-2xl border bg-card p-5 shadow-float" role="dialog" aria-modal="true" tabindex="-1">
       <div class="mb-2 text-sm font-semibold">Open configuration</div>
       <p class="mb-3 text-xs text-muted-foreground">
         Open the {confirm.modality === 'audio' ? 'audio class' : 'relation'} configuration for <span class="font-mono text-foreground">{confirm.name}</span>?

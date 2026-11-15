@@ -23,7 +23,7 @@
       class={cn(
         'h-full rounded px-2 text-xs font-medium transition-colors',
         unit === opt.value
-          ? 'bg-background text-foreground shadow-sm'
+          ? 'bg-card text-foreground shadow-sm'
           : 'text-muted-foreground hover:text-foreground'
       )}
       onclick={() => onUnitChange(opt.value)}

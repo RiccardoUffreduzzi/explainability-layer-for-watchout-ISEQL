@@ -22,23 +22,23 @@
     return d.toLocaleTimeString('en-GB', { hour12: false });
   }
   const STAGE_PREFIXES: Array<[string, string]> = [
-    ['done', 'text-emerald-400'],
-    ['failed', 'text-red-400'],
-    ['vlm', 'text-sky-400'],
-    ['interval', 'text-violet-400'],
-    ['audio', 'text-amber-400'],
-    ['detection', 'text-pink-400'],
+    ['done', 'text-success'],
+    ['failed', 'text-destructive'],
+    ['vlm', 'text-chart-1'],
+    ['interval', 'text-chart-4'],
+    ['audio', 'text-chart-3'],
+    ['detection', 'text-chart-5'],
   ];
 
   function stageClass(s: string): string {
     for (const [prefix, cls] of STAGE_PREFIXES) {
       if (s === prefix || s.startsWith(prefix)) return cls;
     }
-    return 'text-slate-300';
+    return 'text-muted-foreground';
   }
 </script>
 
-<div class="flex min-h-0 flex-1 flex-col rounded-lg border border-border bg-card">
+<div class="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-card">
   <div class="flex items-center justify-between border-b border-border px-4 py-2">
     <div class="flex items-center gap-2 text-sm font-medium">
       <Terminal class="size-4" />

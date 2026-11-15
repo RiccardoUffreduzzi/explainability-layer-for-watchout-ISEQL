@@ -58,7 +58,7 @@
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4" role="presentation" onkeydown={(e) => { if (e.key === 'Escape') onClose(); }}>
     <div class="absolute inset-0 bg-black/40" onclick={onClose} role="presentation"></div>
     <div
-      class="relative z-10 w-full max-w-md rounded-lg border bg-background p-4 shadow-lg"
+      class="relative z-10 w-full max-w-md rounded-2xl border bg-card p-5 shadow-float"
       role="dialog"
       aria-modal="true"
       tabindex="-1"

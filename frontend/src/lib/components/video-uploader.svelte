@@ -33,7 +33,7 @@
 </script>
 
 <div
-  class="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-muted/30 p-6 text-center transition-colors hover:bg-muted/50"
+  class="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-muted/30 p-6 text-center transition-colors hover:bg-muted/50"
   ondragover={(e: DragEvent) => e.preventDefault()}
   ondrop={handleDrop}
   role="region"

@@ -46,6 +46,25 @@ const config: Config = {
           DEFAULT: 'hsl(var(--card) / <alpha-value>)',
           foreground: 'hsl(var(--card-foreground) / <alpha-value>)',
         },
+        success: {
+          DEFAULT: 'hsl(var(--success) / <alpha-value>)',
+          foreground: 'hsl(var(--success-foreground) / <alpha-value>)',
+        },
+        warning: {
+          DEFAULT: 'hsl(var(--warning) / <alpha-value>)',
+          foreground: 'hsl(var(--warning-foreground) / <alpha-value>)',
+        },
+        info: {
+          DEFAULT: 'hsl(var(--info) / <alpha-value>)',
+          foreground: 'hsl(var(--info-foreground) / <alpha-value>)',
+        },
+        chart: {
+          1: 'hsl(var(--chart-1) / <alpha-value>)',
+          2: 'hsl(var(--chart-2) / <alpha-value>)',
+          3: 'hsl(var(--chart-3) / <alpha-value>)',
+          4: 'hsl(var(--chart-4) / <alpha-value>)',
+          5: 'hsl(var(--chart-5) / <alpha-value>)',
+        },
       },
       borderRadius: {
         xl: 'calc(var(--radius) + 4px)',
@@ -53,15 +72,22 @@ const config: Config = {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
+      boxShadow: {
+        soft: '0 1px 2px 0 rgb(0 0 0 / 0.04), 0 6px 20px -6px rgb(0 0 0 / 0.08)',
+        float:
+          '0 12px 40px -8px rgb(0 0 0 / 0.18), 0 2px 8px -2px rgb(0 0 0 / 0.08)',
+      },
       fontFamily: {
         sans: [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'SF Pro Text',
           'Inter',
           'ui-sans-serif',
           'system-ui',
-          '-apple-system',
-          'BlinkMacSystemFont',
           'Segoe UI',
           'Roboto',
+          'Helvetica Neue',
           'sans-serif',
         ],
         mono: [

@@ -34,9 +34,9 @@
   let hasMore = $derived(items.length < total);
 
   const CLASS_COLORS: Record<string, string> = {
-    person: 'bg-sky-500/10 text-sky-300 border-sky-500/30',
-    vehicle: 'bg-amber-500/10 text-amber-300 border-amber-500/30',
-    object: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30',
+    person: 'bg-info/10 text-info border-info/30',
+    vehicle: 'bg-warning/10 text-warning border-warning/30',
+    object: 'bg-success/10 text-success border-success/30',
   };
 
   function buildQuery(off: number): string {

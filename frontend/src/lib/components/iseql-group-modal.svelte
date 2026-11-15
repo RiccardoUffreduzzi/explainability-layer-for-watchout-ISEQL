@@ -46,7 +46,7 @@
 {#if open && group}
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4" role="presentation" onkeydown={(e) => { if (e.key === 'Escape') onClose(); }}>
     <div class="absolute inset-0 bg-black/40" onclick={onClose} role="presentation"></div>
-    <div class="relative z-10 flex max-h-[85dvh] w-full max-w-md flex-col rounded-lg border bg-background p-4 shadow-lg" role="dialog" aria-modal="true" tabindex="-1">
+    <div class="relative z-10 flex max-h-[85dvh] w-full max-w-md flex-col rounded-2xl border bg-card p-5 shadow-float" role="dialog" aria-modal="true" tabindex="-1">
       <div class="mb-3 text-sm font-semibold">{isNew ? 'New Set' : 'Set'}</div>
 
       <div class="min-h-0 flex-1 space-y-4 overflow-y-auto px-1">

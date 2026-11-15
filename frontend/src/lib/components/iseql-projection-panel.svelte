@@ -160,7 +160,7 @@
   {#if pickerOpen}
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4" role="presentation" onkeydown={(e) => { if (e.key === 'Escape') pickerOpen = false; }}>
       <div class="absolute inset-0 bg-black/40" onclick={() => (pickerOpen = false)} role="presentation"></div>
-      <div class="relative z-10 w-full max-w-xs rounded-lg border bg-background p-3 shadow-lg" role="dialog" aria-modal="true" tabindex="-1">
+      <div class="relative z-10 w-full max-w-xs rounded-2xl border bg-card p-4 shadow-float" role="dialog" aria-modal="true" tabindex="-1">
         <div class="mb-2 text-sm font-semibold">Add projection field</div>
         <div class="grid max-h-72 grid-cols-2 gap-1 overflow-y-auto">
           {#each availableFields as f (f)}

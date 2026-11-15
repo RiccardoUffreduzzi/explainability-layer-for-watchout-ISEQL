@@ -144,7 +144,7 @@
         <button
           type="button"
           title="View object memory"
-          class="inline-flex h-7 shrink-0 self-start items-center gap-1.5 rounded-md border border-input bg-background px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:order-3 sm:self-auto"
+          class="inline-flex h-7 shrink-0 self-start items-center gap-1.5 rounded-lg border border-input bg-card px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:order-3 sm:self-auto"
           onclick={onMemory}
         >
           <DatabaseZap class="size-3.5" /> Object memory

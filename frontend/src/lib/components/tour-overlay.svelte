@@ -129,7 +129,7 @@
 
     <div
       bind:this={tooltipEl}
-        class="absolute max-h-[calc(100dvh-24px)] overflow-y-auto rounded-lg border bg-popover p-4 text-popover-foreground shadow-xl"
+        class="absolute max-h-[calc(100dvh-24px)] overflow-y-auto rounded-xl border bg-popover p-4 text-popover-foreground shadow-float"
       style={tooltipStyle()}
     >
       <div class="mb-3 h-1 w-full overflow-hidden rounded-full bg-muted">

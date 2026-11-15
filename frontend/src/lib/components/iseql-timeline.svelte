@@ -923,14 +923,14 @@
   <!-- context menu -->
   {#if ctxMenu}
     <div class="fixed inset-0 z-50" role="presentation" onclick={() => (ctxMenu = null)} oncontextmenu={(e) => { e.preventDefault(); ctxMenu = null; }}></div>
-    <div class="fixed z-50 w-44 rounded-md border bg-background py-1 text-xs shadow-lg" style="left: {ctxMenu.x}px; top: {ctxMenu.y}px">
+    <div class="fixed z-50 w-44 rounded-xl border bg-popover py-1 text-xs shadow-float" style="left: {ctxMenu.x}px; top: {ctxMenu.y}px">
       <button type="button" class="block w-full px-3 py-1 text-left hover:bg-muted" onclick={async () => { if (await askConfirm('Delete this interval?', { title: 'Delete interval' })) removeInterval(ctxMenu!.gi, ctxMenu!.ii); ctxMenu = null; }}>Delete</button>
     </div>
   {/if}
 
   {#if setCtxMenu}
     <div class="fixed inset-0 z-50" role="presentation" onclick={() => (setCtxMenu = null)} oncontextmenu={(e) => { e.preventDefault(); setCtxMenu = null; }}></div>
-    <div class="fixed z-50 w-44 rounded-md border bg-background py-1 text-xs shadow-lg" style="left: {setCtxMenu.x}px; top: {setCtxMenu.y}px">
+    <div class="fixed z-50 w-44 rounded-xl border bg-popover py-1 text-xs shadow-float" style="left: {setCtxMenu.x}px; top: {setCtxMenu.y}px">
       <button type="button" class="block w-full px-3 py-1 text-left hover:bg-muted" onclick={async () => { if (await askConfirm(`Delete set '${setCtxMenu!.name}'? Its intervals move to the unassigned lane.`, { title: 'Delete set' })) deleteSetByName(setCtxMenu!.name); setCtxMenu = null; }}>Delete</button>
     </div>
   {/if}

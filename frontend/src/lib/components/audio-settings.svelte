@@ -105,15 +105,15 @@
   }
 
   const textareaClass =
-    'w-full resize-y rounded-md border border-input bg-background px-3 py-2 font-mono text-xs leading-relaxed ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+    'w-full resize-y rounded-lg border border-input bg-card px-3 py-2 font-mono text-xs leading-relaxed ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 </script>
 
 <div class="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden pt-1">
   {#if error}<p class="text-sm text-destructive">{error}</p>{/if}
   {#if savedMsg}
-    <div class="flex shrink-0 items-start gap-2.5 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-2.5" role="status">
-      <CircleCheck class="mt-0.5 size-4 shrink-0 text-emerald-400" />
-      <p class="min-w-0 flex-1 break-words text-xs leading-relaxed text-emerald-300">{savedMsg}</p>
+    <div class="flex shrink-0 items-start gap-2.5 rounded-lg border border-success/40 bg-success/10 px-3 py-2.5" role="status">
+      <CircleCheck class="mt-0.5 size-4 shrink-0 text-success" />
+      <p class="min-w-0 flex-1 break-words text-xs leading-relaxed text-success">{savedMsg}</p>
     </div>
   {/if}
 
@@ -151,7 +151,7 @@
 {#if modal}
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4" role="presentation" onkeydown={(e) => { if (e.key === 'Escape') modal = null; }}>
     <div class="absolute inset-0 bg-black/40" onclick={() => (modal = null)} role="presentation"></div>
-    <div class="relative z-10 w-full max-w-sm rounded-lg border bg-background p-4 shadow-lg" role="dialog" aria-modal="true" tabindex="-1">
+    <div class="relative z-10 w-full max-w-sm rounded-2xl border bg-card p-5 shadow-float" role="dialog" aria-modal="true" tabindex="-1">
       <div class="mb-3 text-sm font-semibold">{modal.mode === 'new' ? 'New Audio Class' : 'Edit Audio Class'}</div>
       <div class="space-y-3">
         <Field>
@@ -174,7 +174,7 @@
 
 {#if ctxMenu}
   <div class="fixed inset-0 z-50" role="presentation" onclick={() => (ctxMenu = null)} oncontextmenu={(e) => { e.preventDefault(); ctxMenu = null; }}></div>
-  <div class="fixed z-50 w-44 rounded-md border bg-background py-1 text-xs shadow-lg" style="left: {ctxMenu.x}px; top: {ctxMenu.y}px">
+  <div class="fixed z-50 w-44 rounded-xl border bg-popover py-1 text-xs shadow-float" style="left: {ctxMenu.x}px; top: {ctxMenu.y}px">
     <button type="button" class="block w-full px-3 py-1 text-left hover:bg-muted" onclick={() => { remove(ctxMenu!.name); ctxMenu = null; }}>Delete</button>
   </div>
 {/if}

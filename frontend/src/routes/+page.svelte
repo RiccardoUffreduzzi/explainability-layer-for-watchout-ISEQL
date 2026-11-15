@@ -556,7 +556,7 @@
         </div>
 
         {#if error}
-          <div class="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+          <div class="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
             <AlertTriangle class="size-4 shrink-0" />
             <p class="break-all">{error}</p>
           </div>
@@ -564,7 +564,7 @@
       </section>
 
       <section class="col-span-12 flex flex-col lg:min-h-0 lg:col-span-7">
-        <Tabs bind:value={rightTab} class="flex h-[75dvh] min-h-0 flex-col overflow-hidden rounded-md border lg:h-auto lg:flex-1">
+        <Tabs bind:value={rightTab} class="flex h-[75dvh] min-h-0 flex-col overflow-hidden rounded-xl border bg-card/50 shadow-soft lg:h-auto lg:flex-1">
           <TabsList class="shrink-0 border-b px-2 py-1">
             <TabsTrigger value="logs">Logs</TabsTrigger>
             <TabsTrigger value="results">Results</TabsTrigger>
@@ -594,7 +594,7 @@
       onclick={(e) => { if (e.target === e.currentTarget) showMemory = false; }}
       onkeydown={(e) => { if (e.key === 'Escape') showMemory = false; }}
     >
-      <div class="flex h-[85dvh] w-full max-w-4xl flex-col rounded-lg border bg-background shadow-xl">
+      <div class="flex h-[85dvh] w-full max-w-4xl flex-col rounded-2xl border bg-card shadow-float">
         <header class="flex items-center justify-between border-b px-4 py-3">
           <div>
             <h2 class="text-sm font-semibold">Object Memory</h2>
@@ -603,14 +603,14 @@
           <div class="flex items-center gap-2">
             <a
               href={`/memory/${analysisId}`}
-              class="rounded border border-input bg-background px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              class="rounded-lg border border-input bg-card px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             >
               Open full page
             </a>
             <button
               type="button"
               title="Close"
-              class="rounded border border-input bg-background px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+              class="rounded-lg border border-input bg-card px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
               onclick={() => (showMemory = false)}
             >
               ✕
