@@ -22,6 +22,7 @@
   let suppress = false;
   let search = $state('');
   let menu = $state<{ x: number; y: number; name: string } | null>(null);
+  let opMenu = $state<{ x: number; y: number; value: string; anchor: HTMLElement } | null>(null);
   let dragging = $state<{ type: 'reorder' | 'insert'; name: string } | null>(null);
   let dropIndex = $state<number | null>(null);
   let overPalette = $state(false);
@@ -86,7 +87,7 @@
       case 'item':
         return `<span contenteditable="false" draggable="false" data-item="${esc(t.name)}" class="mx-0.5 inline-flex select-none touch-none align-middle"><button type="button" class="rounded-md border border-primary/40 bg-primary/10 px-1.5 py-0.5 font-mono text-xs">${esc(display(t.name))}</button></span>`;
       case 'op':
-        return `<select contenteditable="false" class="mx-0.5 h-6 rounded-md border bg-card px-0.5 py-0 align-middle font-mono text-xs">${operators.map((o) => `<option${o === t.op ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+        return `<button type="button" contenteditable="false" data-op="${esc(t.op)}" class="mx-0.5 h-6 rounded-md border bg-card px-1 align-middle font-mono text-xs">${esc(t.op)}</button>`;
       case 'open':
         return '<span class="text-muted-foreground">(</span>';
       case 'close':
@@ -97,7 +98,7 @@
   function extractText(node: Node): string {
     if (node.nodeType === Node.TEXT_NODE) return node.textContent ?? '';
     const el = node as HTMLElement;
-    if (el.tagName === 'SELECT') return (el as HTMLSelectElement).value;
+    if (el.hasAttribute?.('data-op')) return el.dataset.op ?? '';
     if (el.hasAttribute && el.hasAttribute('data-item')) return el.dataset.item ?? '';
     let out = '';
     node.childNodes.forEach((c) => { out += extractText(c); });
@@ -116,7 +117,7 @@
     const chips = [...el.querySelectorAll('[data-item]')];
     const op = operators[0] ?? '';
     const chip = `<span contenteditable="false" draggable="false" data-item="${esc(name)}" class="mx-0.5 inline-flex select-none touch-none align-middle"><button type="button" class="rounded-md border border-primary/40 bg-primary/10 px-1.5 py-0.5 font-mono text-xs">${esc(display(name))}</button></span>`;
-    const opHtml = `<select contenteditable="false" class="mx-0.5 h-6 rounded-md border bg-card px-0.5 py-0 align-middle font-mono text-xs">${operators.map((o) => `<option>${esc(o)}</option>`).join('')}</select>`;
+    const opHtml = `<button type="button" contenteditable="false" data-op="${esc(op)}" class="mx-0.5 h-6 rounded-md border bg-card px-1 align-middle font-mono text-xs">${esc(op)}</button>`;
     const hasContent = extractText(el).trim().length > 0;
     if (!hasContent) {
       el.innerHTML = chip;
@@ -255,7 +256,26 @@
     menu = { x: e.clientX, y: e.clientY, name: chip.dataset.item ?? '' };
   }
 
+  function openOpMenu(btn: HTMLElement) {
+    const rect = btn.getBoundingClientRect();
+    opMenu = { x: rect.left, y: rect.bottom + 4, value: btn.dataset.op ?? '', anchor: btn };
+  }
+
+  function chooseOp(next: string) {
+    if (!opMenu) return;
+    opMenu.anchor.dataset.op = next;
+    opMenu.anchor.textContent = next;
+    opMenu = null;
+    sync();
+  }
+
   function onClick(e: MouseEvent) {
+    const opBtn = (e.target as HTMLElement).closest('[data-op]') as HTMLElement | null;
+    if (opBtn) {
+      e.preventDefault();
+      openOpMenu(opBtn);
+      return;
+    }
     const btn = (e.target as HTMLElement).closest('button');
     if (!btn) return;
     const chip = btn.closest('[data-item]') as HTMLElement | null;
@@ -264,6 +284,12 @@
 
   function onKeydown(e: KeyboardEvent) {
     if (e.key === 'Enter' || e.key === ' ') {
+      const opBtn = (e.target as HTMLElement).closest('[data-op]') as HTMLElement | null;
+      if (opBtn) {
+        e.preventDefault();
+        openOpMenu(opBtn);
+        return;
+      }
       const btn = (e.target as HTMLElement).closest('button');
       if (btn) {
         const chip = btn.closest('[data-item]') as HTMLElement | null;
@@ -362,5 +388,22 @@
       class="block w-full px-3 py-1 text-left hover:bg-muted"
       onclick={() => { removeItem(menu!.name); menu = null; }}
     >Delete from expression</button>
+  </div>
+{/if}
+
+{#if opMenu}
+  <div
+    class="fixed inset-0 z-50"
+    role="presentation"
+    onclick={() => (opMenu = null)}
+  ></div>
+  <div class="fixed z-50 w-20 rounded-lg border bg-popover p-1 text-xs shadow-float" style="left: {opMenu.x}px; top: {opMenu.y}px">
+    {#each operators as op (op)}
+      <button
+        type="button"
+        class="block w-full rounded-md px-2 py-1 text-left font-mono {opMenu.value === op ? 'bg-accent text-accent-foreground' : 'text-popover-foreground hover:bg-accent hover:text-accent-foreground'}"
+        onclick={() => chooseOp(op)}
+      >{op}</button>
+    {/each}
   </div>
 {/if}

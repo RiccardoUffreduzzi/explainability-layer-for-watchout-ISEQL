@@ -2,7 +2,7 @@
   import { api } from '$lib/api';
   import Input from '$lib/components/ui/input.svelte';
   import Label from '$lib/components/ui/label.svelte';
-  import Select from '$lib/components/ui/select.svelte';
+  import * as Select from '$lib/components/ui/select/index.js';
   import Field from '$lib/components/ui/field.svelte';
   import type { VlmConfig } from '$lib/types';
   import { selectValue, inputInt, inputFloat } from '$lib/dom-helpers';
@@ -101,16 +101,14 @@
     }
   });
 
-  function handleProviderChange(e: Event) {
-    const p = selectValue(e);
+  function handleProviderChange(p: string) {
     const d = PROVIDER_DEFAULTS[p] || { delay: 3, max_retries: 10 };
     const m = p === 'ollama' ? '' : (MODEL_DEFAULTS[p] || '');
     patch({ provider: p, model: m, vlm_delay: d.delay, max_retries: d.max_retries });
     if (p === 'ollama') fetchOllamaModels();
   }
 
-  function handleEmbedProviderChange(e: Event) {
-    const p = selectValue(e);
+  function handleEmbedProviderChange(p: string) {
     patch({ embed_provider: p, embed_model: EMBED_MODEL_DEFAULTS[p] || '' });
   }
 </script>
@@ -118,13 +116,16 @@
 <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
   <Field>
     <Label for="vlm-provider">VLM Provider</Label>
-    <Select
-      id="vlm-provider"
-      options={providerOptions}
-      value={value.provider}
-      onchange={handleProviderChange}
-      {disabled}
-    />
+    <Select.Root type="single" items={providerOptions} value={value.provider} onValueChange={(next: string | undefined) => next && handleProviderChange(next)} {disabled}>
+      <Select.Trigger id="vlm-provider">
+        {providerOptions.find((option) => option.value === value.provider)?.label ?? value.provider}
+      </Select.Trigger>
+      <Select.Content>
+        {#each providerOptions as option (option.value)}
+          <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+        {/each}
+      </Select.Content>
+    </Select.Root>
   </Field>
 
   <Field>
@@ -138,13 +139,16 @@
         Failed to detect models. <button type="button" class="ml-1 underline" onclick={fetchOllamaModels}>Retry</button>
       </div>
     {:else if isOllama && ollamaModels.length > 0}
-      <Select
-        id="vlm-model"
-        options={ollamaModels}
-        value={value.model}
-        onchange={(e) => patch({ model: selectValue(e) })}
-        {disabled}
-      />
+      <Select.Root type="single" items={ollamaModels} value={value.model} onValueChange={(next: string | undefined) => patch({ model: next ?? '' })} {disabled}>
+        <Select.Trigger id="vlm-model">
+          {ollamaModels.find((option) => option.value === value.model)?.label ?? value.model}
+        </Select.Trigger>
+        <Select.Content>
+          {#each ollamaModels as option (option.value)}
+            <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+          {/each}
+        </Select.Content>
+      </Select.Root>
     {:else}
       <Input
         id="vlm-model"
@@ -159,13 +163,16 @@
 
   <Field>
     <Label for="embed-provider">Embedding Provider</Label>
-    <Select
-      id="embed-provider"
-      options={embedProviderOptions}
-      value={value.embed_provider}
-      onchange={handleEmbedProviderChange}
-      {disabled}
-    />
+    <Select.Root type="single" items={embedProviderOptions} value={value.embed_provider} onValueChange={(next: string | undefined) => next && handleEmbedProviderChange(next)} {disabled}>
+      <Select.Trigger id="embed-provider">
+        {embedProviderOptions.find((option) => option.value === value.embed_provider)?.label ?? value.embed_provider}
+      </Select.Trigger>
+      <Select.Content>
+        {#each embedProviderOptions as option (option.value)}
+          <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+        {/each}
+      </Select.Content>
+    </Select.Root>
   </Field>
 
   <Field>
