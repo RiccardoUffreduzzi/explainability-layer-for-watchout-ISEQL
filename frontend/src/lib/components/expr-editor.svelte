@@ -329,7 +329,7 @@
   <div
     bind:this={paletteEl}
     class={[
-      'flex max-h-36 touch-pan-y flex-col gap-1 overflow-y-auto rounded-lg pr-1',
+      'flex max-h-36 touch-pan-y flex-col gap-1 overflow-y-auto rounded-lg p-1',
       overPalette ? 'ring-1 ring-primary bg-primary/5' : '',
     ].join(' ')}
   >
