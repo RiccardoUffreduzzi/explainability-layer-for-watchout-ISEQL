@@ -44,8 +44,8 @@ SCHEMA_STATEMENTS: list[str] = [
         Model          TEXT,
         GridRows       INTEGER,
         GridCols       INTEGER,
-        SamplingRate   REAL,
-        SamplingHz     REAL    DEFAULT 1.0,
+        FrameRate      REAL    DEFAULT 24.0,
+        SamplingRate   REAL    DEFAULT 1.0,
         VLMDelay       REAL    DEFAULT 0.0,
         MaxRetries     INTEGER DEFAULT 3,
         EmbedProvider  TEXT    DEFAULT 'huggingface',
@@ -215,6 +215,7 @@ def setup_database(db_path: Path) -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
         cursor.execute(stmt)
     _migrate_eventspec(conn)
     _migrate_drop_vlm_quantization(conn)
+    _migrate_frame_rate_and_sampling_rate(conn)
     _ensure_columns(conn, "Analyses", {
         "EmbedProvider": "TEXT DEFAULT 'huggingface'",
         "EmbedModel": "TEXT DEFAULT 'google/siglip-base-patch16-224'",
@@ -224,7 +225,6 @@ def setup_database(db_path: Path) -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
         "AudioHop": "REAL DEFAULT 1.25",
         "DeltasJson": "TEXT",
         "DeltaUnit": "TEXT DEFAULT 'seconds'",
-        "SamplingHz": "REAL DEFAULT 1.0",
     })
     conn.commit()
     return conn, cursor
@@ -281,6 +281,22 @@ def _migrate_drop_vlm_quantization(conn: sqlite3.Connection) -> None:
         return
     conn.execute("ALTER TABLE Analyses DROP COLUMN VLMQuantization")
     log.info("Migrated Analyses: dropped legacy VLMQuantization column")
+
+
+def _migrate_frame_rate_and_sampling_rate(conn: sqlite3.Connection) -> None:
+    """Split source FPS from the user-selected visual sampling rate in Hz."""
+    cols = {row[1] for row in conn.execute("PRAGMA table_info(Analyses)").fetchall()}
+    if "FrameRate" not in cols:
+        conn.execute("ALTER TABLE Analyses ADD COLUMN FrameRate REAL")
+    if "SamplingHz" not in cols:
+        return
+    conn.execute(
+        "UPDATE Analyses SET FrameRate = COALESCE(FrameRate, SamplingRate), "
+        "SamplingRate = COALESCE(SamplingHz, 1.0) "
+        "WHERE SamplingHz IS NOT NULL"
+    )
+    conn.execute("ALTER TABLE Analyses DROP COLUMN SamplingHz")
+    log.info("Migrated Analyses: split FrameRate from SamplingRate (Hz)")
 
 
 def _ensure_columns(conn: sqlite3.Connection, table: str, columns: dict[str, str]) -> None:

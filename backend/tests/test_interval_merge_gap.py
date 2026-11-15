@@ -28,7 +28,7 @@ def test_explicit_merge_gap_is_independent_of_sampling_stride(tmp_path) -> None:
     list(
         IntervalServiceImpl().build_visual_and_save(
             conn,
-            sampling_rate=6,
+            frame_step=6,
             analysis_id="pilot",
             merge_gap_frames=48,
         )
@@ -48,7 +48,7 @@ def test_legacy_merge_rule_is_unchanged_without_override(tmp_path) -> None:
     list(
         IntervalServiceImpl().build_visual_and_save(
             conn,
-            sampling_rate=24,
+            frame_step=24,
             analysis_id="pilot",
         )
     )

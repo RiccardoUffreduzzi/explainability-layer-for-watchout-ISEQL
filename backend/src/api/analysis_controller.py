@@ -11,7 +11,7 @@ from fastapi import File, Form, HTTPException, Query, UploadFile
 from fastapi.responses import FileResponse, Response, StreamingResponse
 
 from models.analysis import (
-    VALID_SAMPLING_HZ,
+    VALID_SAMPLING_RATES,
     AnalysisDetectRequest,
     AnalysisStage,
     AnalysisStartResponse,
@@ -78,7 +78,7 @@ class AnalysisStartController:
         model: str = Form(""),
         grid_rows: int = Form(2),
         grid_cols: int = Form(4),
-        sampling_hz: float = Form(1.0),
+        sampling_rate: float = Form(1.0),
         vlm_delay: float = Form(0.0),
         max_retries: int = Form(3),
         embed_provider: str = Form(None),
@@ -98,10 +98,10 @@ class AnalysisStartController:
 
         if condition not in VALID_CONDITIONS:
             raise HTTPException(status_code=400, detail=f"unknown condition '{condition}'; expected A | B | C")
-        if sampling_hz not in VALID_SAMPLING_HZ:
+        if sampling_rate not in VALID_SAMPLING_RATES:
             raise HTTPException(
                 status_code=400,
-                detail="sampling_hz must be one of: 0.5, 1, 2",
+                detail="sampling_rate must be one of: 0.5, 1, 2",
             )
         if vlm_provider is None:
             vlm_provider = available[0] if available else "ollama"
@@ -120,10 +120,10 @@ class AnalysisStartController:
             shutil.copyfileobj(video.file, f)
         log.info("Stored upload as %s (condition=%s)", target_path, condition)
 
-        # Auto-detect the source FPS.  Visual sampling derives its frame step
-        # from this value and sampling_hz; all timestamp/audio logic keeps using
-        # the source FPS itself.
-        video_fps = 24.0
+        # Auto-detect the source frame rate.  Visual sampling derives its frame
+        # step from this value and sampling_rate; all timestamp/audio logic
+        # keeps using the source frame rate itself.
+        frame_rate = 24.0
         try:
             probe = subprocess.check_output(
                 ["ffprobe", "-v", "error", "-select_streams", "v:0",
@@ -139,20 +139,20 @@ class AnalysisStartController:
                     num, den = fps_str.split("/")
                     fps = float(num) / float(den) if float(den) else 0
                     if fps > 0:
-                        video_fps = fps
-                        log.info("Detected video FPS: %.3f (from %s=%s)", video_fps, key, fps_str)
+                        frame_rate = fps
+                        log.info("Detected video frame rate: %.3f (from %s=%s)", frame_rate, key, fps_str)
                         break
             else:
-                log.info("Could not parse FPS, using default 24")
+                log.info("Could not parse frame rate, using default 24")
         except Exception:
             cap = cv2.VideoCapture(str(target_path))
             try:
                 detected_fps = float(cap.get(cv2.CAP_PROP_FPS)) if cap.isOpened() else 0.0
                 if detected_fps > 0:
-                    video_fps = detected_fps
-                    log.info("Detected video FPS with OpenCV fallback: %.3f", video_fps)
+                    frame_rate = detected_fps
+                    log.info("Detected video frame rate with OpenCV fallback: %.3f", frame_rate)
                 else:
-                    log.info("Could not detect FPS, using default 24")
+                    log.info("Could not detect frame rate, using default 24")
             finally:
                 cap.release()
 
@@ -164,8 +164,8 @@ class AnalysisStartController:
             model=model,
             grid_rows=grid_rows,
             grid_cols=grid_cols,
-            sampling_rate=video_fps,
-            sampling_hz=sampling_hz,
+            frame_rate=frame_rate,
+            sampling_rate=sampling_rate,
             vlm_delay=vlm_delay,
             max_retries=max_retries,
             embed_provider=embed_provider,
@@ -184,8 +184,8 @@ class AnalysisStartController:
             analysis_id=run.id,
             condition=Condition(condition),
             stage=AnalysisStage.QUEUED,
-            sampling_rate=video_fps,
-            sampling_hz=sampling_hz,
+            frame_rate=frame_rate,
+            sampling_rate=sampling_rate,
         )
 
 

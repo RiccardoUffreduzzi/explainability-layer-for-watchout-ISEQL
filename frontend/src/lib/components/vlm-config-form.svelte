@@ -39,9 +39,9 @@
     onChange: (v: VlmConfig) => void;
     disabled?: boolean;
     availableProviders?: string[];
-    detectedFps?: number;
+    detectedFrameRate?: number;
   };
-  let { value = $bindable(), onChange, disabled = false, availableProviders = [], detectedFps = 0 }: Props = $props();
+  let { value = $bindable(), onChange, disabled = false, availableProviders = [], detectedFrameRate = 0 }: Props = $props();
 
   let ollamaModels = $state<{ value: string; label: string }[]>([]);
   let ollamaModelsLoading = $state(false);
@@ -54,15 +54,8 @@
   let embedProviderOptions = $derived(
     EMBED_PROVIDERS.map(p => ({ value: p, label: p.charAt(0).toUpperCase() + p.slice(1) }))
   );
-  let samplingCadence = $derived(
-    value.sampling_hz === 0.5
-      ? 'One visual frame every 2 seconds'
-      : value.sampling_hz === 2
-        ? 'Two visual frames per second'
-        : 'One visual frame per second'
-  );
-  let samplingStep = $derived(
-    Math.max(1, Math.round((detectedFps > 0 ? detectedFps : 24) / value.sampling_hz))
+  let frameRateValue = $derived(
+    detectedFrameRate > 0 ? `${Number(detectedFrameRate.toFixed(1))}` : null
   );
 
   function patch(p: Partial<VlmConfig>) {
@@ -229,16 +222,31 @@
   </Field>
 
   <Field class="lg:col-span-2">
-    <Label>Visual Frame Sampling Rate</Label>
-    <div class="grid grid-cols-3 gap-1 rounded-lg border border-input bg-muted/30 p-1" role="group" aria-label="Visual frame sampling mode">
+    <Label for="frame-rate">Frame Rate</Label>
+    <div
+      id="frame-rate"
+      class="flex h-9 items-center gap-1.5 rounded-lg border border-input bg-muted px-3 text-sm"
+    >
+      {#if frameRateValue !== null}
+        <span class="font-mono text-foreground">{frameRateValue}</span>
+        <span class="text-muted-foreground">frames per second (fps)</span>
+      {:else}
+        <span class="text-muted-foreground">Detected from the uploaded video</span>
+      {/if}
+    </div>
+  </Field>
+
+  <Field class="lg:col-span-2">
+    <Label>Sampling Rate</Label>
+    <div class="grid grid-cols-3 gap-1 rounded-lg border border-input bg-muted/30 p-1" role="group" aria-label="Sampling rate">
       <button
         type="button"
         class={cn(
           'flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-md border border-transparent px-2 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
-          value.sampling_hz === 0.5 ? 'border-sky-400/70 bg-sky-500/10 text-sky-400 shadow-sm' : 'text-muted-foreground hover:bg-background/60 hover:text-foreground'
+          value.sampling_rate === 0.5 ? 'border-sky-500/60 bg-sky-500/10 text-sky-700 shadow-sm dark:text-sky-300' : 'text-muted-foreground hover:bg-background/60 hover:text-foreground'
         )}
-        aria-pressed={value.sampling_hz === 0.5}
-        onclick={() => patch({ sampling_hz: 0.5 })}
+        aria-pressed={value.sampling_rate === 0.5}
+        onclick={() => patch({ sampling_rate: 0.5 })}
         {disabled}
       >
         <span class="flex min-w-0 items-center gap-1.5"><Zap class="size-3.5 shrink-0" /><span class="truncate">Fast</span></span>
@@ -248,10 +256,10 @@
         type="button"
         class={cn(
           'flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-md border border-transparent px-2 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
-          value.sampling_hz === 1 ? 'border-sky-400/70 bg-sky-500/10 text-sky-400 shadow-sm' : 'text-muted-foreground hover:bg-background/60 hover:text-foreground'
+          value.sampling_rate === 1 ? 'border-sky-500/60 bg-sky-500/10 text-sky-700 shadow-sm dark:text-sky-300' : 'text-muted-foreground hover:bg-background/60 hover:text-foreground'
         )}
-        aria-pressed={value.sampling_hz === 1}
-        onclick={() => patch({ sampling_hz: 1 })}
+        aria-pressed={value.sampling_rate === 1}
+        onclick={() => patch({ sampling_rate: 1 })}
         {disabled}
       >
         <span class="flex min-w-0 items-center gap-1.5"><Gauge class="size-3.5 shrink-0" /><span class="truncate">Balanced</span></span>
@@ -261,19 +269,16 @@
         type="button"
         class={cn(
           'flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-md border border-transparent px-2 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
-          value.sampling_hz === 2 ? 'border-sky-400/70 bg-sky-500/10 text-sky-400 shadow-sm' : 'text-muted-foreground hover:bg-background/60 hover:text-foreground'
+          value.sampling_rate === 2 ? 'border-sky-500/60 bg-sky-500/10 text-sky-700 shadow-sm dark:text-sky-300' : 'text-muted-foreground hover:bg-background/60 hover:text-foreground'
         )}
-        aria-pressed={value.sampling_hz === 2}
-        onclick={() => patch({ sampling_hz: 2 })}
+        aria-pressed={value.sampling_rate === 2}
+        onclick={() => patch({ sampling_rate: 2 })}
         {disabled}
       >
         <span class="flex min-w-0 items-center gap-1.5"><ScanEye class="size-3.5 shrink-0" /><span class="truncate">Detailed</span></span>
         <span class="text-[10px] opacity-70">2 Hz</span>
       </button>
     </div>
-    <p class="text-xs text-muted-foreground">
-      {samplingCadence} (every ~{samplingStep} source frames)
-    </p>
   </Field>
 
   {#if !isOllama}
