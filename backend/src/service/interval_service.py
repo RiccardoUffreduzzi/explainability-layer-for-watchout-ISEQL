@@ -10,5 +10,6 @@ class IntervalService(ABC):
         sampling_rate: int,
         analysis_id: str = "",
         log_fn: Callable[[str], None] = print,
+        merge_gap_frames: int | None = None,
     ) -> Iterator[str]:
         pass

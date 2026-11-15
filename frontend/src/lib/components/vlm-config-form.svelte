@@ -6,6 +6,8 @@
   import Field from '$lib/components/ui/field.svelte';
   import type { VlmConfig } from '$lib/types';
   import { selectValue, inputInt, inputFloat } from '$lib/dom-helpers';
+  import { cn } from '$lib/utils';
+  import { Gauge, ScanEye, Zap } from 'lucide-svelte';
 
   const DEFAULT_GRID_ROWS = 2;
   const DEFAULT_GRID_COLS = 4;
@@ -51,6 +53,16 @@
   );
   let embedProviderOptions = $derived(
     EMBED_PROVIDERS.map(p => ({ value: p, label: p.charAt(0).toUpperCase() + p.slice(1) }))
+  );
+  let samplingCadence = $derived(
+    value.sampling_hz === 0.5
+      ? 'One visual frame every 2 seconds'
+      : value.sampling_hz === 2
+        ? 'Two visual frames per second'
+        : 'One visual frame per second'
+  );
+  let samplingStep = $derived(
+    Math.max(1, Math.round((detectedFps > 0 ? detectedFps : 24) / value.sampling_hz))
   );
 
   function patch(p: Partial<VlmConfig>) {
@@ -125,11 +137,11 @@
   <Field>
     <Label for="vlm-model">Model</Label>
     {#if isOllama && ollamaModelsLoading}
-      <div class="flex h-9 items-center rounded-lg border border-input bg-muted px-3 text-sm text-muted-foreground">
+      <div class="flex h-9 items-center rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">
         Detecting models...
       </div>
     {:else if isOllama && ollamaModelsFailed}
-      <div class="flex h-9 items-center rounded-lg border border-input bg-muted px-3 text-sm text-muted-foreground">
+      <div class="flex h-9 items-center rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">
         Failed to detect models. <button type="button" class="ml-1 underline" onclick={fetchOllamaModels}>Retry</button>
       </div>
     {:else if isOllama && ollamaModels.length > 0}
@@ -217,10 +229,51 @@
   </Field>
 
   <Field class="lg:col-span-2">
-    <Label for="sampling-rate">Sampling Rate</Label>
-    <div class="flex h-9 items-center rounded-lg border border-input bg-muted px-3 text-sm text-muted-foreground">
-      {detectedFps > 0 ? `Auto-detected: ${detectedFps} fps (1 frame/second)` : 'Auto-detected from video'}
+    <Label>Visual Frame Sampling Rate</Label>
+    <div class="grid grid-cols-3 gap-1 rounded-lg border border-input bg-muted/30 p-1" role="group" aria-label="Visual frame sampling mode">
+      <button
+        type="button"
+        class={cn(
+          'flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-md border border-transparent px-2 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+          value.sampling_hz === 0.5 ? 'border-sky-400/70 bg-sky-500/10 text-sky-400 shadow-sm' : 'text-muted-foreground hover:bg-background/60 hover:text-foreground'
+        )}
+        aria-pressed={value.sampling_hz === 0.5}
+        onclick={() => patch({ sampling_hz: 0.5 })}
+        {disabled}
+      >
+        <span class="flex min-w-0 items-center gap-1.5"><Zap class="size-3.5 shrink-0" /><span class="truncate">Fast</span></span>
+        <span class="text-[10px] opacity-70">0.5 Hz</span>
+      </button>
+      <button
+        type="button"
+        class={cn(
+          'flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-md border border-transparent px-2 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+          value.sampling_hz === 1 ? 'border-sky-400/70 bg-sky-500/10 text-sky-400 shadow-sm' : 'text-muted-foreground hover:bg-background/60 hover:text-foreground'
+        )}
+        aria-pressed={value.sampling_hz === 1}
+        onclick={() => patch({ sampling_hz: 1 })}
+        {disabled}
+      >
+        <span class="flex min-w-0 items-center gap-1.5"><Gauge class="size-3.5 shrink-0" /><span class="truncate">Balanced</span></span>
+        <span class="text-[10px] opacity-70">1 Hz</span>
+      </button>
+      <button
+        type="button"
+        class={cn(
+          'flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-md border border-transparent px-2 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+          value.sampling_hz === 2 ? 'border-sky-400/70 bg-sky-500/10 text-sky-400 shadow-sm' : 'text-muted-foreground hover:bg-background/60 hover:text-foreground'
+        )}
+        aria-pressed={value.sampling_hz === 2}
+        onclick={() => patch({ sampling_hz: 2 })}
+        {disabled}
+      >
+        <span class="flex min-w-0 items-center gap-1.5"><ScanEye class="size-3.5 shrink-0" /><span class="truncate">Detailed</span></span>
+        <span class="text-[10px] opacity-70">2 Hz</span>
+      </button>
     </div>
+    <p class="text-xs text-muted-foreground">
+      {samplingCadence} (every ~{samplingStep} source frames)
+    </p>
   </Field>
 
   {#if !isOllama}

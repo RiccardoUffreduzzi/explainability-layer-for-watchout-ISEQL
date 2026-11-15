@@ -44,7 +44,8 @@ SCHEMA_STATEMENTS: list[str] = [
         Model          TEXT,
         GridRows       INTEGER,
         GridCols       INTEGER,
-        SamplingRate   INTEGER,
+        SamplingRate   REAL,
+        SamplingHz     REAL    DEFAULT 1.0,
         VLMDelay       REAL    DEFAULT 0.0,
         MaxRetries     INTEGER DEFAULT 3,
         EmbedProvider  TEXT    DEFAULT 'huggingface',
@@ -223,6 +224,7 @@ def setup_database(db_path: Path) -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
         "AudioHop": "REAL DEFAULT 1.25",
         "DeltasJson": "TEXT",
         "DeltaUnit": "TEXT DEFAULT 'seconds'",
+        "SamplingHz": "REAL DEFAULT 1.0",
     })
     conn.commit()
     return conn, cursor
