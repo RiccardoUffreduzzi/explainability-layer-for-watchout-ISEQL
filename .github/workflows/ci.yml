@@ -24,10 +24,10 @@ jobs:
         with:
           python-version: '3.10'
 
-      # The ISEQL engine tests are dependency-light (no torch/VLM/audio); only
-      # pytest + pytest-cov are required. `pytest.ini` sets `pythonpath = src`.
+      # Tests use pandas for interval/event queries and pydantic for request
+      # model validation. `pytest.ini` sets `pythonpath = src`.
       - name: Install test dependencies
-        run: pip install pytest pytest-cov
+        run: pip install pytest pytest-cov pandas==2.3.3 pydantic==2.12.5
 
       - name: Run backend tests with coverage
         run: pytest --cov=iseql --cov=service.relation_vocab --cov-report=term-missing --cov-report=xml
