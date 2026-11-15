@@ -84,7 +84,7 @@
   function tokenHtml(t: EditorToken): string {
     switch (t.type) {
       case 'item':
-        return `<span contenteditable="false" draggable="false" data-item="${esc(t.name)}" class="mx-0.5 inline-flex select-none touch-none align-middle"><button type="button" class="rounded border border-primary/40 bg-primary/10 px-1.5 py-0.5 font-mono text-xs">${esc(display(t.name))}</button></span>`;
+        return `<span contenteditable="false" draggable="false" data-item="${esc(t.name)}" class="mx-0.5 inline-flex select-none touch-none align-middle"><button type="button" class="rounded-md border border-primary/40 bg-primary/10 px-1.5 py-0.5 font-mono text-xs">${esc(display(t.name))}</button></span>`;
       case 'op':
         return `<select contenteditable="false" class="mx-0.5 h-6 rounded-md border bg-card px-0.5 py-0 align-middle font-mono text-xs">${operators.map((o) => `<option${o === t.op ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
       case 'open':
@@ -115,7 +115,7 @@
     if (!el) return;
     const chips = [...el.querySelectorAll('[data-item]')];
     const op = operators[0] ?? '';
-    const chip = `<span contenteditable="false" draggable="false" data-item="${esc(name)}" class="mx-0.5 inline-flex select-none touch-none align-middle"><button type="button" class="rounded border border-primary/40 bg-primary/10 px-1.5 py-0.5 font-mono text-xs">${esc(display(name))}</button></span>`;
+    const chip = `<span contenteditable="false" draggable="false" data-item="${esc(name)}" class="mx-0.5 inline-flex select-none touch-none align-middle"><button type="button" class="rounded-md border border-primary/40 bg-primary/10 px-1.5 py-0.5 font-mono text-xs">${esc(display(name))}</button></span>`;
     const opHtml = `<select contenteditable="false" class="mx-0.5 h-6 rounded-md border bg-card px-0.5 py-0 align-middle font-mono text-xs">${operators.map((o) => `<option>${esc(o)}</option>`).join('')}</select>`;
     const hasContent = extractText(el).trim().length > 0;
     if (!hasContent) {
@@ -329,7 +329,7 @@
   <div
     bind:this={paletteEl}
     class={[
-      'flex max-h-36 touch-pan-y flex-col gap-1 overflow-y-auto rounded pr-1',
+      'flex max-h-36 touch-pan-y flex-col gap-1 overflow-y-auto rounded-lg pr-1',
       overPalette ? 'ring-1 ring-primary bg-primary/5' : '',
     ].join(' ')}
   >
@@ -337,7 +337,7 @@
       <button
         type="button"
         data-palette-item={name}
-        class="inline-flex cursor-grab touch-none items-center rounded border border-primary/40 bg-primary/10 px-2 py-0.5 font-mono text-xs"
+        class="inline-flex cursor-grab touch-none items-center rounded-md border border-primary/40 bg-primary/10 px-2 py-0.5 font-mono text-xs"
         title="Drag into the expression · click to configure"
         onclick={() => onOpen(name)}
         onmouseenter={() => onHover([name])}

@@ -54,7 +54,7 @@
       </p>
     </div>
     <div class="flex items-center gap-2">
-      <ThemeToggle showLabel />
+      <ThemeToggle size="sm" />
       <Button href="/" variant="outline" size="sm"><ArrowLeft /> Back to analysis</Button>
     </div>
   </header>
@@ -94,7 +94,7 @@
               type="button"
               title={c.hint}
               class={[
-                'rounded-md border px-3 py-1 text-sm',
+                'rounded-lg border px-3 py-1 text-sm',
                 condition === c.id ? 'border-primary bg-primary/10 font-medium' : 'text-muted-foreground hover:bg-muted/40',
               ].join(' ')}
               onclick={() => { condition = c.id; editing = false; }}

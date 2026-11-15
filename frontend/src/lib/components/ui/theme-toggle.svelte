@@ -3,10 +3,16 @@
   import { Moon, Sun } from 'lucide-svelte';
   import { cn } from '$lib/utils';
 
-  type Props = { class?: string; showLabel?: boolean };
-  let { class: className = '', showLabel = false }: Props = $props();
+  type Props = {
+    class?: string;
+    showLabel?: boolean;
+    variant?: 'default' | 'ghost';
+    size?: 'default' | 'sm';
+  };
+  let { class: className = '', showLabel = false, variant = 'default', size = 'default' }: Props = $props();
 
   const dark = $derived($mode === 'dark');
+  const sizeClass = $derived(showLabel ? (size === 'sm' ? 'h-9 px-3' : 'h-8 px-3') : size === 'sm' ? 'h-9 w-9' : 'size-8');
 </script>
 
 <button
@@ -16,8 +22,11 @@
   aria-label={dark ? 'Switch to light theme' : 'Switch to dark theme'}
   aria-pressed={dark}
   class={cn(
-    'inline-flex h-8 items-center justify-center gap-2 rounded-lg border border-border/70 bg-card text-muted-foreground shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
-    showLabel ? 'px-3' : 'size-8',
+    'inline-flex items-center justify-center gap-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
+    variant === 'ghost'
+      ? 'text-muted-foreground hover:bg-accent hover:text-foreground'
+      : 'border border-border/70 bg-card text-muted-foreground shadow-sm hover:bg-accent hover:text-accent-foreground',
+    sizeClass,
     className
   )}
 >

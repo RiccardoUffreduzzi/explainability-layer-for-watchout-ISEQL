@@ -52,7 +52,7 @@
       {@const Icon = c.icon}
       <label
         class={[
-          'flex cursor-pointer items-start gap-3 rounded-md border p-3 text-left transition-colors',
+          'flex cursor-pointer items-start gap-3 rounded-lg border p-3 text-left transition-colors',
           selected
             ? 'border-primary/60 bg-primary/10'
             : 'border-border bg-muted/30 hover:bg-muted/50',
@@ -73,7 +73,7 @@
           <div class="flex items-center gap-2">
             <Icon class="size-4 text-foreground" />
             <span class="text-sm font-medium text-foreground">{c.label}</span>
-            <span class={['rounded border px-1.5 py-0.5 text-[10px] font-semibold', c.badgeClass].join(' ')}>
+            <span class={['rounded-md border px-1.5 py-0.5 text-[10px] font-semibold', c.badgeClass].join(' ')}>
               {c.badge}
             </span>
           </div>

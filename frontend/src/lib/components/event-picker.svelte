@@ -123,7 +123,7 @@
   };
 </script>
 
-<div class="rounded-md border border-border bg-muted/30 p-3 text-xs mb-4">
+<div class="rounded-lg border border-border bg-muted/30 p-3 text-xs mb-4">
   <p class="flex items-center gap-1 font-medium text-foreground">
     <Database class="size-3.5 text-info" /> All events auto-detected via ISEQL SQL queries
   </p>
@@ -136,7 +136,7 @@
       {#if shown.length}
         {@const hasVisual = shown.some((f) => f.modality === 'visual')}
         {@const hasAudio = shown.some((f) => f.modality === 'audio')}
-        <div class="rounded border border-border bg-muted/30 p-2">
+        <div class="rounded-lg border border-border bg-muted/30 p-2">
           <p class="text-xs font-medium text-foreground mb-1.5">{event.id}</p>
           {#each MODALITY_GROUPS as modality}
             {@const group = shown.filter((f) => f.modality === modality)}

@@ -60,7 +60,7 @@
           {#if draft.intervals.length}
             <div class="max-h-32 space-y-1 overflow-y-auto pr-1">
               {#each draft.intervals as iv, i (iv.id)}
-                <div class="rounded border px-2 py-1 font-mono text-xs">
+                <div class="rounded-md border px-2 py-1 font-mono text-xs">
                   <span class="text-muted-foreground">M{i + 1}(arg1{iv.args.length > 1 ? ', arg2' : ''})</span>
                   <span class="mx-1 text-muted-foreground">=</span>
                   <span>{intervalLabel(iv)}</span>

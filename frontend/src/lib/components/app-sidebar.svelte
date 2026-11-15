@@ -54,7 +54,7 @@
 {#if collapsed}
   <aside class="flex h-full w-12 shrink-0 flex-col items-center border-r border-border bg-card py-3 text-card-foreground">
     <button
-      class="group flex size-8 items-center justify-center rounded-md transition-colors hover:bg-accent"
+      class="group flex size-8 items-center justify-center rounded-lg transition-colors hover:bg-accent"
       title="Show sidebar"
       onclick={onToggle}
     >
@@ -63,7 +63,7 @@
       </span>
       <PanelLeftOpen class="hidden size-4 text-muted-foreground group-hover:block group-hover:text-foreground" />
     </button>
-    <ThemeToggle class="mt-2 size-8 border-0 bg-transparent shadow-none" />
+    <ThemeToggle variant="ghost" class="mt-2" />
     <div class="mt-auto flex w-full flex-col items-center gap-1.5 px-1" title={`Status: ${currentStage}`}>
       <span class="text-xs tracking-wide text-muted-foreground">Status</span>
       <Badge variant={STAGE_VARIANT[currentStage] || 'secondary'} class="max-w-10 truncate text-[10px]">
@@ -79,7 +79,7 @@
       <p class="text-xs text-muted-foreground">{APP_TAGLINE}</p>
     </div>
     <div class="flex shrink-0 items-center gap-1">
-      <ThemeToggle />
+      <ThemeToggle variant="ghost" />
       <button
         class="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         title="Hide sidebar"
@@ -98,7 +98,7 @@
           {#each previousAnalyses as item (item.id)}
             <div
               class={cn(
-                'group flex w-full items-start rounded-md border text-left text-xs transition-colors',
+                'group flex w-full items-start rounded-lg border text-left text-xs transition-colors',
                 item.id === analysisId && 'bg-primary/10 border-primary/30',
                 item.id !== analysisId && 'border-transparent',
               )}
@@ -113,11 +113,11 @@
                   <span class="truncate font-medium text-foreground">{item.video_filename}</span>
                 </div>
                 <div class="flex items-center gap-1.5 mt-0.5">
-                  <span class={cn('rounded border px-1 py-px text-[10px] font-medium', CONDITION_COLORS[item.condition] || 'bg-muted text-muted-foreground')}>
+                  <span class={cn('rounded-md border px-1.5 py-0.5 text-[10px] font-medium', CONDITION_COLORS[item.condition] || 'bg-muted text-muted-foreground')}>
                     {item.condition}
                   </span>
                   <span class={cn(
-                    'rounded px-1 py-px text-[10px]',
+                    'rounded-md px-1.5 py-0.5 text-[10px]',
                     item.stage === 'done' && 'bg-success/15 text-success',
                     item.stage === 'failed' && 'bg-destructive/15 text-destructive',
                     item.stage !== 'done' && item.stage !== 'failed' && 'bg-muted text-muted-foreground',

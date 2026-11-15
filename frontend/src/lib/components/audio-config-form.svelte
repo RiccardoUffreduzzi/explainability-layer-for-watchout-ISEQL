@@ -75,7 +75,7 @@
 
   <Field>
     <Label for="audio-model">Model</Label>
-    <div class="flex h-9 items-center rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">
+    <div class="flex h-9 items-center rounded-lg border border-input bg-muted px-3 text-sm text-muted-foreground">
       {DEFAULT_AUDIO_MODELS[provider] || ''}
     </div>
   </Field>

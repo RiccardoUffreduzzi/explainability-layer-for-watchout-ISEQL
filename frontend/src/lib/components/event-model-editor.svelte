@@ -148,7 +148,7 @@
     </div>
     <div class="space-y-2">
       {#each predicates as p, pi (p.name)}
-        <div class="flex items-center gap-2 rounded-md border p-2">
+        <div class="flex items-center gap-2 rounded-lg border p-2">
           <Input class="w-40 font-mono" value={p.name} onchange={(e) => {
             const old = p.name; const next = inputStr(e);
             predicates = predicates.map((x, idx) => (idx === pi ? { ...x, name: next } : x));
@@ -170,7 +170,7 @@
     </div>
     <div class="space-y-2">
       {#each intervals as iv, i (i)}
-        <div class="rounded-md border p-2">
+        <div class="rounded-lg border p-2">
           <div class="flex items-center gap-2">
             <span class="w-6 text-center font-mono text-xs text-muted-foreground">M{i + 1}</span>
             <Select options={predOptions} value={iv.pred} onchange={(e) => patchInterval(i, { pred: selectValue(e) })} />
@@ -201,7 +201,7 @@
       <Label>Operators between intervals</Label>
       <div class="space-y-2">
         {#each operators as op, i (i)}
-          <div class="flex items-center gap-2 rounded-md border p-2">
+          <div class="flex items-center gap-2 rounded-lg border p-2">
             <span class="font-mono text-xs text-muted-foreground">M{i + 1} → M{i + 2}</span>
             <Select options={OPERATOR_OPTIONS} value={op.op} onchange={(e) => patchOp(i, { op: selectValue(e, 'auto') })} />
             <Input class="w-44 font-mono" placeholder="delta key (e.g. delta_visual_handoff)" value={op.deltaKey} onchange={(e) => patchOp(i, { deltaKey: inputStr(e) })} />
@@ -226,7 +226,7 @@
     </div>
     <div class="space-y-2">
       {#each crossConditions as c, i (i)}
-        <div class="flex items-center gap-2 rounded-md border p-2 font-mono text-sm">
+        <div class="flex items-center gap-2 rounded-lg border p-2 font-mono text-sm">
           <Input class="w-16" value={c.left} onchange={(e) => patchCc(i, { left: inputStr(e) })} />
           <span class="text-xs">.</span>
           <Input class="w-20" value={c.leftAttr} onchange={(e) => patchCc(i, { leftAttr: inputStr(e) })} />

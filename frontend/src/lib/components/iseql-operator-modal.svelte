@@ -67,7 +67,7 @@
         <div class="text-sm font-semibold">Temporal operator</div>
       </div>
 
-      <div class="mb-3 rounded-md border bg-muted/30 p-2 font-mono text-xs text-muted-foreground">
+      <div class="mb-3 rounded-lg border bg-muted/30 p-2 font-mono text-xs text-muted-foreground">
         σ <span class="text-foreground">{a.pred}</span> ··· σ <span class="text-foreground">{b.pred}</span>
       </div>
 

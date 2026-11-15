@@ -125,11 +125,11 @@
   <Field>
     <Label for="vlm-model">Model</Label>
     {#if isOllama && ollamaModelsLoading}
-      <div class="flex h-9 items-center rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">
+      <div class="flex h-9 items-center rounded-lg border border-input bg-muted px-3 text-sm text-muted-foreground">
         Detecting models...
       </div>
     {:else if isOllama && ollamaModelsFailed}
-      <div class="flex h-9 items-center rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">
+      <div class="flex h-9 items-center rounded-lg border border-input bg-muted px-3 text-sm text-muted-foreground">
         Failed to detect models. <button type="button" class="ml-1 underline" onclick={fetchOllamaModels}>Retry</button>
       </div>
     {:else if isOllama && ollamaModels.length > 0}
@@ -218,7 +218,7 @@
 
   <Field class="lg:col-span-2">
     <Label for="sampling-rate">Sampling Rate</Label>
-    <div class="flex h-9 items-center rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">
+    <div class="flex h-9 items-center rounded-lg border border-input bg-muted px-3 text-sm text-muted-foreground">
       {detectedFps > 0 ? `Auto-detected: ${detectedFps} fps (1 frame/second)` : 'Auto-detected from video'}
     </div>
   </Field>

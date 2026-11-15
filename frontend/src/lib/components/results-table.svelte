@@ -160,7 +160,7 @@
       <span>Click or tap a row to play the video from that event's start to end</span>
       <button
         type="button"
-        class="ml-auto shrink-0 rounded px-0.5 text-muted-foreground hover:text-foreground"
+        class="ml-auto shrink-0 rounded-md px-0.5 text-muted-foreground hover:text-foreground"
         title="Dismiss"
         aria-label="Dismiss row click hint"
         onclick={() => (showClickHint = false)}
@@ -176,7 +176,7 @@
         src={`/api/analysis/${analysisId}/video`}
         controls
         preload="metadata"
-        class="max-h-[35dvh] w-full rounded-md bg-black"
+        class="max-h-[35dvh] w-full rounded-lg bg-black"
         ontimeupdate={onTimeUpdate}
         onloadedmetadata={onLoadedMetadata}
       ></video>

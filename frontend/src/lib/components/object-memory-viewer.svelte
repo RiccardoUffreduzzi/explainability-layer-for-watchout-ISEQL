@@ -117,7 +117,7 @@
 
 <div class="flex min-h-0 flex-1 flex-col gap-3">
   {#if error}
-    <div class="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
+    <div class="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
   {/if}
 
   {#if !error && analysisId}
@@ -130,7 +130,7 @@
         {#each Object.entries(stats.per_class) as [cls, n] (cls)}
           <button
             type="button"
-            class="inline-flex items-center gap-1.5 rounded border px-2 py-0.5 text-xs {CLASS_COLORS[cls] || 'bg-muted text-muted-foreground'}"
+            class="inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs {CLASS_COLORS[cls] || 'bg-muted text-muted-foreground'}"
             class:border-primary={classFilter === cls}
             class:ring-2={classFilter === cls}
             onclick={() => { classFilter = classFilter === cls ? '' : cls; load(); }}>
@@ -140,7 +140,7 @@
       {/if}
     </section>
 
-    <section class="flex flex-wrap items-end gap-3 rounded-md border p-3">
+    <section class="flex flex-wrap items-end gap-3 rounded-lg border p-3">
       <Field>
         <Label>Class</Label>
         <Input type="text" value={classFilter} placeholder="person / vehicle / object"
@@ -172,7 +172,7 @@
       {/if}
     </section>
 
-    <section class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border">
+    <section class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border">
       <div class="min-h-0 flex-1 overflow-auto" bind:this={scrollEl}>
         <table class="w-full text-left text-xs">
           <thead class="sticky top-0 bg-card text-muted-foreground">
@@ -191,7 +191,7 @@
                 <td class="px-3 py-1.5 font-mono tabular-nums">{entry.frame}</td>
                 <td class="px-3 py-1.5 font-mono tabular-nums">{entry.id}</td>
                 <td class="px-3 py-1.5">
-                  <span class="rounded border px-1.5 py-px text-[10px] font-medium {CLASS_COLORS[entry.class] || 'bg-muted text-muted-foreground'}">
+                  <span class="rounded-md border px-1.5 py-px text-[10px] font-medium {CLASS_COLORS[entry.class] || 'bg-muted text-muted-foreground'}">
                     {entry.class}
                   </span>
                 </td>

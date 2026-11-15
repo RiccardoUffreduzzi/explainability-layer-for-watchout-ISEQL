@@ -157,7 +157,7 @@
     <span class="text-sm font-semibold">Visual</span>
     <CountBadge filtered={filtered.length} total={rows.length} filtering={search.trim() !== ''} />
     <Input class="h-7 flex-1 font-mono text-xs" placeholder="Search predicates…" value={search} oninput={(e) => (search = (e.currentTarget as HTMLInputElement).value)} />
-    <button type="button" class="rounded border px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted" title="Add relation" onclick={openNew}>＋</button>
+    <button type="button" class="rounded-md border px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted" title="Add relation" onclick={openNew}>＋</button>
   </div>
   <DeleteHint />
 
@@ -166,7 +166,7 @@
       <div
         role="button"
         tabindex="0"
-        class="group flex cursor-pointer select-none touch-callout-none items-center gap-2 rounded-md border px-2 py-1.5 transition-colors hover:border-primary/50 hover:bg-muted/40"
+        class="group flex cursor-pointer select-none touch-callout-none items-center gap-2 rounded-lg border px-2 py-1.5 transition-colors hover:border-primary/50 hover:bg-muted/40"
         onclick={() => openEdit(rows.indexOf(r))}
         onkeydown={(ev) => { if (ev.key === 'Enter') openEdit(rows.indexOf(r)); }}
         oncontextmenu={(e) => { e.preventDefault(); ctxMenu = { x: e.clientX, y: e.clientY, index: rows.indexOf(r) }; }}
@@ -202,7 +202,7 @@
           <div class="flex items-center gap-2">
             <button
               type="button"
-              class="rounded border border-input px-1.5 py-0.5 font-mono text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+              class="rounded-md border border-input px-1.5 py-0.5 font-mono text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
               title="Insert OR (∨)"
               onclick={insertOr}
             >∨</button>

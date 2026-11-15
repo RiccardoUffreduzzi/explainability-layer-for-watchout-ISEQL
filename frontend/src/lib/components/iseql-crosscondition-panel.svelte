@@ -65,7 +65,7 @@
 <div class="space-y-2">
   <div class="flex items-center justify-between">
     <span class="text-xs font-semibold">Cross-conditions</span>
-    <button type="button" class="rounded border px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted disabled:opacity-40" title="Add cross-condition" disabled={!hasIntervals} onclick={add}>＋</button>
+    <button type="button" class="rounded-md border px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted disabled:opacity-40" title="Add cross-condition" disabled={!hasIntervals} onclick={add}>＋</button>
   </div>
 
   {#if !hasIntervals}
@@ -73,7 +73,7 @@
   {:else}
     <div class="max-h-40 space-y-1.5 overflow-y-auto pr-1">
       {#each crossConditions as c, i (c.id)}
-      <div class="rounded border p-1.5">
+      <div class="rounded-lg border p-1.5">
         <div class="mb-1 flex items-center justify-between">
           <select class={sel + ' w-28'} value={c.type} onchange={(e) => patch(i, { type: selectValue(e, 'attr') as 'attr' | 'duration' })}>
             <option value="attr">inequality</option>
