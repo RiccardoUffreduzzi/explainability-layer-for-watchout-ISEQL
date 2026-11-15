@@ -622,7 +622,12 @@
           </div>
         </header>
         <div class="flex min-h-0 flex-1 flex-col p-4">
-          <ObjectMemoryViewer analysisId={analysisId} />
+          <ObjectMemoryViewer
+            analysisId={analysisId}
+            fps={detectedFrameRate}
+            {unit}
+            onUnitChange={(u) => { convertDeltasUnit(unit, u); unit = u; }}
+          />
         </div>
       </div>
     </div>

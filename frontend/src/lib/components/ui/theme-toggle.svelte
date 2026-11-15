@@ -25,7 +25,7 @@
     'inline-flex items-center justify-center gap-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
     variant === 'ghost'
       ? 'text-muted-foreground hover:bg-accent hover:text-foreground'
-      : 'border border-border/70 bg-card text-muted-foreground shadow-sm hover:bg-accent hover:text-accent-foreground',
+      : 'border border-border/70 bg-card text-muted-foreground shadow-sm hover:border-primary/40 hover:bg-accent hover:text-accent-foreground',
     sizeClass,
     className
   )}

@@ -15,7 +15,7 @@
       <p class="text-xs text-muted-foreground">Analysis <span class="font-mono">{analysis_id}</span></p>
     </div>
     <div class="flex items-center gap-2">
-      <ThemeToggle showLabel />
+      <ThemeToggle size="sm" />
       <Button href="/" variant="outline" size="sm"><ArrowLeft /> Back to analysis</Button>
     </div>
   </header>
