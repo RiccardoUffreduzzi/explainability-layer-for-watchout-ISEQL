@@ -15,11 +15,12 @@ class IntervalServiceImpl(IntervalService):
     def build_visual_and_save(
         self,
         conn: sqlite3.Connection,
-        sampling_rate: int,
+        frame_step: int,
         analysis_id: str = "",
         log_fn: Callable[[str], None] = print,
+        merge_gap_frames: int | None = None,
     ) -> Iterator[str]:
-        log_fn(f"Starting post-processing (sampling rate: {sampling_rate})...")
+        log_fn(f"Starting post-processing (frame step: {frame_step})...")
 
         try:
             try:
@@ -56,7 +57,16 @@ class IntervalServiceImpl(IntervalService):
 
             log_fn("Computing duration intervals with merge logic...")
             unique_events = events_per_frame.groupby(["RelationType", "Participants"])
-            merge_threshold = 2 * sampling_rate
+            # Preserve legacy behaviour unless an experiment supplies an explicit
+            # source-frame tolerance.  The latter lets controlled sampling
+            # experiments avoid changing the wall-clock merge tolerance.
+            merge_threshold = (
+                int(merge_gap_frames)
+                if merge_gap_frames is not None
+                else 2 * frame_step
+            )
+            if merge_threshold < 0:
+                raise ValueError("merge_gap_frames must be non-negative")
             processed: list[dict] = []
 
             for (rel_type, participants), group in unique_events:

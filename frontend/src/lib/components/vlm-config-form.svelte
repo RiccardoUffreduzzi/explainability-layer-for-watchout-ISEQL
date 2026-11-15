@@ -2,10 +2,12 @@
   import { api } from '$lib/api';
   import Input from '$lib/components/ui/input.svelte';
   import Label from '$lib/components/ui/label.svelte';
-  import Select from '$lib/components/ui/select.svelte';
+  import * as Select from '$lib/components/ui/select/index.js';
   import Field from '$lib/components/ui/field.svelte';
   import type { VlmConfig } from '$lib/types';
   import { selectValue, inputInt, inputFloat } from '$lib/dom-helpers';
+  import { cn } from '$lib/utils';
+  import { Gauge, ScanEye, Zap } from 'lucide-svelte';
 
   const DEFAULT_GRID_ROWS = 2;
   const DEFAULT_GRID_COLS = 4;
@@ -37,9 +39,9 @@
     onChange: (v: VlmConfig) => void;
     disabled?: boolean;
     availableProviders?: string[];
-    detectedFps?: number;
+    detectedFrameRate?: number;
   };
-  let { value = $bindable(), onChange, disabled = false, availableProviders = [], detectedFps = 0 }: Props = $props();
+  let { value = $bindable(), onChange, disabled = false, availableProviders = [], detectedFrameRate = 0 }: Props = $props();
 
   let ollamaModels = $state<{ value: string; label: string }[]>([]);
   let ollamaModelsLoading = $state(false);
@@ -51,6 +53,9 @@
   );
   let embedProviderOptions = $derived(
     EMBED_PROVIDERS.map(p => ({ value: p, label: p.charAt(0).toUpperCase() + p.slice(1) }))
+  );
+  let frameRateValue = $derived(
+    detectedFrameRate > 0 ? `${Number(detectedFrameRate.toFixed(1))}` : null
   );
 
   function patch(p: Partial<VlmConfig>) {
@@ -96,16 +101,14 @@
     }
   });
 
-  function handleProviderChange(e: Event) {
-    const p = selectValue(e);
+  function handleProviderChange(p: string) {
     const d = PROVIDER_DEFAULTS[p] || { delay: 3, max_retries: 10 };
     const m = p === 'ollama' ? '' : (MODEL_DEFAULTS[p] || '');
     patch({ provider: p, model: m, vlm_delay: d.delay, max_retries: d.max_retries });
     if (p === 'ollama') fetchOllamaModels();
   }
 
-  function handleEmbedProviderChange(e: Event) {
-    const p = selectValue(e);
+  function handleEmbedProviderChange(p: string) {
     patch({ embed_provider: p, embed_model: EMBED_MODEL_DEFAULTS[p] || '' });
   }
 </script>
@@ -113,33 +116,39 @@
 <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
   <Field>
     <Label for="vlm-provider">VLM Provider</Label>
-    <Select
-      id="vlm-provider"
-      options={providerOptions}
-      value={value.provider}
-      onchange={handleProviderChange}
-      {disabled}
-    />
+    <Select.Root type="single" items={providerOptions} value={value.provider} onValueChange={(next: string | undefined) => next && handleProviderChange(next)} {disabled}>
+      <Select.Trigger id="vlm-provider">
+        {providerOptions.find((option) => option.value === value.provider)?.label ?? value.provider}
+      </Select.Trigger>
+      <Select.Content>
+        {#each providerOptions as option (option.value)}
+          <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+        {/each}
+      </Select.Content>
+    </Select.Root>
   </Field>
 
   <Field>
     <Label for="vlm-model">Model</Label>
     {#if isOllama && ollamaModelsLoading}
-      <div class="flex h-9 items-center rounded-lg border border-input bg-muted px-3 text-sm text-muted-foreground">
+      <div class="flex h-9 items-center rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">
         Detecting models...
       </div>
     {:else if isOllama && ollamaModelsFailed}
-      <div class="flex h-9 items-center rounded-lg border border-input bg-muted px-3 text-sm text-muted-foreground">
+      <div class="flex h-9 items-center rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">
         Failed to detect models. <button type="button" class="ml-1 underline" onclick={fetchOllamaModels}>Retry</button>
       </div>
     {:else if isOllama && ollamaModels.length > 0}
-      <Select
-        id="vlm-model"
-        options={ollamaModels}
-        value={value.model}
-        onchange={(e) => patch({ model: selectValue(e) })}
-        {disabled}
-      />
+      <Select.Root type="single" items={ollamaModels} value={value.model} onValueChange={(next: string | undefined) => patch({ model: next ?? '' })} {disabled}>
+        <Select.Trigger id="vlm-model">
+          {ollamaModels.find((option) => option.value === value.model)?.label ?? value.model}
+        </Select.Trigger>
+        <Select.Content>
+          {#each ollamaModels as option (option.value)}
+            <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+          {/each}
+        </Select.Content>
+      </Select.Root>
     {:else}
       <Input
         id="vlm-model"
@@ -154,13 +163,16 @@
 
   <Field>
     <Label for="embed-provider">Embedding Provider</Label>
-    <Select
-      id="embed-provider"
-      options={embedProviderOptions}
-      value={value.embed_provider}
-      onchange={handleEmbedProviderChange}
-      {disabled}
-    />
+    <Select.Root type="single" items={embedProviderOptions} value={value.embed_provider} onValueChange={(next: string | undefined) => next && handleEmbedProviderChange(next)} {disabled}>
+      <Select.Trigger id="embed-provider">
+        {embedProviderOptions.find((option) => option.value === value.embed_provider)?.label ?? value.embed_provider}
+      </Select.Trigger>
+      <Select.Content>
+        {#each embedProviderOptions as option (option.value)}
+          <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+        {/each}
+      </Select.Content>
+    </Select.Root>
   </Field>
 
   <Field>
@@ -217,9 +229,62 @@
   </Field>
 
   <Field class="lg:col-span-2">
-    <Label for="sampling-rate">Sampling Rate</Label>
-    <div class="flex h-9 items-center rounded-lg border border-input bg-muted px-3 text-sm text-muted-foreground">
-      {detectedFps > 0 ? `Auto-detected: ${detectedFps} fps (1 frame/second)` : 'Auto-detected from video'}
+    <Label for="frame-rate">Frame Rate</Label>
+    <div
+      id="frame-rate"
+      class="flex h-9 items-center gap-1.5 rounded-lg border border-input bg-muted px-3 text-sm"
+    >
+      {#if frameRateValue !== null}
+        <span class="font-mono text-foreground">{frameRateValue}</span>
+        <span class="text-muted-foreground">frames per second (fps)</span>
+      {:else}
+        <span class="text-muted-foreground">Detected from the uploaded video</span>
+      {/if}
+    </div>
+  </Field>
+
+  <Field class="lg:col-span-2">
+    <Label>Sampling Rate</Label>
+    <div class="grid grid-cols-3 gap-1 rounded-lg border border-input bg-muted/30 p-1" role="group" aria-label="Sampling rate">
+      <button
+        type="button"
+        class={cn(
+          'flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-md border border-transparent px-2 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+          value.sampling_rate === 0.5 ? 'border-sky-500/60 bg-sky-500/10 text-sky-700 shadow-sm dark:text-sky-300' : 'text-muted-foreground hover:bg-background/60 hover:text-foreground'
+        )}
+        aria-pressed={value.sampling_rate === 0.5}
+        onclick={() => patch({ sampling_rate: 0.5 })}
+        {disabled}
+      >
+        <span class="flex min-w-0 items-center gap-1.5"><Zap class="size-3.5 shrink-0" /><span class="truncate">Fast</span></span>
+        <span class="text-[10px] opacity-70">0.5 Hz</span>
+      </button>
+      <button
+        type="button"
+        class={cn(
+          'flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-md border border-transparent px-2 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+          value.sampling_rate === 1 ? 'border-sky-500/60 bg-sky-500/10 text-sky-700 shadow-sm dark:text-sky-300' : 'text-muted-foreground hover:bg-background/60 hover:text-foreground'
+        )}
+        aria-pressed={value.sampling_rate === 1}
+        onclick={() => patch({ sampling_rate: 1 })}
+        {disabled}
+      >
+        <span class="flex min-w-0 items-center gap-1.5"><Gauge class="size-3.5 shrink-0" /><span class="truncate">Balanced</span></span>
+        <span class="text-[10px] opacity-70">1 Hz</span>
+      </button>
+      <button
+        type="button"
+        class={cn(
+          'flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-md border border-transparent px-2 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+          value.sampling_rate === 2 ? 'border-sky-500/60 bg-sky-500/10 text-sky-700 shadow-sm dark:text-sky-300' : 'text-muted-foreground hover:bg-background/60 hover:text-foreground'
+        )}
+        aria-pressed={value.sampling_rate === 2}
+        onclick={() => patch({ sampling_rate: 2 })}
+        {disabled}
+      >
+        <span class="flex min-w-0 items-center gap-1.5"><ScanEye class="size-3.5 shrink-0" /><span class="truncate">Detailed</span></span>
+        <span class="text-[10px] opacity-70">2 Hz</span>
+      </button>
     </div>
   </Field>
 

@@ -63,7 +63,7 @@
       </span>
       <PanelLeftOpen class="hidden size-4 text-muted-foreground group-hover:block group-hover:text-foreground" />
     </button>
-    <ThemeToggle variant="ghost" class="mt-2" />
+    <ThemeToggle variant="ghost" class="mt-2" menuSide="right" />
     <div class="mt-auto flex w-full flex-col items-center gap-1.5 px-1" title={`Status: ${currentStage}`}>
       <span class="text-xs tracking-wide text-muted-foreground">Status</span>
       <Badge variant={STAGE_VARIANT[currentStage] || 'secondary'} class="max-w-10 truncate text-[10px]">

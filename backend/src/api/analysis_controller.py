@@ -6,10 +6,17 @@ import subprocess
 import uuid
 from pathlib import Path
 
-from fastapi import File, Form, HTTPException, UploadFile
-from fastapi.responses import FileResponse, StreamingResponse
+import cv2
+from fastapi import File, Form, HTTPException, Query, UploadFile
+from fastapi.responses import FileResponse, Response, StreamingResponse
 
-from models.analysis import AnalysisDetectRequest, AnalysisStage, AnalysisStartResponse, Condition
+from models.analysis import (
+    VALID_SAMPLING_RATES,
+    AnalysisDetectRequest,
+    AnalysisStage,
+    AnalysisStartResponse,
+    Condition,
+)
 from utils.config import VALID_CONDITIONS, Config
 from utils.api_logger import get_logger
 from utils.sse import drain_queue_into_sse
@@ -71,7 +78,7 @@ class AnalysisStartController:
         model: str = Form(""),
         grid_rows: int = Form(2),
         grid_cols: int = Form(4),
-        sampling_rate: int = Form(24),
+        sampling_rate: float = Form(1.0),
         vlm_delay: float = Form(0.0),
         max_retries: int = Form(3),
         embed_provider: str = Form(None),
@@ -91,6 +98,11 @@ class AnalysisStartController:
 
         if condition not in VALID_CONDITIONS:
             raise HTTPException(status_code=400, detail=f"unknown condition '{condition}'; expected A | B | C")
+        if sampling_rate not in VALID_SAMPLING_RATES:
+            raise HTTPException(
+                status_code=400,
+                detail="sampling_rate must be one of: 0.5, 1, 2",
+            )
         if vlm_provider is None:
             vlm_provider = available[0] if available else "ollama"
         if embed_provider is None:
@@ -108,7 +120,10 @@ class AnalysisStartController:
             shutil.copyfileobj(video.file, f)
         log.info("Stored upload as %s (condition=%s)", target_path, condition)
 
-        # Auto-detect video FPS
+        # Auto-detect the source frame rate.  Visual sampling derives its frame
+        # step from this value and sampling_rate; all timestamp/audio logic
+        # keeps using the source frame rate itself.
+        frame_rate = 24.0
         try:
             probe = subprocess.check_output(
                 ["ffprobe", "-v", "error", "-select_streams", "v:0",
@@ -122,15 +137,24 @@ class AnalysisStartController:
                 fps_str = stream.get(key, "")
                 if fps_str and "/" in fps_str:
                     num, den = fps_str.split("/")
-                    fps = int(num) // int(den) if int(den) else 0
+                    fps = float(num) / float(den) if float(den) else 0
                     if fps > 0:
-                        sampling_rate = fps
-                        log.info("Detected video FPS: %d (from %s=%s)", sampling_rate, key, fps_str)
+                        frame_rate = fps
+                        log.info("Detected video frame rate: %.3f (from %s=%s)", frame_rate, key, fps_str)
                         break
             else:
-                log.info("Could not parse FPS, using default 24")
+                log.info("Could not parse frame rate, using default 24")
         except Exception:
-            log.info("Could not detect FPS, using default 24")
+            cap = cv2.VideoCapture(str(target_path))
+            try:
+                detected_fps = float(cap.get(cv2.CAP_PROP_FPS)) if cap.isOpened() else 0.0
+                if detected_fps > 0:
+                    frame_rate = detected_fps
+                    log.info("Detected video frame rate with OpenCV fallback: %.3f", frame_rate)
+                else:
+                    log.info("Could not detect frame rate, using default 24")
+            finally:
+                cap.release()
 
         run = self._service.start_analysis(
             video_path=target_path,
@@ -140,6 +164,7 @@ class AnalysisStartController:
             model=model,
             grid_rows=grid_rows,
             grid_cols=grid_cols,
+            frame_rate=frame_rate,
             sampling_rate=sampling_rate,
             vlm_delay=vlm_delay,
             max_retries=max_retries,
@@ -159,6 +184,7 @@ class AnalysisStartController:
             analysis_id=run.id,
             condition=Condition(condition),
             stage=AnalysisStage.QUEUED,
+            frame_rate=frame_rate,
             sampling_rate=sampling_rate,
         )
 
@@ -221,6 +247,49 @@ class AnalysisVideoController:
         if not path.is_file():
             raise HTTPException(status_code=404, detail="video file not found for this analysis")
         return FileResponse(path, media_type="video/mp4", filename=path.name)
+
+
+class AnalysisThumbnailController:
+    """Return one requested frame from an analysis video as a JPEG thumbnail."""
+    def __init__(self, analysis_service) -> None:
+        self._service = analysis_service
+
+    async def on_get(self, analysis_id: str, frame: int = Query(..., ge=0)) -> Response:
+        run = self._service.get_run(analysis_id)
+        path = Path(run.video_path)
+        if not path.is_file():
+            raise HTTPException(status_code=404, detail="video file not found for this analysis")
+
+        cap = cv2.VideoCapture(str(path))
+        try:
+            if not cap.isOpened():
+                raise HTTPException(status_code=422, detail="video file could not be opened")
+
+            frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            if frame_count > 0 and frame >= frame_count:
+                raise HTTPException(status_code=416, detail="frame is outside the video range")
+
+            cap.set(cv2.CAP_PROP_POS_FRAMES, frame)
+            ok, image = cap.read()
+            if not ok or image is None:
+                raise HTTPException(status_code=422, detail="could not extract requested video frame")
+
+            height, width = image.shape[:2]
+            if width <= 0 or height <= 0:
+                raise HTTPException(status_code=422, detail="extracted video frame has invalid dimensions")
+            thumbnail_width = 360
+            thumbnail_height = max(1, round(height * thumbnail_width / width))
+            thumbnail = cv2.resize(image, (thumbnail_width, thumbnail_height), interpolation=cv2.INTER_AREA)
+            encoded, jpeg = cv2.imencode(".jpg", thumbnail)
+            if not encoded:
+                raise HTTPException(status_code=500, detail="could not encode thumbnail")
+            return Response(
+                content=jpeg.tobytes(),
+                media_type="image/jpeg",
+                headers={"Cache-Control": "private, max-age=3600"},
+            )
+        finally:
+            cap.release()
 
 
 class AnalysisStopController:

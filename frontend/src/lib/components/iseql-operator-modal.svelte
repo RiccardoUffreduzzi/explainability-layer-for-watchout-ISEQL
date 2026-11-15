@@ -2,11 +2,11 @@
   import { detectOperator, OPERATOR_OPTIONS, type BuilderInterval, type BuilderOperator } from '$lib/iseql-model';
   import Button from '$lib/components/ui/button.svelte';
   import Input from '$lib/components/ui/input.svelte';
-  import Select from '$lib/components/ui/select.svelte';
+  import * as Select from '$lib/components/ui/select/index.js';
   import Label from '$lib/components/ui/label.svelte';
   import Field from '$lib/components/ui/field.svelte';
-  import Checkbox from '$lib/components/ui/checkbox.svelte';
-  import { inputStr, selectValue } from '$lib/dom-helpers';
+  import { Checkbox } from '$lib/components/ui/checkbox/index.js';
+  import { inputStr } from '$lib/dom-helpers';
 
   type Props = {
     open: boolean;
@@ -74,7 +74,16 @@
       <div class="space-y-3">
         <Field>
           <Label>Operator</Label>
-          <Select options={OPERATOR_OPTIONS} value={op} onchange={(e) => (op = selectValue(e, 'auto'))} />
+          <Select.Root type="single" items={OPERATOR_OPTIONS} value={op} onValueChange={(value: string | undefined) => (op = value ?? 'auto')}>
+            <Select.Trigger>
+              {OPERATOR_OPTIONS.find((option) => option.value === op)?.label ?? op}
+            </Select.Trigger>
+            <Select.Content>
+              {#each OPERATOR_OPTIONS as option (option.value)}
+                <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+              {/each}
+            </Select.Content>
+          </Select.Root>
         </Field>
 
         {#if usesDelta}
@@ -83,7 +92,7 @@
             <div class="flex items-center gap-2">
               <Input class="font-mono" type="number" min="0" step="any" value={deltaUnbounded ? '' : delta} placeholder={deltaUnbounded ? '∞' : undefined} disabled={deltaUnbounded} onchange={(e) => (delta = inputStr(e))} />
               <label class="flex items-center gap-1 text-[11px] text-muted-foreground whitespace-nowrap">
-                <Checkbox checked={deltaUnbounded} onCheckedChange={(c) => { delta = c ? '∞' : '0'; }} />
+                <Checkbox checked={deltaUnbounded} onCheckedChange={(c: boolean) => { delta = c ? '∞' : '0'; }} />
                 ∞
               </label>
             </div>
@@ -96,7 +105,7 @@
             <div class="flex items-center gap-2">
               <Input class="font-mono" type="number" min="0" step="any" value={epsilonUnbounded ? '' : epsilon} placeholder={epsilonUnbounded ? '∞' : undefined} disabled={epsilonUnbounded} onchange={(e) => (epsilon = inputStr(e))} />
               <label class="flex items-center gap-1 text-[11px] text-muted-foreground whitespace-nowrap">
-                <Checkbox checked={epsilonUnbounded} onCheckedChange={(c) => { epsilon = c ? '∞' : '0'; }} />
+                <Checkbox checked={epsilonUnbounded} onCheckedChange={(c: boolean) => { epsilon = c ? '∞' : '0'; }} />
                 ∞
               </label>
             </div>
@@ -107,13 +116,31 @@
           {#if usesDelta}
             <Field>
               <Label>ζ</Label>
-              <Select options={STRICTNESS_OPTIONS} value={zeta} onchange={(e) => (zeta = selectValue(e, '<='))} />
+              <Select.Root type="single" items={STRICTNESS_OPTIONS} value={zeta} onValueChange={(value: string | undefined) => (zeta = value ?? '<=')}>
+                <Select.Trigger>
+                  {STRICTNESS_OPTIONS.find((option) => option.value === zeta)?.label ?? zeta}
+                </Select.Trigger>
+                <Select.Content>
+                  {#each STRICTNESS_OPTIONS as option (option.value)}
+                    <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+                  {/each}
+                </Select.Content>
+              </Select.Root>
             </Field>
           {/if}
           {#if usesEpsilon}
             <Field>
               <Label>η</Label>
-              <Select options={STRICTNESS_OPTIONS} value={eta} onchange={(e) => (eta = selectValue(e, '<='))} />
+              <Select.Root type="single" items={STRICTNESS_OPTIONS} value={eta} onValueChange={(value: string | undefined) => (eta = value ?? '<=')}>
+                <Select.Trigger>
+                  {STRICTNESS_OPTIONS.find((option) => option.value === eta)?.label ?? eta}
+                </Select.Trigger>
+                <Select.Content>
+                  {#each STRICTNESS_OPTIONS as option (option.value)}
+                    <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+                  {/each}
+                </Select.Content>
+              </Select.Root>
             </Field>
           {/if}
         </div>

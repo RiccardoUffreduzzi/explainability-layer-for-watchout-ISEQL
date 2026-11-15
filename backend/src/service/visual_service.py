@@ -13,10 +13,11 @@ class VisualService(ABC):
         client: VLMClient,
         grid_rows: int,
         grid_cols: int,
-        sampling_rate: int,
+        frame_step: int,
         min_interval: float = 0.0,
         analysis_id: str = "",
         track_objects: bool = False,
         log: Callable[[str], None] = print,
+        merge_gap_frames: int | None = None,
     ) -> None:
         pass

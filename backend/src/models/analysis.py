@@ -5,9 +5,21 @@ import threading
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field
+
+
+VALID_SAMPLING_RATES = (0.5, 1.0, 2.0)
+
+
+def frame_step_for(frame_rate: float, sampling_rate: float) -> int:
+    """Return the source-frame step for a visual sampling rate in Hz."""
+    if sampling_rate not in VALID_SAMPLING_RATES:
+        raise ValueError(f"sampling_rate must be one of {VALID_SAMPLING_RATES}")
+    if frame_rate <= 0:
+        raise ValueError("frame_rate must be positive")
+    return max(1, int(frame_rate / sampling_rate + 0.5))
 
 class Condition(str, Enum):
     A = "A"
@@ -35,7 +47,8 @@ class RunState:
     model: str
     grid_rows: int
     grid_cols: int
-    sampling_rate: int
+    frame_rate: float
+    sampling_rate: float
     vlm_delay: float = 0.0
     max_retries: int = 3
     embed_provider: str = "huggingface"
@@ -74,13 +87,17 @@ class AnalysisStartRequest(BaseModel):
     model: str = Field("", description="Provider-specific model name")
     grid_rows: int = Field(2, ge=1, le=10)
     grid_cols: int = Field(4, ge=1, le=10)
-    sampling_rate: int = Field(24, ge=1)
+    sampling_rate: Literal[0.5, 1.0, 2.0] = Field(
+        1.0,
+        description="Visual sampling rate in Hz",
+    )
 
 class AnalysisStartResponse(BaseModel):
     analysis_id: str
     condition: Condition
     stage: AnalysisStage
-    sampling_rate: int = 24
+    frame_rate: float = 24.0
+    sampling_rate: float = 1.0
 
 class AnalysisStatusResponse(BaseModel):
     id: str

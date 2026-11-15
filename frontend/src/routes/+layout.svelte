@@ -56,7 +56,7 @@
   }
 </script>
 
-<ModeWatcher defaultMode="light" themeColors={{ light: '#fbfbfd', dark: '#0f0f0f' }} />
+<ModeWatcher defaultMode="system" themeColors={{ light: '#fbfbfd', dark: '#0f0f0f' }} />
 {@render children?.()}
 <TourOverlay />
 <ConfirmDialog />

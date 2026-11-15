@@ -76,6 +76,7 @@
     model: 'ministral-14b-2512',
     grid_rows: 2,
     grid_cols: 4,
+    sampling_rate: 1,
     vlm_delay: 3.0,
     max_retries: 10,
     embed_provider: 'huggingface',
@@ -115,7 +116,7 @@
   let detecting = $state(false);
 
   let previousAnalyses = $state<AnalysisRecord[]>([]);
-  let detectedFps = $state(0);
+  let detectedFrameRate = $state(0);
   let analysisDone = $state(false);
   let lastConfigSnapshot = $state('');
   let unit = $state<Unit>('seconds');
@@ -133,17 +134,18 @@
 
   function convertDeltasUnit(from: Unit, to: Unit): void {
     if (from === to) return;
-    deltas = convertValues(deltas, from, to, detectedFps);
+    deltas = convertValues(deltas, from, to, detectedFrameRate);
   }
 
   const defaultDeltasForUnit = $derived(
-    convertValues(defaultDeltas, 'seconds', unit, detectedFps)
+    convertValues(defaultDeltas, 'seconds', unit, detectedFrameRate)
   );
 
   function takeConfigSnapshot(): string {
     return JSON.stringify({
       condition, vlm_provider: vlmConfig.provider, vlm_model: vlmConfig.model,
       grid_rows: vlmConfig.grid_rows, grid_cols: vlmConfig.grid_cols,
+      sampling_rate: vlmConfig.sampling_rate,
       audio_provider: audioConfig.provider, audio_model: audioConfig.model,
     });
   }
@@ -239,10 +241,10 @@
 
   function handleVideoChange(f: File | null) {
     if (f && f === video) return;
-    if (analysisId || analysisDone || stage !== 'idle' || detectedFps) {
+    if (analysisId || analysisDone || stage !== 'idle' || detectedFrameRate) {
       reset();
       lastConfigSnapshot = '';
-      detectedFps = 0;
+      detectedFrameRate = 0;
     }
     video = f;
   }
@@ -264,7 +266,7 @@
     analysisId = item.id;
     condition = item.condition as Condition;
     stage = item.stage;
-    detectedFps = item.sampling_rate ?? 0;
+    detectedFrameRate = item.frame_rate ?? 0;
 
     if (item.vlm_provider) {
       vlmConfig = {
@@ -272,6 +274,7 @@
         model: item.model ?? '',
         grid_rows: item.grid_rows ?? 2,
         grid_cols: item.grid_cols ?? 4,
+        sampling_rate: item.sampling_rate ?? 1,
         vlm_delay: item.vlm_delay ?? 0.0,
         max_retries: item.max_retries ?? 3,
         embed_provider: item.embed_provider ?? 'huggingface',
@@ -322,6 +325,7 @@
     form.append('model', vlmConfig.model);
     form.append('grid_rows', String(vlmConfig.grid_rows));
     form.append('grid_cols', String(vlmConfig.grid_cols));
+    form.append('sampling_rate', String(vlmConfig.sampling_rate));
     form.append('vlm_delay', String(vlmConfig.vlm_delay));
     form.append('max_retries', String(vlmConfig.max_retries));
     form.append('embed_provider', vlmConfig.embed_provider);
@@ -338,7 +342,7 @@
       const resp = await api.postForm<AnalysisStartResponse>('/api/analysis/start', form);
       analysisId = resp.analysis_id;
       stage = resp.stage;
-      detectedFps = resp.sampling_rate;
+      detectedFrameRate = resp.frame_rate;
       lastConfigSnapshot = takeConfigSnapshot();
       analysisDone = false;
       appendLog('queued', `analysis_id = ${analysisId} (condition ${resp.condition})`);
@@ -486,7 +490,7 @@
               onChange={(v) => (vlmConfig = v)}
               disabled={busy || condition === 'B'}
               availableProviders={availableProviders}
-              {detectedFps}
+              {detectedFrameRate}
             />
             {#if condition === 'B'}
               <p class="text-xs text-muted-foreground">
@@ -530,7 +534,7 @@
               onChangeDeltas={(d) => (deltas = d)}
               disabled={busy}
               unit={unit}
-              fps={detectedFps}
+              fps={detectedFrameRate}
             />
           </CardContent>
         </Card>
@@ -572,12 +576,12 @@
           <TabsContent value="logs" class="mt-0 flex min-h-0 flex-1 flex-col overflow-hidden">
             <LogConsole entries={logs} onClear={clearLogs} />
           </TabsContent>
-          <TabsContent value="results" class="mt-0 flex min-h-0 flex-1 flex-col overflow-hidden">
-            <div class="flex min-h-0 flex-1 flex-col" data-tour="landing-results">
+          <TabsContent value="results" class="mt-0 min-h-0 flex-1 overflow-y-auto">
+            <div class="flex min-h-full flex-col" data-tour="landing-results">
               <ResultsTable result={result} running={detecting} error={null}
                 unit={unit}
                 analysisId={analysisId}
-                fps={detectedFps}
+                fps={detectedFrameRate}
                 onMemory={() => (showMemory = true)}
                 onUnitChange={(u) => { convertDeltasUnit(unit, u); unit = u; }} />
             </div>
@@ -618,7 +622,12 @@
           </div>
         </header>
         <div class="flex min-h-0 flex-1 flex-col p-4">
-          <ObjectMemoryViewer analysisId={analysisId} />
+          <ObjectMemoryViewer
+            analysisId={analysisId}
+            fps={detectedFrameRate}
+            {unit}
+            onUnitChange={(u) => { convertDeltasUnit(unit, u); unit = u; }}
+          />
         </div>
       </div>
     </div>
