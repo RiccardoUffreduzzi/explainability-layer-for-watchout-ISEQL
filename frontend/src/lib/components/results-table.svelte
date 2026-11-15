@@ -6,7 +6,7 @@
   import Input from '$lib/components/ui/input.svelte';
   import CountBadge from '$lib/components/ui/count-badge.svelte';
   import UnitToggle from '$lib/components/unit-toggle.svelte';
-  import { DatabaseZap, Images, List, MousePointerClick, Hand } from 'lucide-svelte';
+  import { DatabaseZap, ImageOff, LayoutGrid, List, MousePointerClick, Hand } from 'lucide-svelte';
   import { cn } from '$lib/utils';
   import type { DetectionResult, Unit } from '$lib/types';
 
@@ -46,7 +46,8 @@
 
   let search = $state('');
   let showClickHint = $state(true);
-  let highlightsView = $state<'gallery' | 'list'>('gallery');
+  let resultView = $state<'list' | 'gallery'>('gallery');
+  let failedThumbnails = $state<Record<string, boolean>>({});
 
   const filteredRows = $derived(
     (result?.rows ?? []).map((row, i) => ({ row, i })).filter(({ row }) => {
@@ -113,28 +114,70 @@
     return out;
   });
 
-  const highlights = $derived(
-    intervals
-      .filter((interval) =>
-        interval.startFrame !== null &&
-        interval.endFrame !== null &&
-        interval.startFrame >= 0 &&
-        interval.endFrame >= interval.startFrame
-      )
-      .map((interval) => ({
-        ...interval,
-        representativeFrame: Math.floor((interval.startFrame! + interval.endFrame!) / 2),
-      }))
+  const cardColumns = $derived(
+    cols.filter(
+      (c) =>
+        c.key !== 'Event' &&
+        !/^M\d+_/.test(c.key) &&
+        !/(^|[._])(st|et|sf|ef)$/.test(c.key) &&
+        !/(^|[._])arg\d+$/.test(c.key) &&
+        !c.key.startsWith('__p')
+    )
   );
 
+  const galleryRows = $derived(
+    filteredRows.map(({ row, i }) => {
+      const key = `row-${i}`;
+      const interval = intervals.find((item) => item.key === key) ?? null;
+      let previewFrame: number | null = null;
+      if (interval) {
+        if (interval.startFrame !== null && interval.endFrame !== null) {
+          previewFrame = Math.floor((interval.startFrame + interval.endFrame) / 2);
+        } else if (fps > 0) {
+          previewFrame = Math.floor(((interval.startSec + interval.endSec) / 2) * fps);
+        }
+      }
+      return {
+        row,
+        i,
+        key,
+        previewFrame,
+        thumbKey: `${analysisId ?? 'none'}-${i}`,
+        interval,
+      };
+    })
+  );
+
+  function markThumbnailFailed(key: string) {
+    failedThumbnails = { ...failedThumbnails, [key]: true };
+  }
+
   function formatEventTime(seconds: number) {
-    const totalCentiseconds = Math.max(0, Math.round(seconds * 100));
-    const centiseconds = totalCentiseconds % 100;
-    const totalSeconds = Math.floor(totalCentiseconds / 100);
+    const totalMilliseconds = Math.max(0, Math.round(seconds * 1000));
+    const milliseconds = totalMilliseconds % 1000;
+    const totalSeconds = Math.floor(totalMilliseconds / 1000);
     const secs = totalSeconds % 60;
     const mins = Math.floor(totalSeconds / 60) % 60;
     const hours = Math.floor(totalSeconds / 3600);
-    return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${String(centiseconds).padStart(2, '0')}`;
+    return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${String(milliseconds).padStart(3, '0')}`;
+  }
+
+  function formatIntervalRange(interval: {
+    startSec: number;
+    endSec: number;
+    startFrame: number | null;
+    endFrame: number | null;
+  }) {
+    if (unit === 'frames') {
+      const startFrame =
+        interval.startFrame ?? (fps > 0 ? Math.round(interval.startSec * fps) : null);
+      const endFrame =
+        interval.endFrame ?? (fps > 0 ? Math.round(interval.endSec * fps) : null);
+      if (startFrame !== null && endFrame !== null) {
+        return `${startFrame} – ${endFrame} frames`;
+      }
+    }
+    return `${formatEventTime(interval.startSec)} – ${formatEventTime(interval.endSec)}`;
   }
 
   function seekToEvent(startSec: number, endSec: number) {
@@ -160,11 +203,6 @@
     seekToEvent(iv.startSec, iv.endSec);
   }
 
-  function playHighlight(key: string, startSec: number, endSec: number) {
-    selectedKey = key;
-    seekToEvent(startSec, endSec);
-  }
-
   function onTimeUpdate() {
     if (!videoEl) return;
     if (videoEl.duration && Number.isFinite(videoEl.duration)) duration = videoEl.duration;
@@ -188,18 +226,59 @@
 
 <Card class="flex min-h-0 flex-1 flex-col">
   <CardHeader class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-    <div class="flex items-center justify-between gap-2 sm:contents">
+    <div class="flex flex-wrap items-center justify-between gap-2 sm:contents">
       <CardTitle class="flex shrink-0 items-center gap-1.5 sm:order-1">
         Results
         {#if result}<CountBadge filtered={filteredRows.length} total={result.rows.length} filtering={search.trim() !== ''} />{/if}
       </CardTitle>
-      <div class="flex shrink-0 items-center gap-1.5 sm:order-4">
-        <span class="text-xs text-muted-foreground">Unit</span>
-        <UnitToggle {unit} {onUnitChange} secondsLabel="Time" />
+      <div class="flex shrink-0 flex-wrap items-center gap-2 sm:order-4">
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs text-muted-foreground">View</span>
+          <div
+            class="inline-flex h-7 items-center rounded-lg border border-border bg-muted/30 p-0.5"
+            role="group"
+            aria-label="Results view"
+          >
+            <button
+              type="button"
+              title="Gallery"
+              aria-label="Gallery"
+              aria-pressed={resultView === 'gallery'}
+              class={cn(
+                'inline-flex h-full w-7 items-center justify-center rounded-md transition-colors',
+                resultView === 'gallery'
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+              onclick={() => (resultView = 'gallery')}
+            >
+              <LayoutGrid class="size-3.5" />
+            </button>
+            <button
+              type="button"
+              title="List"
+              aria-label="List"
+              aria-pressed={resultView === 'list'}
+              class={cn(
+                'inline-flex h-full w-7 items-center justify-center rounded-md transition-colors',
+                resultView === 'list'
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+              onclick={() => (resultView = 'list')}
+            >
+              <List class="size-3.5" />
+            </button>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs text-muted-foreground">Unit</span>
+          <UnitToggle {unit} {onUnitChange} secondsLabel="Time" />
+        </div>
       </div>
     </div>
     <div class="flex flex-col gap-2 sm:contents">
-      <Input class="h-7 w-full min-w-0 font-mono text-xs sm:order-2 sm:flex-1" placeholder="Search results…" value={search} oninput={(e) => (search = (e.currentTarget as HTMLInputElement).value)} />
+      <Input class="h-7 w-full min-w-0 font-mono text-xs sm:order-2 sm:min-w-[18rem] sm:flex-1" placeholder="Search results…" value={search} oninput={(e) => (search = (e.currentTarget as HTMLInputElement).value)} />
       {#if onMemory}
         <button
           type="button"
@@ -214,10 +293,10 @@
   </CardHeader>
 
   {#if showClickHint && result && result.rows.length > 0}
-    <div class="flex shrink-0 items-center gap-1.5 border-b border-border/60 bg-muted/30 px-4 py-1 text-[10px] leading-tight text-muted-foreground">
+    <div class="flex shrink-0 items-center gap-1.5 border-b border-border/60 bg-muted/30 px-5 py-1 text-[10px] leading-tight text-muted-foreground">
       <MousePointerClick class="size-3 shrink-0" />
       <Hand class="size-3 shrink-0" />
-      <span>Click or tap a row to play the video from that event's start to end</span>
+      <span>Click or tap a result to play the video from that event's start to end</span>
       <button
         type="button"
         class="ml-auto shrink-0 rounded-md px-0.5 text-muted-foreground hover:text-foreground"
@@ -229,96 +308,22 @@
   {/if}
 
   {#if analysisId && result && result.rows.length > 0}
-    <div class="shrink-0 border-b border-border/50 px-4 pb-3">
+    <div class="shrink-0 border-b border-border/50 px-5 pb-3">
       <!-- svelte-ignore a11y_media_has_caption -->
       <video
         bind:this={videoEl}
         src={`/api/analysis/${analysisId}/video`}
         controls
         preload="metadata"
-        class="max-h-[30dvh] w-full rounded-lg bg-black"
+        class="max-h-[35dvh] w-full rounded-lg bg-black"
         ontimeupdate={onTimeUpdate}
         onseeked={onSeeked}
         onloadedmetadata={onLoadedMetadata}
       ></video>
     </div>
-    {#if highlights.length > 0}
-      <section class="shrink-0 border-b border-border/50 px-4 py-3" aria-label="Highlights">
-        <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <h3 class="text-sm font-medium">Highlights</h3>
-          <div class="inline-flex items-center rounded-md border border-input bg-muted/30 p-0.5" role="group" aria-label="Highlights view">
-            <button
-              type="button"
-              class={cn(
-                'inline-flex h-6 items-center gap-1 rounded px-2 text-xs font-medium transition-colors',
-                highlightsView === 'gallery' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-              )}
-              aria-pressed={highlightsView === 'gallery'}
-              onclick={() => (highlightsView = 'gallery')}
-            >
-              <Images class="size-3.5" /> Gallery
-            </button>
-            <button
-              type="button"
-              class={cn(
-                'inline-flex h-6 items-center gap-1 rounded px-2 text-xs font-medium transition-colors',
-                highlightsView === 'list' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-              )}
-              aria-pressed={highlightsView === 'list'}
-              onclick={() => (highlightsView = 'list')}
-            >
-              <List class="size-3.5" /> List
-            </button>
-          </div>
-        </div>
-        {#if highlightsView === 'gallery'}
-          <div class="flex flex-nowrap gap-3 overflow-x-auto pb-1">
-            {#each highlights as highlight (highlight.key)}
-              <button
-                type="button"
-                class="group w-32 shrink-0 overflow-hidden rounded-md border border-border bg-muted/20 text-left transition-colors hover:border-primary hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-40"
-                title={`Play ${highlight.event} from ${formatEventTime(highlight.startSec)} to ${formatEventTime(highlight.endSec)}`}
-                onclick={() => playHighlight(highlight.key, highlight.startSec, highlight.endSec)}
-              >
-                <img
-                  src={`/api/analysis/${analysisId}/thumbnail?frame=${highlight.representativeFrame}`}
-                  alt={`${highlight.event} at ${formatEventTime(highlight.startSec)}`}
-                  loading="lazy"
-                  class="aspect-video w-full bg-black object-cover"
-                />
-                <span class="block truncate px-2 pt-1.5 text-xs font-medium">{highlight.event}</span>
-                <span class="block px-2 pb-2 text-[11px] text-muted-foreground">{formatEventTime(highlight.startSec)}</span>
-              </button>
-            {/each}
-          </div>
-        {:else}
-          <div class="space-y-2">
-            {#each highlights as highlight (highlight.key)}
-              <button
-                type="button"
-                class="group flex w-full min-w-0 items-center gap-3 rounded-md border border-border bg-muted/20 p-2 text-left transition-colors hover:border-primary hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                title={`Play ${highlight.event} from ${formatEventTime(highlight.startSec)} to ${formatEventTime(highlight.endSec)}`}
-                onclick={() => playHighlight(highlight.key, highlight.startSec, highlight.endSec)}
-              >
-                <img
-                  src={`/api/analysis/${analysisId}/thumbnail?frame=${highlight.representativeFrame}`}
-                  alt={`${highlight.event} at ${formatEventTime(highlight.startSec)}`}
-                  loading="lazy"
-                  class="h-14 w-20 shrink-0 rounded bg-black object-cover sm:h-16 sm:w-24"
-                />
-                <span class="min-w-0">
-                  <span class="block truncate text-sm font-medium">{highlight.event}</span>
-                  <span class="block text-xs text-muted-foreground">{formatEventTime(highlight.startSec)} – {formatEventTime(highlight.endSec)}</span>
-                </span>
-              </button>
-            {/each}
-          </div>
-        {/if}
-      </section>
-    {/if}
   {/if}
 
-  <CardContent class="min-h-0 flex-none overflow-visible">
+  <CardContent class="min-h-0 flex-1 overflow-y-auto">
     {#if running}
       <p class="text-sm text-muted-foreground">Running detection...</p>
     {:else if error}
@@ -331,7 +336,7 @@
       <p class="text-sm text-muted-foreground">No events detected.</p>
     {:else if filteredRows.length === 0}
       <p class="text-sm text-muted-foreground">No results match your search.</p>
-    {:else}
+    {:else if resultView === 'list'}
       <div class="overflow-x-auto">
         <table class={cn('w-full text-left text-sm')}>
           <thead class="border-b border-border text-xs uppercase text-muted-foreground">
@@ -363,6 +368,61 @@
             {/each}
           </tbody>
         </table>
+      </div>
+    {:else}
+      <div class="grid grid-cols-1 gap-3 py-1 sm:grid-cols-2 xl:grid-cols-3">
+        {#each galleryRows as item (item.key)}
+          <button
+            type="button"
+            class={cn(
+              'group flex min-w-0 flex-col overflow-hidden rounded-xl border bg-card text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              selectedKey === item.key
+                ? 'border-primary/60 ring-1 ring-primary/30'
+                : 'border-border hover:border-primary/40 hover:bg-muted/20'
+            )}
+            onclick={() => seekRow(item.i)}
+          >
+            {#if item.previewFrame !== null && !failedThumbnails[item.thumbKey]}
+              <img
+                src={`/api/analysis/${analysisId}/thumbnail?frame=${item.previewFrame}`}
+                alt=""
+                loading="lazy"
+                class="aspect-video w-full bg-black object-cover"
+                onerror={() => markThumbnailFailed(item.thumbKey)}
+              />
+            {:else}
+              <span class="flex aspect-video w-full items-center justify-center bg-muted/40 text-muted-foreground">
+                <ImageOff class="size-5" />
+              </span>
+            {/if}
+            <span class="flex flex-1 flex-col gap-2 p-3">
+              <span class="flex flex-col gap-0.5">
+                <span class="truncate text-sm font-medium">{String(item.row['Event'] ?? 'Result')}</span>
+                {#if item.interval}
+                  <span class="font-mono text-[10px] text-muted-foreground">
+                    {formatIntervalRange(item.interval)}
+                  </span>
+                {/if}
+              </span>
+              {#if cardColumns.length > 0}
+                <span class="grid grid-cols-2 gap-x-3 gap-y-1.5 border-t border-border/60 pt-2 text-[11px]">
+                  {#each cardColumns as c (c.key)}
+                    <span class="min-w-0">
+                      <span class="block truncate text-muted-foreground">{c.label}</span>
+                      <span class="block truncate font-mono text-foreground">
+                        {#if typeof item.row[c.key] === 'object' && item.row[c.key] !== null}
+                          {JSON.stringify(item.row[c.key])}
+                        {:else}
+                          {item.row[c.key]}
+                        {/if}
+                      </span>
+                    </span>
+                  {/each}
+                </span>
+              {/if}
+            </span>
+          </button>
+        {/each}
       </div>
     {/if}
   </CardContent>
