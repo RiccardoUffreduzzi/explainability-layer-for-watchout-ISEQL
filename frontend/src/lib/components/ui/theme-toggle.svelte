@@ -1,6 +1,6 @@
 <script lang="ts">
   import { mode, setMode, userPrefersMode } from 'mode-watcher';
-  import { Monitor, Moon, Sun } from 'lucide-svelte';
+  import { Check, Monitor, Moon, Sun } from 'lucide-svelte';
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
   import { cn } from '$lib/utils';
 
@@ -66,22 +66,24 @@
   </DropdownMenu.Trigger>
 
   <DropdownMenu.Content
-    class="w-36"
+    class="w-40"
     side={menuSide}
     align={menuSide === 'right' ? 'start' : menuAlign}
     sideOffset={8}
   >
-    <DropdownMenu.RadioGroup
-      value={preference}
-      onValueChange={(next: string | undefined) => setMode(next as 'light' | 'dark' | 'system')}
-    >
-      {#each MODES as option (option.value)}
-        {@const Icon = option.icon}
-        <DropdownMenu.RadioItem value={option.value}>
-          <Icon class="size-4" />
-          <span>{option.label}</span>
-        </DropdownMenu.RadioItem>
-      {/each}
-    </DropdownMenu.RadioGroup>
+    {#each MODES as option (option.value)}
+      {@const Icon = option.icon}
+      <DropdownMenu.Item
+        class={cn(
+          'gap-2.5 px-2.5 py-2 text-xs',
+          preference === option.value && 'bg-accent text-accent-foreground'
+        )}
+        onSelect={() => setMode(option.value)}
+      >
+        <Icon class="size-4" />
+        <span class="flex-1">{option.label}</span>
+        {#if preference === option.value}<Check class="size-3.5" />{/if}
+      </DropdownMenu.Item>
+    {/each}
   </DropdownMenu.Content>
 </DropdownMenu.Root>
