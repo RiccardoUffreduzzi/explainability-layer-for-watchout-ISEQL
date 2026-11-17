@@ -21,7 +21,6 @@ def k2_path(draft_path: Path) -> Path:
 
 
 class K2Stage:
-
     name = "k2"
     reads_from = "k1"
 
