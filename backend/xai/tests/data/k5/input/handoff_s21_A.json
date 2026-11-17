@@ -1,0 +1,298 @@
+{
+  "plan": {
+    "plan_meta": {
+      "plan_version": "0.1.0-k4",
+      "contract_hash": "3bd9134d95371422726d6279e45af9a8357846dfdfcf297510ecbefbeb96eb33",
+      "source_of_truth_version": "0.2.0-k2",
+      "contract_version": "0.4.0-k1",
+      "event_id": "ev_beffcb6f2a6e",
+      "model_id": "handoff/A",
+      "label": "handoff",
+      "branches": [
+        "s1"
+      ],
+      "plan_hash": "7175bac0e03ff9c35ce1e2de6e169a7ac1a9369916a1e8ca70d6c9c58abca6fa"
+    },
+    "steps": [
+      {
+        "step_id": "s_s1_sel1",
+        "type": "observation",
+        "construct": "c_s1_sel1",
+        "refs": [
+          "c_s1_sel1",
+          "iv_v59",
+          "ent_3",
+          "ent_4",
+          "g_predicate_carrying"
+        ],
+        "role": "because",
+        "depends_on": [],
+        "t_order": 1.0,
+        "t_order_basis": "interval",
+        "in_report2": true,
+        "term": "g_predicate_carrying",
+        "slots": {
+          "arg1": "ent_3",
+          "arg2": "ent_4"
+        }
+      },
+      {
+        "step_id": "s_s1_sel2",
+        "type": "observation",
+        "construct": "c_s1_sel2",
+        "refs": [
+          "c_s1_sel2",
+          "iv_v60",
+          "ent_5",
+          "ent_4",
+          "g_predicate_carrying"
+        ],
+        "role": "because",
+        "depends_on": [],
+        "t_order": 5.0,
+        "t_order_basis": "interval",
+        "in_report2": true,
+        "term": "g_predicate_carrying",
+        "slots": {
+          "arg1": "ent_5",
+          "arg2": "ent_4"
+        }
+      },
+      {
+        "step_id": "s_s1_op1",
+        "type": "temporal",
+        "construct": "c_s1_op1",
+        "refs": [
+          "c_s1_op1",
+          "g_operator_Bef"
+        ],
+        "role": "because",
+        "depends_on": [
+          "s_s1_sel1",
+          "s_s1_sel2"
+        ],
+        "t_order": 5.0,
+        "t_order_basis": "interval",
+        "in_report2": false,
+        "term": "g_operator_Bef",
+        "slots": {
+          "r": "s_s1_sel1",
+          "s": "s_s1_sel2"
+        },
+        "readings": [
+          {
+            "param": "δ",
+            "condition": "δ = ∞",
+            "phrase": "{s} starting at any time after {r} ends"
+          }
+        ]
+      },
+      {
+        "step_id": "s_s1_cc1",
+        "type": "identity",
+        "construct": "c_s1_cc1",
+        "refs": [
+          "c_s1_cc1",
+          "ent_3",
+          "ent_5",
+          "g_comparison_identity_ne"
+        ],
+        "role": "because",
+        "depends_on": [
+          "s_s1_sel1",
+          "s_s1_sel2"
+        ],
+        "t_order": 5.0,
+        "t_order_basis": "interval",
+        "in_report2": false,
+        "term": "g_comparison_identity_ne",
+        "slots": {
+          "left": "ent_3",
+          "right": "ent_5"
+        }
+      },
+      {
+        "step_id": "s_s1_cc2",
+        "type": "identity",
+        "construct": "c_s1_cc2",
+        "refs": [
+          "c_s1_cc2",
+          "ent_4",
+          "g_comparison_identity_eq"
+        ],
+        "role": "because",
+        "depends_on": [
+          "s_s1_sel1",
+          "s_s1_sel2"
+        ],
+        "t_order": 5.0,
+        "t_order_basis": "interval",
+        "in_report2": false,
+        "term": "g_comparison_identity_eq",
+        "slots": {
+          "left": "ent_4",
+          "right": "ent_4"
+        }
+      },
+      {
+        "step_id": "s_s1_proj",
+        "type": "conclusion",
+        "construct": "c_s1_proj",
+        "refs": [
+          "c_s1_proj",
+          "ev_beffcb6f2a6e",
+          "ent_3",
+          "ent_5",
+          "ent_4",
+          "g_event_model_handoff"
+        ],
+        "depends_on": [
+          "s_s1_cc1",
+          "s_s1_cc2",
+          "s_s1_op1"
+        ],
+        "t_order": 5.0,
+        "t_order_basis": "interval",
+        "in_report2": true,
+        "term": "g_event_model_handoff"
+      }
+    ],
+    "bindings": [
+      {
+        "branch": "s1",
+        "variable": "M1",
+        "status": "attributed",
+        "interval_ids": [
+          "iv_v59"
+        ],
+        "basis": [
+          "engine_lineage"
+        ]
+      },
+      {
+        "branch": "s1",
+        "variable": "M2",
+        "status": "attributed",
+        "interval_ids": [
+          "iv_v60"
+        ],
+        "basis": [
+          "engine_lineage"
+        ]
+      }
+    ],
+    "plan_report": {
+      "excluded_constructs": [],
+      "unbound_intervals": [],
+      "unmatched_readings": [],
+      "notes": []
+    }
+  },
+  "values": {
+    "c_s1_sel1.text": "σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M1)",
+    "iv_v59.start": "0:01",
+    "iv_v59.end": "0:04",
+    "iv_v59.start_frame": "24",
+    "iv_v59.end_frame": "96",
+    "iv_v59.predicate": "carrying",
+    "iv_v59.confidence": {
+      "value": null,
+      "reason": "the system does not record a confidence for visual intervals"
+    },
+    "ent_3": "person 1",
+    "ent_4": "object 1",
+    "g_predicate_carrying.term": "carrying",
+    "g_predicate_carrying.definition": "The person is holding, carrying, or transporting any object of class 'object' (package, suitcase, bag, backpack). Report for ANY person touching or holding a transportable item, even briefly.",
+    "c_s1_sel2.text": "σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M2)",
+    "iv_v60.start": "0:05",
+    "iv_v60.end": "0:08",
+    "iv_v60.start_frame": "120",
+    "iv_v60.end_frame": "192",
+    "iv_v60.predicate": "carrying",
+    "iv_v60.confidence": {
+      "value": null,
+      "reason": "the system does not record a confidence for visual intervals"
+    },
+    "ent_5": "person 2",
+    "c_s1_op1.text": "Bef(δ:∞; ζ:<=, ρ:0)",
+    "c_s1_op1.δ": "∞",
+    "c_s1_op1.ζ": "<=",
+    "c_s1_op1.ρ": "0 seconds",
+    "g_operator_Bef.term": "Bef",
+    "g_operator_Bef.definition": "r.Te ζ s.Ts, s.Ts − r.Te ≤ δ",
+    "c_s1_cc1.text": "M1.arg1≠M2.arg1",
+    "g_comparison_identity_ne.term": "identity_ne",
+    "g_comparison_identity_ne.definition": "left ≠ right",
+    "c_s1_cc2.text": "M1.arg2=M2.arg2",
+    "g_comparison_identity_eq.term": "identity_eq",
+    "g_comparison_identity_eq.definition": "left = right",
+    "c_s1_proj.text": "π_{M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et}",
+    "ev_beffcb6f2a6e.model_id": {
+      "value": "handoff/A",
+      "label": "identifier of the WatchOut rule that made the detection"
+    },
+    "ev_beffcb6f2a6e.start": "0:01",
+    "ev_beffcb6f2a6e.end": "0:08",
+    "ev_beffcb6f2a6e.start_frame": "24",
+    "ev_beffcb6f2a6e.end_frame": "192",
+    "g_event_model_handoff.term": "handoff",
+    "g_event_model_handoff.definition": "π_{M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et} (\n  σ_{M1.arg1≠M2.arg1 ∧ M1.arg2=M2.arg2} (\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M1)\n    Bef(δ:∞; ζ:<=, ρ:0)\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M2)\n  ))"
+  },
+  "entities": {
+    "ent_3": {
+      "class": "person",
+      "description": "man in dark blue hoodie carrying a box",
+      "label": "person 1",
+      "roles": [
+        "M1.arg1"
+      ]
+    },
+    "ent_4": {
+      "class": "object",
+      "description": "cardboard box",
+      "label": "object 1",
+      "roles": [
+        "M1.arg2"
+      ]
+    },
+    "ent_5": {
+      "class": "person",
+      "description": "man in grey jacket and dark trousers holding a box",
+      "label": "person 2",
+      "roles": [
+        "M2.arg1"
+      ]
+    }
+  },
+  "glossary": {
+    "g_predicate_carrying": {
+      "kind": "predicate",
+      "term": "carrying",
+      "phrase": "{arg1} carries {arg2}"
+    },
+    "g_operator_Bef": {
+      "kind": "operator",
+      "term": "Bef",
+      "phrase": "{r} ends before {s} starts"
+    },
+    "g_comparison_identity_ne": {
+      "kind": "comparison",
+      "term": "identity_ne",
+      "phrase": "{left} and {right} are different"
+    },
+    "g_comparison_identity_eq": {
+      "kind": "comparison",
+      "term": "identity_eq",
+      "phrase": "{left} is the same in both observations"
+    },
+    "g_event_model_handoff": {
+      "kind": "event_model",
+      "term": "handoff",
+      "phrase": "an object passing from one person to another"
+    }
+  },
+  "codes": {
+    "engine_lineage": "WatchOut's lineage query, which records the intervals that produced the detection row",
+    "attributed": "the engine records exactly one interval for the variable"
+  }
+}

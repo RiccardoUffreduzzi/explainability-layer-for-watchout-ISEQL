@@ -1,0 +1,172 @@
+{
+  "plan": {
+    "plan_meta": {
+      "plan_version": "0.1.0-k4",
+      "contract_hash": "be71af80cd50efb531da79384d1360c944f28a8d45cda03b8306464e8c336da6",
+      "source_of_truth_version": "0.2.0-k2",
+      "contract_version": "0.4.0-k1",
+      "event_id": "ev_69409d7b3e1a",
+      "model_id": "suspicious_near_vehicle/A",
+      "label": "suspicious_near_vehicle",
+      "branches": [
+        "s1"
+      ],
+      "plan_hash": "f4ced41e1c3c88f977ace427d757e02fb269b256537b42acb50c4eef84a94ae2"
+    },
+    "steps": [
+      {
+        "step_id": "s_s1_sel1",
+        "type": "observation",
+        "construct": "c_s1_sel1",
+        "refs": [
+          "c_s1_sel1",
+          "iv_v54",
+          "ent_6",
+          "ent_1",
+          "g_predicate_suspicious_near_vehicle"
+        ],
+        "role": "because",
+        "depends_on": [],
+        "t_order": 2.0,
+        "t_order_basis": "interval",
+        "in_report2": true,
+        "term": "g_predicate_suspicious_near_vehicle",
+        "slots": {
+          "arg1": "ent_6",
+          "arg2": "ent_1"
+        }
+      },
+      {
+        "step_id": "s_s1_cc1",
+        "type": "condition",
+        "construct": "c_s1_cc1",
+        "refs": [
+          "c_s1_cc1",
+          "g_comparison_duration_ge"
+        ],
+        "role": "because",
+        "depends_on": [
+          "s_s1_sel1"
+        ],
+        "t_order": 2.0,
+        "t_order_basis": "interval",
+        "in_report2": false,
+        "term": "g_comparison_duration_ge",
+        "slots": {
+          "unit": "#/rule/constraints/1/payload/unit",
+          "value": "#/rule/constraints/1/payload/value",
+          "x": "s_s1_sel1"
+        }
+      },
+      {
+        "step_id": "s_s1_proj",
+        "type": "conclusion",
+        "construct": "c_s1_proj",
+        "refs": [
+          "c_s1_proj",
+          "ev_69409d7b3e1a",
+          "ent_6",
+          "ent_1",
+          "g_event_model_suspicious_near_vehicle"
+        ],
+        "depends_on": [
+          "s_s1_cc1"
+        ],
+        "t_order": 2.0,
+        "t_order_basis": "interval",
+        "in_report2": true,
+        "term": "g_event_model_suspicious_near_vehicle"
+      }
+    ],
+    "bindings": [
+      {
+        "branch": "s1",
+        "variable": "M1",
+        "status": "attributed",
+        "interval_ids": [
+          "iv_v54"
+        ],
+        "basis": [
+          "engine_lineage"
+        ]
+      }
+    ],
+    "plan_report": {
+      "excluded_constructs": [],
+      "unbound_intervals": [],
+      "unmatched_readings": [],
+      "notes": []
+    }
+  },
+  "values": {
+    "c_s1_sel1.text": "σ_{pred=\"suspicious_near_vehicle\" ∧ arg1=\"person\" ∧ arg2=\"vehicle\"}(M1)",
+    "iv_v54.start": "0:02",
+    "iv_v54.end": "0:07",
+    "iv_v54.start_frame": "48",
+    "iv_v54.end_frame": "168",
+    "iv_v54.predicate": "suspicious_near_vehicle",
+    "iv_v54.confidence": {
+      "value": null,
+      "reason": "the system does not record a confidence for visual intervals"
+    },
+    "ent_6": "person 1",
+    "ent_1": "vehicle 1",
+    "g_predicate_suspicious_near_vehicle.term": "suspicious_near_vehicle",
+    "g_predicate_suspicious_near_vehicle.definition": "A person is lingering suspiciously around a parked vehicle without entering it: peering into windows with hands cupped around the eyes, crouching near or examining the tires/body, trying door or trunk handles, or pacing/circling the vehicle while repeatedly looking around. Report only when the person is NOT entering or driving the vehicle.",
+    "c_s1_cc1.text": "(M1.et − M1.st) >= 3",
+    "c_s1_cc1.value": "3",
+    "c_s1_cc1.unit": "seconds",
+    "g_comparison_duration_ge.term": "duration_ge",
+    "g_comparison_duration_ge.definition": "(end − start) ≥ value",
+    "c_s1_proj.text": "π_{M1.arg1, M1.arg2, M1.st, M1.et}",
+    "ev_69409d7b3e1a.model_id": {
+      "value": "suspicious_near_vehicle/A",
+      "label": "identifier of the WatchOut rule that made the detection"
+    },
+    "ev_69409d7b3e1a.start": "0:02",
+    "ev_69409d7b3e1a.end": "0:07",
+    "ev_69409d7b3e1a.start_frame": "48",
+    "ev_69409d7b3e1a.end_frame": "168",
+    "g_event_model_suspicious_near_vehicle.term": "suspicious_near_vehicle",
+    "g_event_model_suspicious_near_vehicle.definition": "π_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{(M1.et − M1.st) >= 3} (\n    σ_{pred=\"suspicious_near_vehicle\" ∧ arg1=\"person\" ∧ arg2=\"vehicle\"}(M1)\n  ))"
+  },
+  "entities": {
+    "ent_6": {
+      "class": "person",
+      "description": "person in dark hooded jacket leaning over car window",
+      "label": "person 1",
+      "roles": [
+        "M1.arg1"
+      ]
+    },
+    "ent_1": {
+      "class": "vehicle",
+      "description": "silver sedan",
+      "label": "vehicle 1",
+      "roles": [
+        "M1.arg2"
+      ]
+    }
+  },
+  "glossary": {
+    "g_predicate_suspicious_near_vehicle": {
+      "kind": "predicate",
+      "term": "suspicious_near_vehicle",
+      "phrase": "{arg1} lingers suspiciously around {arg2}"
+    },
+    "g_comparison_duration_ge": {
+      "kind": "comparison",
+      "term": "duration_ge",
+      "phrase": "{x} lasts at least {value} {unit}"
+    },
+    "g_event_model_suspicious_near_vehicle": {
+      "kind": "event_model",
+      "term": "suspicious_near_vehicle",
+      "phrase": "a person lingering suspiciously near a vehicle"
+    }
+  },
+  "codes": {
+    "engine_lineage": "WatchOut's lineage query, which records the intervals that produced the detection row",
+    "attributed": "the engine records exactly one interval for the variable"
+  }
+}

@@ -1,0 +1,12 @@
+## Event and rule
+
+The system detected an event with rule {ev_b04365241841.model_id}, from {ev_b04365241841.start} to {ev_b04365241841.end} (frames {ev_b04365241841.start_frame}–{ev_b04365241841.end_frame}). [s_s1_proj]
+In plain words, the event is a gunshot or an explosion. [s_s1_proj]
+In the rule, M1.arg1 is the [silver SUV parked near a building](ent_4). [s_s1_proj]
+The rule that was executed: {g_event_model_gunshot_or_explosion.definition} [s_s1_proj]
+
+## What was observed
+
+The rule accepts either of two predicates, {g_predicate_gunshot_visible.term} or {g_predicate_explosion_visible.term}, as {c_s1_sel1.text} says. [s_s1_sel1]
+From {iv_v11.start} to {iv_v11.end} (frames {iv_v11.start_frame}–{iv_v11.end_frame}), the video model saw an explosion at the [silver SUV](ent_4): the predicate of the interval is {iv_v11.predicate}. [s_s1_sel1]
+For the video model, {g_predicate_explosion_visible.term} means: {g_predicate_explosion_visible.definition} [s_s1_sel1]

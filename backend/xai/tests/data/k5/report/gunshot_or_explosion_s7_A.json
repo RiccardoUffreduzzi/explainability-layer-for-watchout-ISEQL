@@ -1,0 +1,489 @@
+{
+  "report_meta": {
+    "attempts": 1,
+    "contract_hash": "cb20c646d57952bb9ecf8e02b7f100314d143154ee48685c704841f93bd977a7",
+    "event_id": "ev_b04365241841",
+    "label": "gunshot_or_explosion",
+    "llm": {
+      "model": "scripted",
+      "provider": "test",
+      "seed": null,
+      "temperature": 0.0
+    },
+    "model_id": "gunshot_or_explosion/A",
+    "plan_hash": "0d1050345589b77504a26c46c74137c5cc0bfaf36191176049f832fa01fc4a50",
+    "prompt_version": "report1@830cf043a1ae",
+    "report": 1,
+    "report_version": "0.2.0-k5",
+    "sentences_version": "report1@ac52072d368b",
+    "verification": "not_run"
+  },
+  "sections": [
+    {
+      "sentences": [
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "The system detected an event with rule {ev_b04365241841.model_id}, from {ev_b04365241841.start} to {ev_b04365241841.end} (frames {ev_b04365241841.start_frame}–{ev_b04365241841.end_frame}). [s_s1_proj]",
+          "step_ids": [
+            "s_s1_proj"
+          ],
+          "text": "The system detected an event with rule gunshot_or_explosion/A, from 0:05 to 0:10 (frames 120–240).",
+          "values": [
+            {
+              "form": "code",
+              "name": "ev_b04365241841.model_id",
+              "ref": "#/event/model_id",
+              "text": "gunshot_or_explosion/A"
+            },
+            {
+              "form": "plain",
+              "name": "ev_b04365241841.start",
+              "ref": "#/event/interval/start_s",
+              "text": "0:05"
+            },
+            {
+              "form": "plain",
+              "name": "ev_b04365241841.end",
+              "ref": "#/event/interval/end_s",
+              "text": "0:10"
+            },
+            {
+              "form": "plain",
+              "name": "ev_b04365241841.start_frame",
+              "ref": "#/event/interval/start_frame",
+              "text": "120"
+            },
+            {
+              "form": "plain",
+              "name": "ev_b04365241841.end_frame",
+              "ref": "#/event/interval/end_frame",
+              "text": "240"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "In plain words, the event is a gunshot or an explosion. [s_s1_proj]",
+          "step_ids": [
+            "s_s1_proj"
+          ],
+          "text": "In plain words, the event is a gunshot or an explosion.",
+          "values": []
+        },
+        {
+          "block": 0,
+          "entities": [
+            {
+              "entity_id": "ent_4",
+              "text": "silver SUV parked near a building"
+            }
+          ],
+          "list_item": false,
+          "llm_text": "In the rule, M1.arg1 is the [silver SUV parked near a building](ent_4). [s_s1_proj]",
+          "step_ids": [
+            "s_s1_proj"
+          ],
+          "text": "In the rule, M1.arg1 is the silver SUV parked near a building.",
+          "values": []
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "The rule that was executed: {g_event_model_gunshot_or_explosion.definition} [s_s1_proj]",
+          "step_ids": [
+            "s_s1_proj"
+          ],
+          "text": "The rule that was executed: π_{M1.arg1, M1.st, M1.et} (\n  σ_{(pred=\"gunshot_visible\" ∧ arg1=\"person\") ∨ (pred=\"explosion_visible\" ∧ (arg1=\"vehicle\" ∨ arg1=\"object\"))}(M1)\n)",
+          "values": [
+            {
+              "form": "block",
+              "name": "g_event_model_gunshot_or_explosion.definition",
+              "ref": "#/glossary/0/definition",
+              "text": "π_{M1.arg1, M1.st, M1.et} (\n  σ_{(pred=\"gunshot_visible\" ∧ arg1=\"person\") ∨ (pred=\"explosion_visible\" ∧ (arg1=\"vehicle\" ∨ arg1=\"object\"))}(M1)\n)"
+            }
+          ]
+        }
+      ],
+      "title": "Event and rule",
+      "written_by": "llm"
+    },
+    {
+      "sentences": [
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "The rule accepts either of two predicates, {g_predicate_gunshot_visible.term} or {g_predicate_explosion_visible.term}, as {c_s1_sel1.text} says. [s_s1_sel1]",
+          "step_ids": [
+            "s_s1_sel1"
+          ],
+          "text": "The rule accepts either of two predicates, gunshot_visible or explosion_visible, as σ_{(pred=\"gunshot_visible\" ∧ arg1=\"person\") ∨ (pred=\"explosion_visible\" ∧ (arg1=\"vehicle\" ∨ arg1=\"object\"))}(M1) says.",
+          "values": [
+            {
+              "form": "code",
+              "name": "g_predicate_gunshot_visible.term",
+              "ref": "#/glossary/2/term",
+              "text": "gunshot_visible"
+            },
+            {
+              "form": "code",
+              "name": "g_predicate_explosion_visible.term",
+              "ref": "#/glossary/1/term",
+              "text": "explosion_visible"
+            },
+            {
+              "form": "code",
+              "name": "c_s1_sel1.text",
+              "ref": "#/rule/constraints/1/text",
+              "text": "σ_{(pred=\"gunshot_visible\" ∧ arg1=\"person\") ∨ (pred=\"explosion_visible\" ∧ (arg1=\"vehicle\" ∨ arg1=\"object\"))}(M1)"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [
+            {
+              "entity_id": "ent_4",
+              "text": "silver SUV"
+            }
+          ],
+          "list_item": false,
+          "llm_text": "From {iv_v11.start} to {iv_v11.end} (frames {iv_v11.start_frame}–{iv_v11.end_frame}), the video model saw an explosion at the [silver SUV](ent_4): the predicate of the interval is {iv_v11.predicate}. [s_s1_sel1]",
+          "step_ids": [
+            "s_s1_sel1"
+          ],
+          "text": "From 0:05 to 0:10 (frames 120–240), the video model saw an explosion at the silver SUV: the predicate of the interval is explosion_visible.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "iv_v11.start",
+              "ref": "#/intervals/0/anchor/start_s",
+              "text": "0:05"
+            },
+            {
+              "form": "plain",
+              "name": "iv_v11.end",
+              "ref": "#/intervals/0/anchor/end_s",
+              "text": "0:10"
+            },
+            {
+              "form": "plain",
+              "name": "iv_v11.start_frame",
+              "ref": "#/intervals/0/anchor/start_frame",
+              "text": "120"
+            },
+            {
+              "form": "plain",
+              "name": "iv_v11.end_frame",
+              "ref": "#/intervals/0/anchor/end_frame",
+              "text": "240"
+            },
+            {
+              "form": "code",
+              "name": "iv_v11.predicate",
+              "ref": "#/intervals/0/predicate",
+              "text": "explosion_visible"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "For the video model, {g_predicate_explosion_visible.term} means: {g_predicate_explosion_visible.definition} [s_s1_sel1]",
+          "step_ids": [
+            "s_s1_sel1"
+          ],
+          "text": "For the video model, explosion_visible means: A visible explosion: fireball, large smoke cloud, debris flying through the air, or shattered windows. Report the VehicleID or nearest object ID.",
+          "values": [
+            {
+              "form": "code",
+              "name": "g_predicate_explosion_visible.term",
+              "ref": "#/glossary/1/term",
+              "text": "explosion_visible"
+            },
+            {
+              "form": "quote",
+              "name": "g_predicate_explosion_visible.definition",
+              "ref": "#/glossary/1/definition",
+              "text": "A visible explosion: fireball, large smoke cloud, debris flying through the air, or shattered windows. Report the VehicleID or nearest object ID."
+            }
+          ]
+        }
+      ],
+      "title": "What was observed",
+      "written_by": "llm"
+    },
+    {
+      "sentences": [
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "The video was sampled at {pipeline_config.sampling.effective_hz}: one frame in every {pipeline_config.sampling.sample_every_n} of a {pipeline_config.sampling.source_fps} video. [s_prov_sampling]",
+          "step_ids": [
+            "s_prov_sampling"
+          ],
+          "text": "The video was sampled at 1.0 Hz: one frame in every 24 of a 24 fps video.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "pipeline_config.sampling.effective_hz",
+              "ref": "#/contract_meta/pipeline_config/sampling/effective_hz",
+              "text": "1.0 Hz"
+            },
+            {
+              "form": "plain",
+              "name": "pipeline_config.sampling.sample_every_n",
+              "ref": "#/contract_meta/pipeline_config/sampling/sample_every_n",
+              "text": "24"
+            },
+            {
+              "form": "plain",
+              "name": "pipeline_config.sampling.source_fps",
+              "ref": "#/contract_meta/pipeline_config/sampling/source_fps",
+              "text": "24 fps"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "Detections of the same relation at most {pipeline_config.merge_tolerance_s} apart were merged into one interval. [s_prov_merge_tolerance]",
+          "step_ids": [
+            "s_prov_merge_tolerance"
+          ],
+          "text": "Detections of the same relation at most 2 s apart were merged into one interval.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "pipeline_config.merge_tolerance_s",
+              "ref": "#/contract_meta/pipeline_config/merge_tolerance_s",
+              "text": "2 s"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "The video model ran with temperature {pipeline_config.determinism.temperature} and seed {pipeline_config.determinism.seed}. [s_prov_determinism]",
+          "step_ids": [
+            "s_prov_determinism"
+          ],
+          "text": "The video model ran with temperature 0.0 and seed 42.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "pipeline_config.determinism.temperature",
+              "ref": "#/contract_meta/pipeline_config/determinism/temperature",
+              "text": "0.0"
+            },
+            {
+              "form": "plain",
+              "name": "pipeline_config.determinism.seed",
+              "ref": "#/contract_meta/pipeline_config/determinism/seed",
+              "text": "42"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "Detection mode: {pipeline_config.detection_mode}. [s_prov_detection_mode]",
+          "step_ids": [
+            "s_prov_detection_mode"
+          ],
+          "text": "Detection mode: visual.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "pipeline_config.detection_mode",
+              "ref": "#/contract_meta/pipeline_config/detection_mode",
+              "text": "visual"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "Rule parameters: {params_origin}. [s_prov_params_origin]",
+          "step_ids": [
+            "s_prov_params_origin"
+          ],
+          "text": "Rule parameters: rule defaults.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "params_origin",
+              "ref": "#/contract_meta/params_origin",
+              "text": "rule defaults"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "WatchOut's lineage of this detection records M1 as the interval from {iv_v11.start} to {iv_v11.end}. [s_prov_bindings]",
+          "step_ids": [
+            "s_prov_bindings"
+          ],
+          "text": "WatchOut's lineage of this detection records M1 as the interval from 0:05 to 0:10.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "iv_v11.start",
+              "ref": "#/intervals/0/anchor/start_s",
+              "text": "0:05"
+            },
+            {
+              "form": "plain",
+              "name": "iv_v11.end",
+              "ref": "#/intervals/0/anchor/end_s",
+              "text": "0:10"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "Source of truth: contract {contract_hash}. [s_prov_contract_hash]",
+          "step_ids": [
+            "s_prov_contract_hash"
+          ],
+          "text": "Source of truth: contract cb20c646d57952bb9ecf8e02b7f100314d143154ee48685c704841f93bd977a7.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "contract_hash",
+              "ref": "#/contract_meta/contract_hash",
+              "text": "cb20c646d57952bb9ecf8e02b7f100314d143154ee48685c704841f93bd977a7"
+            }
+          ]
+        }
+      ],
+      "title": "Method and provenance",
+      "written_by": "system"
+    },
+    {
+      "sentences": [
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "These limits concern the whole detection. [s_lim_visual_confidence_unavailable][s_lim_perceptual_attribution_unavailable][s_lim_temporal_resolution][s_lim_data_not_available]",
+          "step_ids": [
+            "s_lim_visual_confidence_unavailable",
+            "s_lim_perceptual_attribution_unavailable",
+            "s_lim_temporal_resolution",
+            "s_lim_data_not_available"
+          ],
+          "text": "These limits concern the whole detection.",
+          "values": []
+        },
+        {
+          "block": 1,
+          "entities": [],
+          "list_item": true,
+          "llm_text": "{s_lim_visual_confidence_unavailable.fixed_text} [s_lim_visual_confidence_unavailable]",
+          "step_ids": [
+            "s_lim_visual_confidence_unavailable"
+          ],
+          "text": "The system does not record a confidence value for visual detections.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "s_lim_visual_confidence_unavailable.fixed_text",
+              "ref": "#/knowledge_limits/0/sentence",
+              "text": "The system does not record a confidence value for visual detections."
+            }
+          ]
+        },
+        {
+          "block": 2,
+          "entities": [],
+          "list_item": true,
+          "llm_text": "{s_lim_perceptual_attribution_unavailable.fixed_text} [s_lim_perceptual_attribution_unavailable]",
+          "step_ids": [
+            "s_lim_perceptual_attribution_unavailable"
+          ],
+          "text": "The system does not record what in the images led to each visual detection.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "s_lim_perceptual_attribution_unavailable.fixed_text",
+              "ref": "#/knowledge_limits/1/sentence",
+              "text": "The system does not record what in the images led to each visual detection."
+            }
+          ]
+        },
+        {
+          "block": 3,
+          "entities": [],
+          "list_item": true,
+          "llm_text": "{s_lim_temporal_resolution.fixed_text} [s_lim_temporal_resolution]",
+          "step_ids": [
+            "s_lim_temporal_resolution"
+          ],
+          "text": "Times are approximate: they depend on the sampling rate of the video analysis.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "s_lim_temporal_resolution.fixed_text",
+              "ref": "#/knowledge_limits/2/sentence",
+              "text": "Times are approximate: they depend on the sampling rate of the video analysis."
+            }
+          ]
+        },
+        {
+          "block": 4,
+          "entities": [],
+          "list_item": true,
+          "llm_text": "{s_lim_data_not_available.fixed_text} [s_lim_data_not_available]",
+          "step_ids": [
+            "s_lim_data_not_available"
+          ],
+          "text": "Some information is not saved by the system and is reported as not available.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "s_lim_data_not_available.fixed_text",
+              "ref": "#/knowledge_limits/3/sentence",
+              "text": "Some information is not saved by the system and is reported as not available."
+            }
+          ]
+        },
+        {
+          "block": 4,
+          "entities": [],
+          "list_item": true,
+          "llm_text": "Not available here: {missing_fields}. [s_lim_data_not_available]",
+          "step_ids": [
+            "s_lim_data_not_available"
+          ],
+          "text": "Not available here: Re-ID similarity (Chroma stores the embeddings, not the match similarity); interval confidence (VisualPerInterval has no confidence column); key frames (this WatchOut version does not store key frames).",
+          "values": [
+            {
+              "form": "plain",
+              "name": "missing_fields",
+              "ref": "#/harvest_report/missing_fields",
+              "text": "Re-ID similarity (Chroma stores the embeddings, not the match similarity); interval confidence (VisualPerInterval has no confidence column); key frames (this WatchOut version does not store key frames)"
+            }
+          ]
+        }
+      ],
+      "title": "Limits",
+      "written_by": "system"
+    }
+  ]
+}

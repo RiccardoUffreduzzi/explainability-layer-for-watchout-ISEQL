@@ -1,0 +1,191 @@
+You write Report 1 of a detection made by a video-surveillance system: a technical report for an analyst or an auditor who knows the ISEQL+ rule language. You turn the explanation plan below into English prose. The plan decides the facts and their order; you only choose the words. The system writes the method and the limits of the report itself: you write only the sections listed below.
+
+# What you receive
+
+At the end of this prompt there is a JSON object with:
+
+- "plan": the explanation plan. Its "steps" are already in reading order. Each step has an ID ("step_id"), a type, the facts it cites ("refs") and the steps it depends on ("depends_on"). Some steps also have a glossary term ("term"), the fillers of the term's phrase ("slots": an entity, a value or a step), the readings of the thresholds of a temporal operator ("readings") or a sentence of the system ("fixed_text"). "bindings" says which interval each variable of the rule (M1, M2 ...) was bound to, and how.
+- "values": every value you may cite, by name. A value is a text; or an object with the value and a "label" that says what it is; or an object with "value": null and the "reason" why it is not available.
+- "entities": the people, vehicles and objects the steps cite: their class, the description the video model gave of them, the roles they fill in the rule and a label.
+- "glossary": the term and the plain phrase of every glossary entry the steps cite. In a phrase, {arg1}, {arg2}, {r}, {s}, {left}, {right}, {x}, {value} and {unit} stand for the slots of the step.
+- "codes": what the codes of the bindings mean. Write what a code means, never the code.
+
+# Step types
+
+- conclusion: the detection the report explains, in two sentences. The first says what was detected with the phrase of its term from the glossary, never with the term or its code, with the event's own times ({ev_….start} to {ev_….end}, or {ev_….at}; not those of an interval), the projection {c_….text} and the arguments of the detection row. The second gives only the definition of the rule, after a colon: {g_event_model_….definition}.
+- observation: what a model saw or heard in an interval, selected by a selection of the rule.
+- context: something seen that sets the scene of an observation.
+- condition: a condition of the rule on one observation, such as a duration or two different arguments.
+- temporal: a temporal operator between two observations, with the readings of its thresholds.
+- identity: a condition on the same or on different entities across observations.
+- reinforcement: whether video and audio detected the event together. The system says it with its own sentence (rule 7).
+- provenance: one of two facts about the modalities.
+  - "s_prov_confidences": the confidence each model gave to what it detected. For each interval the step cites, say which model gave it (video or audio), what that model detected there, in a few words taken from the observation of that interval, and its confidence {iv_….confidence}.
+  - "s_prov_modality_association": how the system associated the video and the audio detections of the event, that is their relation in time, cited as {reinforcement.status}. It is not the reinforcement: do not say again what the sentence of the reinforcement says.
+
+# Sections
+
+Write these sections, in this order. After each title are the steps the section renders. Write each title on a line of its own as "## <title>", exactly as it is written between the quotes, without the steps. Write no other section.
+
+- "Event and rule": s_s1_proj
+- "What was observed": s_s1_sel1
+
+# Rules
+
+1. Follow the order of the steps. Render every step of a section at least once. Add no fact, cause or judgement that the plan does not contain.
+2. End every sentence with a period, then the markers of the steps it renders, such as ". [s_x_sel1]" or ". [s_x_sel1][s_x_sel2]". A sentence without a marker is not accepted. A step is cited only by its marker, never in braces.
+3. Write no number yourself: no time, frame, count, threshold, confidence, parameter or hash. Cite every value by its name in braces, such as {iv_v7.start} or {c_s1_cc1.value}; the system writes the value in its place. The only digits allowed outside braces are those inside the names of the rule, such as M1 or M2.arg1. Compute nothing: no differences, durations, counts or ordinals. The "label" of a value tells you what the value is: do not copy the label into the text.
+4. About time, write only the values and the readings the plan gives. Do not add words such as "immediately", "shortly", "soon" or "just": a threshold that reads "at any time after" allows any delay. Cite an interval with its start and its end: from {iv_….start} to {iv_….end}. An interval of a single analysed frame has one time instead: at {iv_….at}.
+5. Name a person, vehicle or object with words of its description, marked with its ID, with the article before the mark: a [woman in a red coat](ent_9), the [woman in a red coat](ent_9). Keep only the words about how it looks and leave out what it is doing: the steps say that. For an entity without a description, cite its label as {ent_9}. When a condition says two arguments are the same entity, name it once. Only an entity is marked in this way: a term, a value or a step is never marked as [words](ID).
+6. Cite formal terms by name, never in your own words: a selection, an operator, a condition or the projection as {c_….text}, a parameter of an operator as {c_….δ}, a definition as {g_….definition}, a term as {g_….term}. Give the definition of the rule ({g_event_model_….definition}) at the end of a sentence of its own, after a colon. When a step has a "term", also say in plain words what it means, in the sentence of that step: use the term's phrase from the glossary, and the readings of the step if it has any, with each placeholder replaced by the words for its slot (rule 10 says how you may change their grammar). A slot that is a step stands for what that step observed: name it in a few words taken only from that step (what was seen or heard there, and by whom), not with its selection.
+7. A sentence of the system ("fixed_text") is cited by its name in braces, once: {s_….fixed_text}. Never write out its words or rewrite them: the system puts the sentence in its place. Do not say again in your words what it says.
+8. When a variable has more than one interval (status "ambiguous"), name every interval: each one is a witness of the same detection row.
+9. Outside braces, entity marks and markers, never write an ID (ent_, iv_, ev_, c_, g_, s_) or a word with an underscore: say in words what it means.
+10. Write in correct English, in full sentences, for a technical reader. You choose the grammar and the order of the words of each sentence, as long as it says what its steps say, with the same focus, and nothing more. The phrases and the readings of the glossary give a meaning, not a grammar: change the form of a verb, an article or the order of the words, turn a clause into a noun, and join the phrases with words of your own, so that the sentence reads well. Use Markdown only for the section titles ("## Title"). Write each sentence on its own line, and separate paragraphs with a blank line.
+
+# Output
+
+Only the text of the report: the section titles and their sentences, nothing before or after them.
+
+# Input
+
+{
+  "plan": {
+    "plan_meta": {
+      "plan_version": "0.1.0-k4",
+      "contract_hash": "cb20c646d57952bb9ecf8e02b7f100314d143154ee48685c704841f93bd977a7",
+      "source_of_truth_version": "0.2.0-k2",
+      "contract_version": "0.4.0-k1",
+      "event_id": "ev_b04365241841",
+      "model_id": "gunshot_or_explosion/A",
+      "label": "gunshot_or_explosion",
+      "branches": [
+        "s1"
+      ],
+      "plan_hash": "0d1050345589b77504a26c46c74137c5cc0bfaf36191176049f832fa01fc4a50"
+    },
+    "steps": [
+      {
+        "step_id": "s_s1_sel1",
+        "type": "observation",
+        "construct": "c_s1_sel1",
+        "refs": [
+          "c_s1_sel1",
+          "iv_v11",
+          "ent_4",
+          "g_predicate_explosion_visible"
+        ],
+        "role": "because",
+        "depends_on": [],
+        "t_order": 5.0,
+        "t_order_basis": "interval",
+        "in_report2": true,
+        "term": "g_predicate_explosion_visible",
+        "slots": {
+          "arg1": "ent_4"
+        },
+        "alternatives": [
+          "g_predicate_gunshot_visible",
+          "g_predicate_explosion_visible"
+        ]
+      },
+      {
+        "step_id": "s_s1_proj",
+        "type": "conclusion",
+        "construct": "c_s1_proj",
+        "refs": [
+          "c_s1_proj",
+          "ev_b04365241841",
+          "ent_4",
+          "g_event_model_gunshot_or_explosion"
+        ],
+        "depends_on": [
+          "s_s1_sel1"
+        ],
+        "t_order": 5.0,
+        "t_order_basis": "interval",
+        "in_report2": true,
+        "term": "g_event_model_gunshot_or_explosion"
+      }
+    ],
+    "bindings": [
+      {
+        "branch": "s1",
+        "variable": "M1",
+        "status": "attributed",
+        "interval_ids": [
+          "iv_v11"
+        ],
+        "basis": [
+          "engine_lineage"
+        ]
+      }
+    ],
+    "plan_report": {
+      "excluded_constructs": [],
+      "unbound_intervals": [],
+      "unmatched_readings": [],
+      "notes": []
+    }
+  },
+  "values": {
+    "c_s1_sel1.text": "σ_{(pred=\"gunshot_visible\" ∧ arg1=\"person\") ∨ (pred=\"explosion_visible\" ∧ (arg1=\"vehicle\" ∨ arg1=\"object\"))}(M1)",
+    "iv_v11.start": "0:05",
+    "iv_v11.end": "0:10",
+    "iv_v11.start_frame": "120",
+    "iv_v11.end_frame": "240",
+    "iv_v11.predicate": "explosion_visible",
+    "iv_v11.confidence": {
+      "value": null,
+      "reason": "the system does not record a confidence for visual intervals"
+    },
+    "ent_4": "vehicle 1",
+    "g_predicate_explosion_visible.term": "explosion_visible",
+    "g_predicate_explosion_visible.definition": "A visible explosion: fireball, large smoke cloud, debris flying through the air, or shattered windows. Report the VehicleID or nearest object ID.",
+    "g_predicate_gunshot_visible.term": "gunshot_visible",
+    "g_predicate_gunshot_visible.definition": "A person is holding or firing a gun: visible muzzle flash, gun in hand, recoil motion, or smoke from the barrel.",
+    "c_s1_proj.text": "π_{M1.arg1, M1.st, M1.et}",
+    "ev_b04365241841.model_id": {
+      "value": "gunshot_or_explosion/A",
+      "label": "identifier of the WatchOut rule that made the detection"
+    },
+    "ev_b04365241841.start": "0:05",
+    "ev_b04365241841.end": "0:10",
+    "ev_b04365241841.start_frame": "120",
+    "ev_b04365241841.end_frame": "240",
+    "g_event_model_gunshot_or_explosion.term": "gunshot_or_explosion",
+    "g_event_model_gunshot_or_explosion.definition": "π_{M1.arg1, M1.st, M1.et} (\n  σ_{(pred=\"gunshot_visible\" ∧ arg1=\"person\") ∨ (pred=\"explosion_visible\" ∧ (arg1=\"vehicle\" ∨ arg1=\"object\"))}(M1)\n)"
+  },
+  "entities": {
+    "ent_4": {
+      "class": "vehicle",
+      "description": "silver SUV parked near building",
+      "label": "vehicle 1",
+      "roles": [
+        "M1.arg1"
+      ]
+    }
+  },
+  "glossary": {
+    "g_predicate_explosion_visible": {
+      "kind": "predicate",
+      "term": "explosion_visible",
+      "phrase": "an explosion is visible at {arg1}"
+    },
+    "g_predicate_gunshot_visible": {
+      "kind": "predicate",
+      "term": "gunshot_visible",
+      "phrase": "{arg1} holds or fires a gun"
+    },
+    "g_event_model_gunshot_or_explosion": {
+      "kind": "event_model",
+      "term": "gunshot_or_explosion",
+      "phrase": "a gunshot or an explosion"
+    }
+  },
+  "codes": {
+    "engine_lineage": "WatchOut's lineage query, which records the intervals that produced the detection row",
+    "attributed": "the engine records exactly one interval for the variable"
+  }
+}
+

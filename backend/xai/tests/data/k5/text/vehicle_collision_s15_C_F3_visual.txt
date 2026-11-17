@@ -1,0 +1,17 @@
+## Event and rule
+
+The system detected an event with rule {ev_f61f6c2d9945.model_id}, from {ev_f61f6c2d9945.start} to {ev_f61f6c2d9945.end} (frames {ev_f61f6c2d9945.start_frame}–{ev_f61f6c2d9945.end_frame}), from the video branch of the rule. [s_right_proj]
+In plain words, the event is a vehicle collision. [s_right_proj]
+In the rule, M1.arg1 is the [dark sedan](ent_12). [s_right_proj]
+The rule that was executed: {g_event_model_vehicle_collision.definition} [s_right_proj]
+
+## What was observed
+
+From {iv_v48.start} to {iv_v48.end} (frames {iv_v48.start_frame}–{iv_v48.end_frame}), the video model saw collision damage on the [dark sedan](ent_12), selected by {c_right_sel1.text}. [s_right_sel1]
+For the video model, {g_predicate_vehicle_collision.term} means: {g_predicate_vehicle_collision.definition} [s_right_sel1]
+
+## Confidences and reinforcement
+
+{s_reinforcement.fixed_text} [s_reinforcement]
+The association of the two modalities is recorded as: {reinforcement.status}. [s_prov_modality_association]
+The audio detection goes from {modality_detections.3.start} to {modality_detections.3.end}, and the video detection of this row from {modality_detections.2.start} to {modality_detections.2.end}. [s_reinforcement]

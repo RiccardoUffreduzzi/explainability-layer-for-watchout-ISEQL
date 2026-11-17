@@ -69,7 +69,7 @@
             {
               "param": "δ",
               "condition": "δ = ∞",
-              "phrase": "at any time while {r} is ongoing"
+              "phrase": "at any time after the start of {r}"
             }
           ]
         },

@@ -1,0 +1,30 @@
+## Event and rule
+The detection {ev_beffcb6f2a6e.label} runs from {ev_beffcb6f2a6e.start} to {ev_beffcb6f2a6e.end}, using the projection {c_s1_proj.text} and the definition of the event model handoff: {g_event_model_handoff.definition}. [s_s1_proj]
+
+## What was observed
+The selection {c_s1_sel1.text} observed that the [man in dark blue hoodie](ent_3) carries the [cardboard box](ent_4) from {iv_v59.start} to {iv_v59.end}. [s_s1_sel1]
+The selection {c_s1_sel2.text} observed that the [man in grey jacket and dark trousers](ent_5) carries the [cardboard box](ent_4) from {iv_v60.start} to {iv_v60.end}. [s_s1_sel2]
+
+## Why it was flagged
+The operator {c_s1_op1.text} held because the [man in dark blue hoodie](ent_3) carries the [cardboard box](ent_4) from {iv_v59.start} to {iv_v59.end} ends before the [man in grey jacket and dark trousers](ent_5) carries the [cardboard box](ent_4) from {iv_v60.start} to {iv_v60.end} starts, at any time after with threshold {c_s1_op1.δ}. [s_s1_op1]
+The condition {c_s1_cc1.text} held because the [man in dark blue hoodie](ent_3) and the [man in grey jacket and dark trousers](ent_5) are different. [s_s1_cc1]
+The condition {c_s1_cc2.text} held because the [cardboard box](ent_4) and the [cardboard box](ent_4) are the same. [s_s1_cc2]
+
+## Method and provenance
+The video sampling used a source frame rate of {pipeline_config.sampling.source_fps}, sampled one frame every {pipeline_config.sampling.sample_every_n}, resulting in an effective rate of {pipeline_config.sampling.effective_hz}. [s_prov_sampling]
+The merge tolerance was {pipeline_config.merge_tolerance_s}. [s_prov_merge_tolerance]
+Determinism was configured with a sampling temperature of {pipeline_config.determinism.temperature} and a random seed of {pipeline_config.determinism.seed}. [s_prov_determinism]
+The detection mode was {pipeline_config.detection_mode}. [s_prov_detection_mode]
+The parameters originated from {params_origin}. [s_prov_params_origin]
+Variable M1 was bound to interval {iv_v59.start} to {iv_v59.end} via engine lineage, and variable M2 was bound to interval {iv_v60.start} to {iv_v60.end} via engine lineage. [s_prov_bindings]
+The contract hash was {contract_hash}. [s_prov_contract_hash]
+
+## Limits
+These limits concern the conditions and the detection:
+- {s_lim_reid_dependence.fixed_text} [s_lim_reid_dependence]
+- {s_lim_reid_evidence_unavailable.fixed_text} [s_lim_reid_evidence_unavailable]
+- {s_lim_visual_confidence_unavailable.fixed_text} [s_lim_visual_confidence_unavailable]
+- {s_lim_perceptual_attribution_unavailable.fixed_text} [s_lim_perceptual_attribution_unavailable]
+- {s_lim_temporal_resolution.fixed_text} [s_lim_temporal_resolution]
+- {s_lim_data_not_available.fixed_text} [s_lim_data_not_available]
+Not available here: {missing_fields}. [s_lim_data_not_available]

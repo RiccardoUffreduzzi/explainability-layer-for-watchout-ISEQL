@@ -267,8 +267,6 @@ class RuleLayout:
     form: ModelForm
     branches: tuple[Branch, ...]
     set_operation: SetOperationLayout | None
-    multiset: bool
-    """Branches combined by a set operation with kind-aligned columns (F2 with ``op``)."""
     columns: tuple[ResultColumn, ...] | None
     """None when a column holds a different field on each side (F3): a row is then read by its side."""
     columns_problem: str | None

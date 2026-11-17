@@ -1,10 +1,10 @@
-"""``K4Stage``: the stage that ``ReportPipeline`` runs on each draft after K2.
+"""the stage that ``ReportPipeline`` runs on each draft after K2.
 
 It is the only module of K4 that knows where the files are. For the draft at
 ``<analysis_id>/<event type>/<ev_id>.json`` it reads K2's source of truth in
 ``<analysis_id>/k2/<event type>/<ev_id>.json`` and writes the plan in
 ``<analysis_id>/k4/<event type>/<ev_id>.json``. If the source cannot be planned it raises
-``PlanFailure`` and writes nothing: the plan is whole or absent (UC-K4-11).
+``PlanFailure`` and writes nothing: the plan is whole or absent.
 """
 
 import os
@@ -31,6 +31,7 @@ class K4Stage:
     """Satisfies ``xai.pipeline.runner.ReportStage``."""
 
     name = "k4"
+    reads_from = "k2"
 
     def __init__(self, planner: ExplanationPlanner | None = None) -> None:
         self._planner = planner if planner is not None else ExplanationPlanner()

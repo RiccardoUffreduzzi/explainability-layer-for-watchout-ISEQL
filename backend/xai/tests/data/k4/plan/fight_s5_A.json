@@ -16,12 +16,12 @@
     "branches": [
       "s1"
     ],
-    "contract_hash": "32b1e4ad056c2efb90836435bb4fdcae9af5c8f76bf354a7538738713a728c68",
+    "contract_hash": "9118e7309af73ec54a32bdd623eb6257d12686195fe7f20c1f5b3e90a2ed935f",
     "contract_version": "0.4.0-k1",
     "event_id": "ev_d966ffea748d",
     "label": "fight",
     "model_id": "fight/A",
-    "plan_hash": "dfafd6a78861b7e66383148b73e4642f7ebd042f4697bfd988b832ca89d2a31f",
+    "plan_hash": "423a5257f586c34d12111bcac540bdc3b75d71d597de75d5903b80b8b4a71247",
     "plan_version": "0.1.0-k4",
     "source_of_truth_version": "0.2.0-k2"
   },

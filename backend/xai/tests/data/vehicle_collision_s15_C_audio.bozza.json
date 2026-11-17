@@ -72,7 +72,7 @@
         }
       }
     },
-    "glossary_version": "glossary.yaml@0.2.0#91ca24285312+relation_vocab@2026-08-30 16:51:22+audio_taxonomy@2026-08-15 22:01:29",
+    "glossary_version": "glossary.yaml@0.2.4#1b2936cb8e18+relation_vocab@2026-08-30 16:51:22+audio_taxonomy@2026-08-15 22:01:29",
     "params_origin": "rule_defaults",
     "sources": {
       "glossary_version": {
@@ -510,7 +510,7 @@
       "kind": "audio_class",
       "term": "glass_breaking",
       "definition": "WatchOut assigns this class when the audio model answers with one of: glass, glass_breaking, shatter, shattering.",
-      "plain_template": "glass breaking is heard",
+      "plain_template": "the sound of glass breaking",
       "source": {
         "stage": "config",
         "record_id": "AppConfig/audio_taxonomy.keywords.glass_breaking",
@@ -529,7 +529,7 @@
       "kind": "audio_class",
       "term": "horn",
       "definition": "WatchOut assigns this class when the audio model answers with one of: horn, honk, honking.",
-      "plain_template": "a horn is heard",
+      "plain_template": "the sound of a horn",
       "source": {
         "stage": "config",
         "record_id": "AppConfig/audio_taxonomy.keywords.horn",
@@ -548,7 +548,7 @@
       "kind": "audio_class",
       "term": "impact",
       "definition": "WatchOut assigns this class when the audio model answers with one of: impact, thump, thud, bang, slam, smash, crash, punch, hit.",
-      "plain_template": "an impact is heard",
+      "plain_template": "the sound of an impact",
       "source": {
         "stage": "config",
         "record_id": "AppConfig/audio_taxonomy.keywords.impact",
@@ -567,7 +567,7 @@
       "kind": "audio_class",
       "term": "skidding",
       "definition": "WatchOut assigns this class when the audio model answers with one of: skidding, skid.",
-      "plain_template": "tyres skidding are heard",
+      "plain_template": "the sound of tyres skidding",
       "source": {
         "stage": "config",
         "record_id": "AppConfig/audio_taxonomy.keywords.skidding",
@@ -585,11 +585,11 @@
       "term_id": "g_event_model_vehicle_collision",
       "kind": "event_model",
       "term": "vehicle_collision",
-      "definition": "π_{M1.st, M1.et, M2.st, M2.et} (\n  σ_{(pred=\"horn\") ∨ (pred=\"skidding\")}(M1)\n  SP(δ:∞; ζ:<=, ρ:0)\n  σ_{(pred=\"impact\") ∨ (pred=\"glass_breaking\")}(M2)\n)\n∪\nπ_{M1.arg1, M1.st, M1.et} (\n  σ_{pred=\"vehicle_collision\" ∧ arg1=\"vehicle\"}(M1)\n)",
+      "definition": "π_{M1.st, M2.et} (\n  σ_{(pred=\"horn\") ∨ (pred=\"skidding\")}(M1)\n  SP(δ:∞; ζ:<=, ρ:0)\n  σ_{(pred=\"impact\") ∨ (pred=\"glass_breaking\")}(M2)\n)\n∪\nπ_{M1.arg1, M1.st, M1.et} (\n  σ_{pred=\"vehicle_collision\" ∧ arg1=\"vehicle\"}(M1)\n)",
       "plain_template": "a vehicle collision",
       "source": {
         "stage": "iseql",
-        "record_id": "EventSpec/vehicle_collision/C#/iseql_text",
+        "record_id": "EventSpec/vehicle_collision/C",
         "mode": "read"
       },
       "sources": {
@@ -609,7 +609,7 @@
       "parameter_readings": [
         {
           "condition": "δ = ∞",
-          "phrase": "at any time while {r} is ongoing"
+          "phrase": "at any time after the start of {r}"
         },
         {
           "condition": "δ = d",

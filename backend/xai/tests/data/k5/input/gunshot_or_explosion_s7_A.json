@@ -1,0 +1,139 @@
+{
+  "plan": {
+    "plan_meta": {
+      "plan_version": "0.1.0-k4",
+      "contract_hash": "cb20c646d57952bb9ecf8e02b7f100314d143154ee48685c704841f93bd977a7",
+      "source_of_truth_version": "0.2.0-k2",
+      "contract_version": "0.4.0-k1",
+      "event_id": "ev_b04365241841",
+      "model_id": "gunshot_or_explosion/A",
+      "label": "gunshot_or_explosion",
+      "branches": [
+        "s1"
+      ],
+      "plan_hash": "0d1050345589b77504a26c46c74137c5cc0bfaf36191176049f832fa01fc4a50"
+    },
+    "steps": [
+      {
+        "step_id": "s_s1_sel1",
+        "type": "observation",
+        "construct": "c_s1_sel1",
+        "refs": [
+          "c_s1_sel1",
+          "iv_v11",
+          "ent_4",
+          "g_predicate_explosion_visible"
+        ],
+        "role": "because",
+        "depends_on": [],
+        "t_order": 5.0,
+        "t_order_basis": "interval",
+        "in_report2": true,
+        "term": "g_predicate_explosion_visible",
+        "slots": {
+          "arg1": "ent_4"
+        },
+        "alternatives": [
+          "g_predicate_gunshot_visible",
+          "g_predicate_explosion_visible"
+        ]
+      },
+      {
+        "step_id": "s_s1_proj",
+        "type": "conclusion",
+        "construct": "c_s1_proj",
+        "refs": [
+          "c_s1_proj",
+          "ev_b04365241841",
+          "ent_4",
+          "g_event_model_gunshot_or_explosion"
+        ],
+        "depends_on": [
+          "s_s1_sel1"
+        ],
+        "t_order": 5.0,
+        "t_order_basis": "interval",
+        "in_report2": true,
+        "term": "g_event_model_gunshot_or_explosion"
+      }
+    ],
+    "bindings": [
+      {
+        "branch": "s1",
+        "variable": "M1",
+        "status": "attributed",
+        "interval_ids": [
+          "iv_v11"
+        ],
+        "basis": [
+          "engine_lineage"
+        ]
+      }
+    ],
+    "plan_report": {
+      "excluded_constructs": [],
+      "unbound_intervals": [],
+      "unmatched_readings": [],
+      "notes": []
+    }
+  },
+  "values": {
+    "c_s1_sel1.text": "σ_{(pred=\"gunshot_visible\" ∧ arg1=\"person\") ∨ (pred=\"explosion_visible\" ∧ (arg1=\"vehicle\" ∨ arg1=\"object\"))}(M1)",
+    "iv_v11.start": "0:05",
+    "iv_v11.end": "0:10",
+    "iv_v11.start_frame": "120",
+    "iv_v11.end_frame": "240",
+    "iv_v11.predicate": "explosion_visible",
+    "iv_v11.confidence": {
+      "value": null,
+      "reason": "the system does not record a confidence for visual intervals"
+    },
+    "ent_4": "vehicle 1",
+    "g_predicate_explosion_visible.term": "explosion_visible",
+    "g_predicate_explosion_visible.definition": "A visible explosion: fireball, large smoke cloud, debris flying through the air, or shattered windows. Report the VehicleID or nearest object ID.",
+    "g_predicate_gunshot_visible.term": "gunshot_visible",
+    "g_predicate_gunshot_visible.definition": "A person is holding or firing a gun: visible muzzle flash, gun in hand, recoil motion, or smoke from the barrel.",
+    "c_s1_proj.text": "π_{M1.arg1, M1.st, M1.et}",
+    "ev_b04365241841.model_id": {
+      "value": "gunshot_or_explosion/A",
+      "label": "identifier of the WatchOut rule that made the detection"
+    },
+    "ev_b04365241841.start": "0:05",
+    "ev_b04365241841.end": "0:10",
+    "ev_b04365241841.start_frame": "120",
+    "ev_b04365241841.end_frame": "240",
+    "g_event_model_gunshot_or_explosion.term": "gunshot_or_explosion",
+    "g_event_model_gunshot_or_explosion.definition": "π_{M1.arg1, M1.st, M1.et} (\n  σ_{(pred=\"gunshot_visible\" ∧ arg1=\"person\") ∨ (pred=\"explosion_visible\" ∧ (arg1=\"vehicle\" ∨ arg1=\"object\"))}(M1)\n)"
+  },
+  "entities": {
+    "ent_4": {
+      "class": "vehicle",
+      "description": "silver SUV parked near building",
+      "label": "vehicle 1",
+      "roles": [
+        "M1.arg1"
+      ]
+    }
+  },
+  "glossary": {
+    "g_predicate_explosion_visible": {
+      "kind": "predicate",
+      "term": "explosion_visible",
+      "phrase": "an explosion is visible at {arg1}"
+    },
+    "g_predicate_gunshot_visible": {
+      "kind": "predicate",
+      "term": "gunshot_visible",
+      "phrase": "{arg1} holds or fires a gun"
+    },
+    "g_event_model_gunshot_or_explosion": {
+      "kind": "event_model",
+      "term": "gunshot_or_explosion",
+      "phrase": "a gunshot or an explosion"
+    }
+  },
+  "codes": {
+    "engine_lineage": "WatchOut's lineage query, which records the intervals that produced the detection row",
+    "attributed": "the engine records exactly one interval for the variable"
+  }
+}

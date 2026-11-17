@@ -1,6 +1,6 @@
 """The fixed sentences of the limits of knowledge (Report 1)."""
 
-from xai.contract.source_of_truth import KnowledgeLimit, LimitCode
+from xai.contract.source_of_truth import LimitCode
 
 SENTENCES: dict[LimitCode, str] = {
     LimitCode.VISUAL_CONFIDENCE_UNAVAILABLE: (
@@ -25,7 +25,3 @@ SENTENCES: dict[LimitCode, str] = {
         "Some information is not saved by the system and is reported as not available."
     ),
 }
-
-
-def knowledge_limit(code: LimitCode) -> KnowledgeLimit:
-    return KnowledgeLimit(code=code, sentence=SENTENCES[code])

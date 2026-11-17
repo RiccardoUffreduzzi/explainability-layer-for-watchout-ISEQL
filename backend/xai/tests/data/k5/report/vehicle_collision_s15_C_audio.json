@@ -1,0 +1,641 @@
+{
+  "report_meta": {
+    "attempts": 1,
+    "contract_hash": "b2689362bb2e2ff726798b0e652c16138e8f244d635950aa4a0d829d9447f82f",
+    "event_id": "ev_cb96ebb2235a",
+    "label": "vehicle_collision",
+    "llm": {
+      "model": "scripted",
+      "provider": "test",
+      "seed": null,
+      "temperature": 0.0
+    },
+    "model_id": "vehicle_collision/C",
+    "plan_hash": "063848c462fbc4bdb22e6dd520e5b10c79dd24b62db12d9327fad5ca08505335",
+    "prompt_version": "report1@830cf043a1ae",
+    "report": 1,
+    "report_version": "0.2.0-k5",
+    "sentences_version": "report1@ac52072d368b",
+    "verification": "not_run"
+  },
+  "sections": [
+    {
+      "sentences": [
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "The system detected an event with rule {ev_cb96ebb2235a.model_id}, from {ev_cb96ebb2235a.start} to {ev_cb96ebb2235a.end} (frames {ev_cb96ebb2235a.start_frame}–{ev_cb96ebb2235a.end_frame}), from the audio branch of the rule. [s_s1_proj]",
+          "step_ids": [
+            "s_s1_proj"
+          ],
+          "text": "The system detected an event with rule vehicle_collision/C, from 0:00 to 0:07.5 (frames 0–180), from the audio branch of the rule.",
+          "values": [
+            {
+              "form": "code",
+              "name": "ev_cb96ebb2235a.model_id",
+              "ref": "#/event/model_id",
+              "text": "vehicle_collision/C"
+            },
+            {
+              "form": "plain",
+              "name": "ev_cb96ebb2235a.start",
+              "ref": "#/event/interval/start_s",
+              "text": "0:00"
+            },
+            {
+              "form": "plain",
+              "name": "ev_cb96ebb2235a.end",
+              "ref": "#/event/interval/end_s",
+              "text": "0:07.5"
+            },
+            {
+              "form": "plain",
+              "name": "ev_cb96ebb2235a.start_frame",
+              "ref": "#/event/interval/start_frame",
+              "text": "0"
+            },
+            {
+              "form": "plain",
+              "name": "ev_cb96ebb2235a.end_frame",
+              "ref": "#/event/interval/end_frame",
+              "text": "180"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "In plain words, the event is a vehicle collision. [s_s1_proj]",
+          "step_ids": [
+            "s_s1_proj"
+          ],
+          "text": "In plain words, the event is a vehicle collision.",
+          "values": []
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "The branch projects {c_s1_proj.text}: the start of M1 and the end of M2. [s_s1_proj]",
+          "step_ids": [
+            "s_s1_proj"
+          ],
+          "text": "The branch projects π_{M1.st, M2.et}: the start of M1 and the end of M2.",
+          "values": [
+            {
+              "form": "code",
+              "name": "c_s1_proj.text",
+              "ref": "#/rule/constraints/1/text",
+              "text": "π_{M1.st, M2.et}"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "The rule that was executed: {g_event_model_vehicle_collision.definition} [s_s1_proj]",
+          "step_ids": [
+            "s_s1_proj"
+          ],
+          "text": "The rule that was executed: π_{M1.st, M2.et} (\n  σ_{(pred=\"horn\") ∨ (pred=\"skidding\")}(M1)\n  SP(δ:∞; ζ:<=, ρ:0)\n  σ_{(pred=\"impact\") ∨ (pred=\"glass_breaking\")}(M2)\n)\n∪\nπ_{M1.arg1, M1.st, M1.et} (\n  σ_{pred=\"vehicle_collision\" ∧ arg1=\"vehicle\"}(M1)\n)",
+          "values": [
+            {
+              "form": "block",
+              "name": "g_event_model_vehicle_collision.definition",
+              "ref": "#/glossary/4/definition",
+              "text": "π_{M1.st, M2.et} (\n  σ_{(pred=\"horn\") ∨ (pred=\"skidding\")}(M1)\n  SP(δ:∞; ζ:<=, ρ:0)\n  σ_{(pred=\"impact\") ∨ (pred=\"glass_breaking\")}(M2)\n)\n∪\nπ_{M1.arg1, M1.st, M1.et} (\n  σ_{pred=\"vehicle_collision\" ∧ arg1=\"vehicle\"}(M1)\n)"
+            }
+          ]
+        }
+      ],
+      "title": "Event and rule",
+      "written_by": "llm"
+    },
+    {
+      "sentences": [
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "From {iv_a21.start} to {iv_a21.end} (frames {iv_a21.start_frame}–{iv_a21.end_frame}), the audio model heard a horn: the class of the interval is {iv_a21.predicate}, one of the two classes {c_s1_sel1.text} accepts. [s_s1_sel1]",
+          "step_ids": [
+            "s_s1_sel1"
+          ],
+          "text": "From 0:00 to 0:05 (frames 0–120), the audio model heard a horn: the class of the interval is horn, one of the two classes σ_{(pred=\"horn\") ∨ (pred=\"skidding\")}(M1) accepts.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "iv_a21.start",
+              "ref": "#/intervals/0/anchor/start_s",
+              "text": "0:00"
+            },
+            {
+              "form": "plain",
+              "name": "iv_a21.end",
+              "ref": "#/intervals/0/anchor/end_s",
+              "text": "0:05"
+            },
+            {
+              "form": "plain",
+              "name": "iv_a21.start_frame",
+              "ref": "#/intervals/0/anchor/start_frame",
+              "text": "0"
+            },
+            {
+              "form": "plain",
+              "name": "iv_a21.end_frame",
+              "ref": "#/intervals/0/anchor/end_frame",
+              "text": "120"
+            },
+            {
+              "form": "code",
+              "name": "iv_a21.predicate",
+              "ref": "#/intervals/0/predicate",
+              "text": "horn"
+            },
+            {
+              "form": "code",
+              "name": "c_s1_sel1.text",
+              "ref": "#/rule/constraints/3/text",
+              "text": "σ_{(pred=\"horn\") ∨ (pred=\"skidding\")}(M1)"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "For the system, {g_audio_class_horn.term} means: {g_audio_class_horn.definition} [s_s1_sel1]",
+          "step_ids": [
+            "s_s1_sel1"
+          ],
+          "text": "For the system, horn means: WatchOut assigns this class when the audio model answers with one of: horn, honk, honking.",
+          "values": [
+            {
+              "form": "code",
+              "name": "g_audio_class_horn.term",
+              "ref": "#/glossary/1/term",
+              "text": "horn"
+            },
+            {
+              "form": "quote",
+              "name": "g_audio_class_horn.definition",
+              "ref": "#/glossary/1/definition",
+              "text": "WatchOut assigns this class when the audio model answers with one of: horn, honk, honking."
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "From {iv_a22.start} to {iv_a22.end} (frames {iv_a22.start_frame}–{iv_a22.end_frame}), it heard glass breaking: the class of the interval is {iv_a22.predicate}, one of the two classes {c_s1_sel2.text} accepts. [s_s1_sel2]",
+          "step_ids": [
+            "s_s1_sel2"
+          ],
+          "text": "From 0:02.5 to 0:07.5 (frames 60–180), it heard glass breaking: the class of the interval is glass_breaking, one of the two classes σ_{(pred=\"impact\") ∨ (pred=\"glass_breaking\")}(M2) accepts.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "iv_a22.start",
+              "ref": "#/intervals/1/anchor/start_s",
+              "text": "0:02.5"
+            },
+            {
+              "form": "plain",
+              "name": "iv_a22.end",
+              "ref": "#/intervals/1/anchor/end_s",
+              "text": "0:07.5"
+            },
+            {
+              "form": "plain",
+              "name": "iv_a22.start_frame",
+              "ref": "#/intervals/1/anchor/start_frame",
+              "text": "60"
+            },
+            {
+              "form": "plain",
+              "name": "iv_a22.end_frame",
+              "ref": "#/intervals/1/anchor/end_frame",
+              "text": "180"
+            },
+            {
+              "form": "code",
+              "name": "iv_a22.predicate",
+              "ref": "#/intervals/1/predicate",
+              "text": "glass_breaking"
+            },
+            {
+              "form": "code",
+              "name": "c_s1_sel2.text",
+              "ref": "#/rule/constraints/4/text",
+              "text": "σ_{(pred=\"impact\") ∨ (pred=\"glass_breaking\")}(M2)"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "For the system, {g_audio_class_glass_breaking.term} means: {g_audio_class_glass_breaking.definition} [s_s1_sel2]",
+          "step_ids": [
+            "s_s1_sel2"
+          ],
+          "text": "For the system, glass_breaking means: WatchOut assigns this class when the audio model answers with one of: glass, glass_breaking, shatter, shattering.",
+          "values": [
+            {
+              "form": "code",
+              "name": "g_audio_class_glass_breaking.term",
+              "ref": "#/glossary/0/term",
+              "text": "glass_breaking"
+            },
+            {
+              "form": "quote",
+              "name": "g_audio_class_glass_breaking.definition",
+              "ref": "#/glossary/0/definition",
+              "text": "WatchOut assigns this class when the audio model answers with one of: glass, glass_breaking, shatter, shattering."
+            }
+          ]
+        }
+      ],
+      "title": "What was observed",
+      "written_by": "llm"
+    },
+    {
+      "sentences": [
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "The glass breaking starts while the horn is ongoing: operator {c_s1_op1.text}, defined as {g_operator_SP.definition}. [s_s1_op1]",
+          "step_ids": [
+            "s_s1_op1"
+          ],
+          "text": "The glass breaking starts while the horn is ongoing: operator SP(δ:∞; ζ:<=, ρ:0), defined as r.Ts ζ s.Ts < r.Te, s.Ts − r.Ts ≤ δ.",
+          "values": [
+            {
+              "form": "code",
+              "name": "c_s1_op1.text",
+              "ref": "#/rule/constraints/2/text",
+              "text": "SP(δ:∞; ζ:<=, ρ:0)"
+            },
+            {
+              "form": "code",
+              "name": "g_operator_SP.definition",
+              "ref": "#/glossary/5/definition",
+              "text": "r.Ts ζ s.Ts < r.Te, s.Ts − r.Ts ≤ δ"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "With δ = {c_s1_op1.δ}, the second sound can start at any time while the first one is ongoing. [s_s1_op1]",
+          "step_ids": [
+            "s_s1_op1"
+          ],
+          "text": "With δ = ∞, the second sound can start at any time while the first one is ongoing.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "c_s1_op1.δ",
+              "ref": "#/rule/constraints/2/payload/params/0/engine_value",
+              "text": "∞"
+            }
+          ]
+        }
+      ],
+      "title": "Why it was flagged",
+      "written_by": "llm"
+    },
+    {
+      "sentences": [
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "{s_reinforcement.fixed_text} [s_reinforcement]",
+          "step_ids": [
+            "s_reinforcement"
+          ],
+          "text": "The event was detected by both video and audio, in the same time interval.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "s_reinforcement.fixed_text",
+              "ref": "#/event/reinforcement/sentence",
+              "text": "The event was detected by both video and audio, in the same time interval."
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "The association of the two modalities is recorded as: {reinforcement.status}. [s_prov_modality_association]",
+          "step_ids": [
+            "s_prov_modality_association"
+          ],
+          "text": "The association of the two modalities is recorded as: detected by both video and audio, at overlapping times.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "reinforcement.status",
+              "ref": "#/event/reinforcement/status",
+              "text": "detected by both video and audio, at overlapping times"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "The audio model gave a confidence of {iv_a21.confidence} to the horn and of {iv_a22.confidence} to the glass breaking. [s_prov_confidences]",
+          "step_ids": [
+            "s_prov_confidences"
+          ],
+          "text": "The audio model gave a confidence of 1.0 to the horn and of 1.0 to the glass breaking.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "iv_a21.confidence",
+              "ref": "#/intervals/0/confidence",
+              "text": "1.0"
+            },
+            {
+              "form": "plain",
+              "name": "iv_a22.confidence",
+              "ref": "#/intervals/1/confidence",
+              "text": "1.0"
+            }
+          ]
+        }
+      ],
+      "title": "Confidences and reinforcement",
+      "written_by": "llm"
+    },
+    {
+      "sentences": [
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "The video was sampled at {pipeline_config.sampling.effective_hz}: one frame in every {pipeline_config.sampling.sample_every_n} of a {pipeline_config.sampling.source_fps} video. [s_prov_sampling]",
+          "step_ids": [
+            "s_prov_sampling"
+          ],
+          "text": "The video was sampled at 1.0 Hz: one frame in every 24 of a 24 fps video.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "pipeline_config.sampling.effective_hz",
+              "ref": "#/contract_meta/pipeline_config/sampling/effective_hz",
+              "text": "1.0 Hz"
+            },
+            {
+              "form": "plain",
+              "name": "pipeline_config.sampling.sample_every_n",
+              "ref": "#/contract_meta/pipeline_config/sampling/sample_every_n",
+              "text": "24"
+            },
+            {
+              "form": "plain",
+              "name": "pipeline_config.sampling.source_fps",
+              "ref": "#/contract_meta/pipeline_config/sampling/source_fps",
+              "text": "24 fps"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "Detections of the same relation at most {pipeline_config.merge_tolerance_s} apart were merged into one interval. [s_prov_merge_tolerance]",
+          "step_ids": [
+            "s_prov_merge_tolerance"
+          ],
+          "text": "Detections of the same relation at most 2 s apart were merged into one interval.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "pipeline_config.merge_tolerance_s",
+              "ref": "#/contract_meta/pipeline_config/merge_tolerance_s",
+              "text": "2 s"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "The video model ran with temperature {pipeline_config.determinism.temperature} and seed {pipeline_config.determinism.seed}. [s_prov_determinism]",
+          "step_ids": [
+            "s_prov_determinism"
+          ],
+          "text": "The video model ran with temperature 0.0 and seed 42.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "pipeline_config.determinism.temperature",
+              "ref": "#/contract_meta/pipeline_config/determinism/temperature",
+              "text": "0.0"
+            },
+            {
+              "form": "plain",
+              "name": "pipeline_config.determinism.seed",
+              "ref": "#/contract_meta/pipeline_config/determinism/seed",
+              "text": "42"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "Detection mode: {pipeline_config.detection_mode}. [s_prov_detection_mode]",
+          "step_ids": [
+            "s_prov_detection_mode"
+          ],
+          "text": "Detection mode: multimodal.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "pipeline_config.detection_mode",
+              "ref": "#/contract_meta/pipeline_config/detection_mode",
+              "text": "multimodal"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "Rule parameters: {params_origin}. [s_prov_params_origin]",
+          "step_ids": [
+            "s_prov_params_origin"
+          ],
+          "text": "Rule parameters: rule defaults.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "params_origin",
+              "ref": "#/contract_meta/params_origin",
+              "text": "rule defaults"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "WatchOut's lineage of this detection records M1 as the interval from {iv_a21.start} to {iv_a21.end} and M2 as the interval from {iv_a22.start} to {iv_a22.end}. [s_prov_bindings]",
+          "step_ids": [
+            "s_prov_bindings"
+          ],
+          "text": "WatchOut's lineage of this detection records M1 as the interval from 0:00 to 0:05 and M2 as the interval from 0:02.5 to 0:07.5.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "iv_a21.start",
+              "ref": "#/intervals/0/anchor/start_s",
+              "text": "0:00"
+            },
+            {
+              "form": "plain",
+              "name": "iv_a21.end",
+              "ref": "#/intervals/0/anchor/end_s",
+              "text": "0:05"
+            },
+            {
+              "form": "plain",
+              "name": "iv_a22.start",
+              "ref": "#/intervals/1/anchor/start_s",
+              "text": "0:02.5"
+            },
+            {
+              "form": "plain",
+              "name": "iv_a22.end",
+              "ref": "#/intervals/1/anchor/end_s",
+              "text": "0:07.5"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "Source of truth: contract {contract_hash}. [s_prov_contract_hash]",
+          "step_ids": [
+            "s_prov_contract_hash"
+          ],
+          "text": "Source of truth: contract b2689362bb2e2ff726798b0e652c16138e8f244d635950aa4a0d829d9447f82f.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "contract_hash",
+              "ref": "#/contract_meta/contract_hash",
+              "text": "b2689362bb2e2ff726798b0e652c16138e8f244d635950aa4a0d829d9447f82f"
+            }
+          ]
+        }
+      ],
+      "title": "Method and provenance",
+      "written_by": "system"
+    },
+    {
+      "sentences": [
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "These limits concern the whole detection. [s_lim_temporal_resolution][s_lim_audio_without_participants][s_lim_data_not_available]",
+          "step_ids": [
+            "s_lim_temporal_resolution",
+            "s_lim_audio_without_participants",
+            "s_lim_data_not_available"
+          ],
+          "text": "These limits concern the whole detection.",
+          "values": []
+        },
+        {
+          "block": 1,
+          "entities": [],
+          "list_item": true,
+          "llm_text": "{s_lim_temporal_resolution.fixed_text} [s_lim_temporal_resolution]",
+          "step_ids": [
+            "s_lim_temporal_resolution"
+          ],
+          "text": "Times are approximate: they depend on the sampling rate of the video analysis.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "s_lim_temporal_resolution.fixed_text",
+              "ref": "#/knowledge_limits/0/sentence",
+              "text": "Times are approximate: they depend on the sampling rate of the video analysis."
+            }
+          ]
+        },
+        {
+          "block": 2,
+          "entities": [],
+          "list_item": true,
+          "llm_text": "{s_lim_audio_without_participants.fixed_text} [s_lim_audio_without_participants]",
+          "step_ids": [
+            "s_lim_audio_without_participants"
+          ],
+          "text": "An audio detection does not say who or what produced the sound.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "s_lim_audio_without_participants.fixed_text",
+              "ref": "#/knowledge_limits/1/sentence",
+              "text": "An audio detection does not say who or what produced the sound."
+            }
+          ]
+        },
+        {
+          "block": 3,
+          "entities": [],
+          "list_item": true,
+          "llm_text": "{s_lim_data_not_available.fixed_text} [s_lim_data_not_available]",
+          "step_ids": [
+            "s_lim_data_not_available"
+          ],
+          "text": "Some information is not saved by the system and is reported as not available.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "s_lim_data_not_available.fixed_text",
+              "ref": "#/knowledge_limits/2/sentence",
+              "text": "Some information is not saved by the system and is reported as not available."
+            }
+          ]
+        },
+        {
+          "block": 3,
+          "entities": [],
+          "list_item": true,
+          "llm_text": "Not available here: {missing_fields}. [s_lim_data_not_available]",
+          "step_ids": [
+            "s_lim_data_not_available"
+          ],
+          "text": "Not available here: key frames (this WatchOut version does not store key frames).",
+          "values": [
+            {
+              "form": "plain",
+              "name": "missing_fields",
+              "ref": "#/harvest_report/missing_fields",
+              "text": "key frames (this WatchOut version does not store key frames)"
+            }
+          ]
+        }
+      ],
+      "title": "Limits",
+      "written_by": "system"
+    }
+  ]
+}

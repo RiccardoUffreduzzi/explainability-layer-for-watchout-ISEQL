@@ -28,7 +28,7 @@ def test_an_unlimited_threshold() -> None:
     choice = _choice("handoff_s21_A", "c_s1_op1")
 
     assert [r.model_dump(mode="json") for r in choice.readings] == [
-        {"param": "δ", "condition": "δ = ∞", "phrase": "at any time after"}
+        {"param": "δ", "condition": "δ = ∞", "phrase": "{s} starting at any time after {r} ends"}
     ]
     assert choice.unmatched == ()
     assert choice.notes == ()
@@ -37,7 +37,7 @@ def test_an_unlimited_threshold() -> None:
 def test_the_phrase_is_copied_with_its_placeholder() -> None:
     choice = _choice("vehicle_collision_s15_C_audio", "c_s1_op1")
 
-    assert choice.readings[0].phrase == "at any time while {r} is ongoing"
+    assert choice.readings[0].phrase == "at any time after the start of {r}"
 
 
 def test_a_finite_threshold_points_at_the_value_of_the_engine() -> None:
@@ -47,7 +47,7 @@ def test_a_finite_threshold_points_at_the_value_of_the_engine() -> None:
     reading = _choice("handoff_s21_A", "c_s1_op1", two_seconds).readings[0]
 
     assert reading.condition == "δ = d"
-    assert reading.phrase == "within d seconds"
+    assert reading.phrase == "{s} starting within d seconds of the end of {r}"
     assert reading.value_ref == "#/rule/constraints/3/payload/params/0/engine_value"
 
 

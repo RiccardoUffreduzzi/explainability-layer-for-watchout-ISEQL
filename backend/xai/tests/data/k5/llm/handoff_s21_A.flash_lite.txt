@@ -1,0 +1,29 @@
+## Event and rule: s_s1_proj
+The event {ev_beffcb6f2a6e.label} was detected from interval {iv_v59.start} to {iv_v59.end} involving [man in dark blue hoodie carrying a box](ent_3), [cardboard box](ent_4), and [man in grey jacket and dark trousers holding a box](ent_5) using the projection {c_s1_proj.text} defined by {g_event_model_handoff.term}: {g_event_model_handoff.definition} [s_s1_proj].
+
+## What was observed: s_s1_sel1, s_s1_sel2
+From interval {iv_v59.start} to {iv_v59.end}, it was observed that [man in dark blue hoodie carrying a box](ent_3) carries [cardboard box](ent_4) as selected by {c_s1_sel1.text} [s_s1_sel1].
+From interval {iv_v60.start} to {iv_v60.end}, it was observed that [man in grey jacket and dark trousers holding a box](ent_5) carries [cardboard box](ent_4) as selected by {c_s1_sel2.text} [s_s1_sel2].
+
+## Why it was flagged: s_s1_op1, s_s1_cc1, s_s1_cc2
+The operator {g_operator_Bef.term} evaluated that interval {iv_v59.start} to {iv_v59.end} ends before interval {iv_v60.start} to {iv_v60.end} starts, with the threshold {c_s1_op1.text} applying at any time after [s_s1_op1].
+The condition {c_s1_cc1.text} ensured that [man in dark blue hoodie carrying a box](ent_3) and [man in grey jacket and dark trousers holding a box](ent_5) are different [s_s1_cc1].
+The condition {c_s1_cc2.text} ensured that [cardboard box](ent_4) and [cardboard box](ent_4) are the same [s_s1_cc2].
+
+## Method and provenance: s_prov_sampling, s_prov_merge_tolerance, s_prov_determinism, s_prov_detection_mode, s_prov_params_origin, s_prov_bindings, s_prov_contract_hash
+The video analysis ran at a frame rate of {pipeline_config.sampling.source_fps}, analysing one frame every {pipeline_config.sampling.sample_every_n} frames, resulting in an effective rate of {pipeline_config.sampling.effective_hz} [s_prov_sampling].
+The merge tolerance was set to {pipeline_config.merge_tolerance_s} as the largest gap between two detections merged into one interval [s_prov_merge_tolerance].
+The video model ran with a sampling temperature of {pipeline_config.determinism.temperature} and a random seed of {pipeline_config.determinism.seed} [s_prov_determinism].
+The detection mode was {pipeline_config.detection_mode} [s_prov_detection_mode].
+The parameters of the rule came from {params_origin} [s_prov_params_origin].
+Variable M1 was bound to interval {iv_v59.start} to {iv_v59.end}, and variable M2 was bound to interval {iv_v60.start} to {iv_v60.end} [s_prov_bindings].
+The source of truth contract hash was {contract_hash} [s_prov_contract_hash].
+
+## Limits: s_lim_reid_dependence, s_lim_reid_evidence_unavailable, s_lim_visual_confidence_unavailable, s_lim_perceptual_attribution_unavailable, s_lim_temporal_resolution, s_lim_data_not_available
+The following limits concern the rules, detections, and data availability of this report:
+- {s_lim_reid_dependence.fixed_text} [s_lim_reid_dependence]
+- {s_lim_reid_evidence_unavailable.fixed_text} [s_lim_reid_evidence_unavailable]
+- {s_lim_visual_confidence_unavailable.fixed_text} [s_lim_visual_confidence_unavailable]
+- {s_lim_perceptual_attribution_unavailable.fixed_text} [s_lim_perceptual_attribution_unavailable]
+- {s_lim_temporal_resolution.fixed_text} [s_lim_temporal_resolution]
+- {s_lim_data_not_available.fixed_text}: {missing_fields.value} [s_lim_data_not_available]

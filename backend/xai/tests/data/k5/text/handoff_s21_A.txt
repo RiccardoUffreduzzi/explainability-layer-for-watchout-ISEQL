@@ -1,0 +1,19 @@
+## Event and rule
+
+The system detected a handoff with rule {ev_beffcb6f2a6e.model_id}, from {ev_beffcb6f2a6e.start} to {ev_beffcb6f2a6e.end} (frames {ev_beffcb6f2a6e.start_frame}–{ev_beffcb6f2a6e.end_frame}). [s_s1_proj]
+In plain words, an object passing from one person to another was detected. [s_s1_proj]
+In the rule, M1.arg1 is the [man in a dark blue hoodie](ent_3), M2.arg1 is the [man in a grey jacket and dark trousers](ent_5), and M1.arg2 is the [cardboard box](ent_4). [s_s1_proj]
+The rule that was executed: {g_event_model_handoff.definition} [s_s1_proj]
+
+## What was observed
+
+From {iv_v59.start} to {iv_v59.end} (frames {iv_v59.start_frame}–{iv_v59.end_frame}), the video model saw a [man in a dark blue hoodie](ent_3) carrying a [cardboard box](ent_4), selected by {c_s1_sel1.text}. [s_s1_sel1]
+From {iv_v60.start} to {iv_v60.end} (frames {iv_v60.start_frame}–{iv_v60.end_frame}), it saw a [man in a grey jacket and dark trousers](ent_5) carrying the [cardboard box](ent_4), selected by {c_s1_sel2.text}. [s_s1_sel2]
+For the video model, carrying means: {g_predicate_carrying.definition} [s_s1_sel1][s_s1_sel2]
+
+## Why it was flagged
+
+The first carrying ends before the second one starts: operator {c_s1_op1.text}, defined as {g_operator_Bef.definition}. [s_s1_op1]
+With δ = {c_s1_op1.δ}, the second carrying can start at any time after the first one ends. [s_s1_op1]
+The two people are different ({c_s1_cc1.text}): the [man in a dark blue hoodie](ent_3) and the [man in a grey jacket and dark trousers](ent_5). [s_s1_cc1]
+The object is the same in both intervals ({c_s1_cc2.text}): the [cardboard box](ent_4). [s_s1_cc2]

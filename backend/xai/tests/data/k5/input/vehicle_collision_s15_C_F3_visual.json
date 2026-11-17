@@ -1,0 +1,201 @@
+{
+  "plan": {
+    "plan_meta": {
+      "plan_version": "0.1.0-k4",
+      "contract_hash": "d91f61e4396d4403efd8f8cf1af6357511bcd541f8d3f0888a942a204d4553ec",
+      "source_of_truth_version": "0.2.0-k2",
+      "contract_version": "0.4.0-k1",
+      "event_id": "ev_f61f6c2d9945",
+      "model_id": "vehicle_collision/C",
+      "label": "vehicle_collision",
+      "branches": [
+        "right"
+      ],
+      "plan_hash": "0fcd9820ea71560fa373b73a69fd88db5cf693c299ac78217acf4f13b289174f"
+    },
+    "steps": [
+      {
+        "step_id": "s_right_sel1",
+        "type": "observation",
+        "construct": "c_right_sel1",
+        "refs": [
+          "c_right_sel1",
+          "iv_v48",
+          "ent_12",
+          "g_predicate_vehicle_collision"
+        ],
+        "role": "because",
+        "depends_on": [],
+        "t_order": 6.0,
+        "t_order_basis": "interval",
+        "in_report2": true,
+        "term": "g_predicate_vehicle_collision",
+        "slots": {
+          "arg1": "ent_12"
+        }
+      },
+      {
+        "step_id": "s_right_proj",
+        "type": "conclusion",
+        "construct": "c_right_proj",
+        "refs": [
+          "c_right_proj",
+          "ev_f61f6c2d9945",
+          "ent_12",
+          "g_event_model_vehicle_collision"
+        ],
+        "depends_on": [
+          "s_right_sel1"
+        ],
+        "t_order": 6.0,
+        "t_order_basis": "interval",
+        "in_report2": true,
+        "term": "g_event_model_vehicle_collision"
+      },
+      {
+        "step_id": "s_reinforcement",
+        "type": "reinforcement",
+        "refs": [
+          "ev_f61f6c2d9945",
+          "#/event/modality_detections/0",
+          "#/event/modality_detections/1",
+          "#/event/modality_detections/2",
+          "#/event/modality_detections/3"
+        ],
+        "role": "context",
+        "depends_on": [
+          "s_right_proj"
+        ],
+        "t_order": 6.0,
+        "t_order_basis": "interval",
+        "in_report2": true,
+        "fixed_text": "The event was detected by both video and audio, in the same time interval."
+      },
+      {
+        "step_id": "s_prov_modality_association",
+        "type": "provenance",
+        "refs": [
+          "#/event/reinforcement"
+        ],
+        "role": "context",
+        "depends_on": [],
+        "t_order": null,
+        "t_order_basis": "none",
+        "in_report2": false
+      }
+    ],
+    "bindings": [
+      {
+        "branch": "right",
+        "variable": "M1",
+        "status": "attributed",
+        "interval_ids": [
+          "iv_v48"
+        ],
+        "basis": [
+          "engine_lineage"
+        ]
+      }
+    ],
+    "plan_report": {
+      "excluded_constructs": [
+        {
+          "constraint_id": "c_set1",
+          "reason": "set_operation"
+        },
+        {
+          "constraint_id": "c_left_proj",
+          "reason": "other_branch"
+        },
+        {
+          "constraint_id": "c_left_op1",
+          "reason": "other_branch"
+        },
+        {
+          "constraint_id": "c_left_sel1",
+          "reason": "other_branch"
+        },
+        {
+          "constraint_id": "c_left_sel2",
+          "reason": "other_branch"
+        }
+      ],
+      "unbound_intervals": [],
+      "unmatched_readings": [],
+      "notes": []
+    }
+  },
+  "values": {
+    "c_right_sel1.text": "σ_{pred=\"vehicle_collision\" ∧ arg1=\"vehicle\"}(M1)",
+    "iv_v48.start": "0:06",
+    "iv_v48.end": "0:10",
+    "iv_v48.start_frame": "144",
+    "iv_v48.end_frame": "240",
+    "iv_v48.predicate": "vehicle_collision",
+    "iv_v48.confidence": {
+      "value": null,
+      "reason": "the system does not record a confidence for visual intervals"
+    },
+    "ent_12": "vehicle 1",
+    "g_predicate_vehicle_collision.term": "vehicle_collision",
+    "g_predicate_vehicle_collision.definition": "A vehicle has visible collision damage: broken windshield, dented hood or doors, deployed airbags, smoke from the hood, or another object embedded in the vehicle.",
+    "c_right_proj.text": "π_{M1.arg1, M1.st, M1.et}",
+    "ev_f61f6c2d9945.model_id": {
+      "value": "vehicle_collision/C",
+      "label": "identifier of the WatchOut rule that made the detection"
+    },
+    "ev_f61f6c2d9945.start": "0:06",
+    "ev_f61f6c2d9945.end": "0:10",
+    "ev_f61f6c2d9945.start_frame": "144",
+    "ev_f61f6c2d9945.end_frame": "240",
+    "g_event_model_vehicle_collision.term": "vehicle_collision",
+    "g_event_model_vehicle_collision.definition": "π_{M1.st, M1.et, M2.st, M2.et} (\n  σ_{(pred=\"horn\") ∨ (pred=\"skidding\")}(M1)\n  SP(δ:∞; ζ:<=, ρ:0)\n  σ_{(pred=\"impact\") ∨ (pred=\"glass_breaking\")}(M2)\n)\n∪\nπ_{M1.arg1, M1.st, M1.et} (\n  σ_{pred=\"vehicle_collision\" ∧ arg1=\"vehicle\"}(M1)\n)",
+    "s_reinforcement.fixed_text": "The event was detected by both video and audio, in the same time interval.",
+    "modality_detections.0.modality": "visual",
+    "modality_detections.0.at": "0:05",
+    "modality_detections.0.frame": "120",
+    "modality_detections.1.modality": "visual",
+    "modality_detections.1.at": "0:05",
+    "modality_detections.1.frame": "120",
+    "modality_detections.2.modality": "visual",
+    "modality_detections.2.start": "0:06",
+    "modality_detections.2.end": "0:10",
+    "modality_detections.2.start_frame": "144",
+    "modality_detections.2.end_frame": "240",
+    "modality_detections.3.modality": "audio",
+    "modality_detections.3.start": "0:00",
+    "modality_detections.3.end": "0:07.5",
+    "modality_detections.3.start_frame": "0",
+    "modality_detections.3.end_frame": "180",
+    "reinforcement.status": {
+      "value": "detected by both video and audio, at overlapping times",
+      "label": "relation in time between the video and the audio detections of the event"
+    }
+  },
+  "entities": {
+    "ent_12": {
+      "class": "vehicle",
+      "description": "dark sedan stopped in parking lot aisle with open door",
+      "label": "vehicle 1",
+      "roles": [
+        "M1.arg1"
+      ]
+    }
+  },
+  "glossary": {
+    "g_predicate_vehicle_collision": {
+      "kind": "predicate",
+      "term": "vehicle_collision",
+      "phrase": "{arg1} shows collision damage"
+    },
+    "g_event_model_vehicle_collision": {
+      "kind": "event_model",
+      "term": "vehicle_collision",
+      "phrase": "a vehicle collision"
+    }
+  },
+  "codes": {
+    "engine_lineage": "WatchOut's lineage query, which records the intervals that produced the detection row",
+    "attributed": "the engine records exactly one interval for the variable"
+  }
+}

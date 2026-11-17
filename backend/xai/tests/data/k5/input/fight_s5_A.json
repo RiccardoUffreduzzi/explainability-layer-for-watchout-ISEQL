@@ -1,0 +1,171 @@
+{
+  "plan": {
+    "plan_meta": {
+      "plan_version": "0.1.0-k4",
+      "contract_hash": "9118e7309af73ec54a32bdd623eb6257d12686195fe7f20c1f5b3e90a2ed935f",
+      "source_of_truth_version": "0.2.0-k2",
+      "contract_version": "0.4.0-k1",
+      "event_id": "ev_d966ffea748d",
+      "model_id": "fight/A",
+      "label": "fight",
+      "branches": [
+        "s1"
+      ],
+      "plan_hash": "423a5257f586c34d12111bcac540bdc3b75d71d597de75d5903b80b8b4a71247"
+    },
+    "steps": [
+      {
+        "step_id": "s_s1_sel1",
+        "type": "observation",
+        "construct": "c_s1_sel1",
+        "refs": [
+          "c_s1_sel1",
+          "iv_v6",
+          "ent_1",
+          "ent_2",
+          "g_predicate_physical_altercation"
+        ],
+        "role": "because",
+        "depends_on": [],
+        "t_order": 0.0,
+        "t_order_basis": "interval",
+        "in_report2": true,
+        "term": "g_predicate_physical_altercation",
+        "slots": {
+          "arg1": "ent_1",
+          "arg2": "ent_2"
+        }
+      },
+      {
+        "step_id": "s_s1_cc1",
+        "type": "condition",
+        "construct": "c_s1_cc1",
+        "refs": [
+          "c_s1_cc1",
+          "ent_1",
+          "ent_2",
+          "g_comparison_identity_ne"
+        ],
+        "role": "because",
+        "depends_on": [
+          "s_s1_sel1"
+        ],
+        "t_order": 0.0,
+        "t_order_basis": "interval",
+        "in_report2": false,
+        "term": "g_comparison_identity_ne",
+        "slots": {
+          "left": "ent_1",
+          "right": "ent_2"
+        }
+      },
+      {
+        "step_id": "s_s1_proj",
+        "type": "conclusion",
+        "construct": "c_s1_proj",
+        "refs": [
+          "c_s1_proj",
+          "ev_d966ffea748d",
+          "ent_1",
+          "ent_2",
+          "g_event_model_fight"
+        ],
+        "depends_on": [
+          "s_s1_cc1"
+        ],
+        "t_order": 0.0,
+        "t_order_basis": "interval",
+        "in_report2": true,
+        "term": "g_event_model_fight"
+      }
+    ],
+    "bindings": [
+      {
+        "branch": "s1",
+        "variable": "M1",
+        "status": "attributed",
+        "interval_ids": [
+          "iv_v6"
+        ],
+        "basis": [
+          "engine_lineage"
+        ]
+      }
+    ],
+    "plan_report": {
+      "excluded_constructs": [],
+      "unbound_intervals": [],
+      "unmatched_readings": [],
+      "notes": []
+    }
+  },
+  "values": {
+    "c_s1_sel1.text": "σ_{pred=\"physical_altercation\" ∧ arg1=\"person\" ∧ arg2=\"person\"}(M1)",
+    "iv_v6.start": "0:00",
+    "iv_v6.end": "0:05",
+    "iv_v6.start_frame": "0",
+    "iv_v6.end_frame": "120",
+    "iv_v6.predicate": "physical_altercation",
+    "iv_v6.confidence": {
+      "value": null,
+      "reason": "the system does not record a confidence for visual intervals"
+    },
+    "ent_1": "person 1",
+    "ent_2": "person 2",
+    "g_predicate_physical_altercation.term": "physical_altercation",
+    "g_predicate_physical_altercation.definition": "Two or more people are involved in aggressive behavior: fighting, pushing, hitting, punching, making aggressive gestures, or throwing objects at each other. Include IDs of all people involved.",
+    "c_s1_cc1.text": "M1.arg1≠M1.arg2",
+    "g_comparison_identity_ne.term": "identity_ne",
+    "g_comparison_identity_ne.definition": "left ≠ right",
+    "c_s1_proj.text": "π_{M1.arg1, M1.arg2, M1.st, M1.et}",
+    "ev_d966ffea748d.model_id": {
+      "value": "fight/A",
+      "label": "identifier of the WatchOut rule that made the detection"
+    },
+    "ev_d966ffea748d.start": "0:00",
+    "ev_d966ffea748d.end": "0:05",
+    "ev_d966ffea748d.start_frame": "0",
+    "ev_d966ffea748d.end_frame": "120",
+    "g_event_model_fight.term": "fight",
+    "g_event_model_fight.definition": "π_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{M1.arg1≠M1.arg2} (\n    σ_{pred=\"physical_altercation\" ∧ arg1=\"person\" ∧ arg2=\"person\"}(M1)\n  ))"
+  },
+  "entities": {
+    "ent_1": {
+      "class": "person",
+      "description": "man in grey hooded sweatshirt and khaki pants",
+      "label": "person 1",
+      "roles": [
+        "M1.arg1"
+      ]
+    },
+    "ent_2": {
+      "class": "person",
+      "description": "man in dark jacket and blue jeans",
+      "label": "person 2",
+      "roles": [
+        "M1.arg2"
+      ]
+    }
+  },
+  "glossary": {
+    "g_predicate_physical_altercation": {
+      "kind": "predicate",
+      "term": "physical_altercation",
+      "phrase": "{arg1} and {arg2} fight"
+    },
+    "g_comparison_identity_ne": {
+      "kind": "comparison",
+      "term": "identity_ne",
+      "phrase": "{left} and {right} are different"
+    },
+    "g_event_model_fight": {
+      "kind": "event_model",
+      "term": "fight",
+      "phrase": "a fight"
+    }
+  },
+  "codes": {
+    "engine_lineage": "WatchOut's lineage query, which records the intervals that produced the detection row",
+    "attributed": "the engine records exactly one interval for the variable"
+  }
+}

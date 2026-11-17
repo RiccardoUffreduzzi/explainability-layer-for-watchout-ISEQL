@@ -21,7 +21,12 @@ log = logging.getLogger("xai.pipeline")
 
 
 class ReportStage(Protocol):
-    """A stage after K1: it reads one draft and writes its own outputs."""
+    """A stage after K1: it reads one draft and writes its own outputs.
+
+    A stage may declare ``reads_from``, the name of the stage whose files it reads (``"k1"`` for
+    the draft): it is skipped only when that stage failed or was skipped. A stage that declares
+    nothing reads from every stage before it.
+    """
 
     name: str
 
@@ -80,18 +85,27 @@ class ReportPipeline:
     def _later_stages(self, outcome: AnalysisOutcome, folder: AnalysisFolder) -> None:
         """Each stage on each draft, in order.
 
-        A stage that fails on a draft stops the later stages for that draft only: they
-        read its output.
+        A stage that fails on a draft stops, for that draft only, the stages that read its
+        output: K6 does not read K5, so a failed Report 1 does not stop Report 2.
         """
         for _, result in outcome.drafts():
             assert result.draft is not None
             path = folder.draft_path(result.draft.event.label, result.event_id)
+            stopped: list[str] = []
             for stage in self.stages:
+                reads_from: str | None = getattr(stage, "reads_from", None)
+                blocked = stopped if reads_from is None else [s for s in stopped if s == reads_from]
+                if blocked:
+                    log.warning(
+                        "stage %s skipped on %s: %s did not write its files", stage.name, path, blocked[0]
+                    )
+                    stopped.append(stage.name)
+                    continue
                 try:
                     stage.process(result.draft, path)
                 except Exception:
                     log.exception("stage %s failed on %s", stage.name, path)
-                    break
+                    stopped.append(stage.name)
 
 
 def _log_outcome(outcome: AnalysisOutcome, folder: AnalysisFolder) -> None:

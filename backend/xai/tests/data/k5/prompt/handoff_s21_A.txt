@@ -1,0 +1,351 @@
+You write Report 1 of a detection made by a video-surveillance system: a technical report for an analyst or an auditor who knows the ISEQL+ rule language. You turn the explanation plan below into English prose. The plan decides the facts and their order; you only choose the words. The system writes the method and the limits of the report itself: you write only the sections listed below.
+
+# What you receive
+
+At the end of this prompt there is a JSON object with:
+
+- "plan": the explanation plan. Its "steps" are already in reading order. Each step has an ID ("step_id"), a type, the facts it cites ("refs") and the steps it depends on ("depends_on"). Some steps also have a glossary term ("term"), the fillers of the term's phrase ("slots": an entity, a value or a step), the readings of the thresholds of a temporal operator ("readings") or a sentence of the system ("fixed_text"). "bindings" says which interval each variable of the rule (M1, M2 ...) was bound to, and how.
+- "values": every value you may cite, by name. A value is a text; or an object with the value and a "label" that says what it is; or an object with "value": null and the "reason" why it is not available.
+- "entities": the people, vehicles and objects the steps cite: their class, the description the video model gave of them, the roles they fill in the rule and a label.
+- "glossary": the term and the plain phrase of every glossary entry the steps cite. In a phrase, {arg1}, {arg2}, {r}, {s}, {left}, {right}, {x}, {value} and {unit} stand for the slots of the step.
+- "codes": what the codes of the bindings mean. Write what a code means, never the code.
+
+# Step types
+
+- conclusion: the detection the report explains, in two sentences. The first says what was detected with the phrase of its term from the glossary, never with the term or its code, with the event's own times ({ev_….start} to {ev_….end}, or {ev_….at}; not those of an interval), the projection {c_….text} and the arguments of the detection row. The second gives only the definition of the rule, after a colon: {g_event_model_….definition}.
+- observation: what a model saw or heard in an interval, selected by a selection of the rule.
+- context: something seen that sets the scene of an observation.
+- condition: a condition of the rule on one observation, such as a duration or two different arguments.
+- temporal: a temporal operator between two observations, with the readings of its thresholds.
+- identity: a condition on the same or on different entities across observations.
+- reinforcement: whether video and audio detected the event together. The system says it with its own sentence (rule 7).
+- provenance: one of two facts about the modalities.
+  - "s_prov_confidences": the confidence each model gave to what it detected. For each interval the step cites, say which model gave it (video or audio), what that model detected there, in a few words taken from the observation of that interval, and its confidence {iv_….confidence}.
+  - "s_prov_modality_association": how the system associated the video and the audio detections of the event, that is their relation in time, cited as {reinforcement.status}. It is not the reinforcement: do not say again what the sentence of the reinforcement says.
+
+# Sections
+
+Write these sections, in this order. After each title are the steps the section renders. Write each title on a line of its own as "## <title>", exactly as it is written between the quotes, without the steps. Write no other section.
+
+- "Event and rule": s_s1_proj
+- "What was observed": s_s1_sel1, s_s1_sel2
+- "Why it was flagged": s_s1_op1, s_s1_cc1, s_s1_cc2
+
+# Rules
+
+1. Follow the order of the steps. Render every step of a section at least once. Add no fact, cause or judgement that the plan does not contain.
+2. End every sentence with a period, then the markers of the steps it renders, such as ". [s_x_sel1]" or ". [s_x_sel1][s_x_sel2]". A sentence without a marker is not accepted. A step is cited only by its marker, never in braces.
+3. Write no number yourself: no time, frame, count, threshold, confidence, parameter or hash. Cite every value by its name in braces, such as {iv_v7.start} or {c_s1_cc1.value}; the system writes the value in its place. The only digits allowed outside braces are those inside the names of the rule, such as M1 or M2.arg1. Compute nothing: no differences, durations, counts or ordinals. The "label" of a value tells you what the value is: do not copy the label into the text.
+4. About time, write only the values and the readings the plan gives. Do not add words such as "immediately", "shortly", "soon" or "just": a threshold that reads "at any time after" allows any delay. Cite an interval with its start and its end: from {iv_….start} to {iv_….end}. An interval of a single analysed frame has one time instead: at {iv_….at}.
+5. Name a person, vehicle or object with words of its description, marked with its ID, with the article before the mark: a [woman in a red coat](ent_9), the [woman in a red coat](ent_9). Keep only the words about how it looks and leave out what it is doing: the steps say that. For an entity without a description, cite its label as {ent_9}. When a condition says two arguments are the same entity, name it once. Only an entity is marked in this way: a term, a value or a step is never marked as [words](ID).
+6. Cite formal terms by name, never in your own words: a selection, an operator, a condition or the projection as {c_….text}, a parameter of an operator as {c_….δ}, a definition as {g_….definition}, a term as {g_….term}. Give the definition of the rule ({g_event_model_….definition}) at the end of a sentence of its own, after a colon. When a step has a "term", also say in plain words what it means, in the sentence of that step: use the term's phrase from the glossary, and the readings of the step if it has any, with each placeholder replaced by the words for its slot (rule 10 says how you may change their grammar). A slot that is a step stands for what that step observed: name it in a few words taken only from that step (what was seen or heard there, and by whom), not with its selection.
+7. A sentence of the system ("fixed_text") is cited by its name in braces, once: {s_….fixed_text}. Never write out its words or rewrite them: the system puts the sentence in its place. Do not say again in your words what it says.
+8. When a variable has more than one interval (status "ambiguous"), name every interval: each one is a witness of the same detection row.
+9. Outside braces, entity marks and markers, never write an ID (ent_, iv_, ev_, c_, g_, s_) or a word with an underscore: say in words what it means.
+10. Write in correct English, in full sentences, for a technical reader. You choose the grammar and the order of the words of each sentence, as long as it says what its steps say, with the same focus, and nothing more. The phrases and the readings of the glossary give a meaning, not a grammar: change the form of a verb, an article or the order of the words, turn a clause into a noun, and join the phrases with words of your own, so that the sentence reads well. Use Markdown only for the section titles ("## Title"). Write each sentence on its own line, and separate paragraphs with a blank line.
+
+# Output
+
+Only the text of the report: the section titles and their sentences, nothing before or after them.
+
+# Input
+
+{
+  "plan": {
+    "plan_meta": {
+      "plan_version": "0.1.0-k4",
+      "contract_hash": "3bd9134d95371422726d6279e45af9a8357846dfdfcf297510ecbefbeb96eb33",
+      "source_of_truth_version": "0.2.0-k2",
+      "contract_version": "0.4.0-k1",
+      "event_id": "ev_beffcb6f2a6e",
+      "model_id": "handoff/A",
+      "label": "handoff",
+      "branches": [
+        "s1"
+      ],
+      "plan_hash": "7175bac0e03ff9c35ce1e2de6e169a7ac1a9369916a1e8ca70d6c9c58abca6fa"
+    },
+    "steps": [
+      {
+        "step_id": "s_s1_sel1",
+        "type": "observation",
+        "construct": "c_s1_sel1",
+        "refs": [
+          "c_s1_sel1",
+          "iv_v59",
+          "ent_3",
+          "ent_4",
+          "g_predicate_carrying"
+        ],
+        "role": "because",
+        "depends_on": [],
+        "t_order": 1.0,
+        "t_order_basis": "interval",
+        "in_report2": true,
+        "term": "g_predicate_carrying",
+        "slots": {
+          "arg1": "ent_3",
+          "arg2": "ent_4"
+        }
+      },
+      {
+        "step_id": "s_s1_sel2",
+        "type": "observation",
+        "construct": "c_s1_sel2",
+        "refs": [
+          "c_s1_sel2",
+          "iv_v60",
+          "ent_5",
+          "ent_4",
+          "g_predicate_carrying"
+        ],
+        "role": "because",
+        "depends_on": [],
+        "t_order": 5.0,
+        "t_order_basis": "interval",
+        "in_report2": true,
+        "term": "g_predicate_carrying",
+        "slots": {
+          "arg1": "ent_5",
+          "arg2": "ent_4"
+        }
+      },
+      {
+        "step_id": "s_s1_op1",
+        "type": "temporal",
+        "construct": "c_s1_op1",
+        "refs": [
+          "c_s1_op1",
+          "g_operator_Bef"
+        ],
+        "role": "because",
+        "depends_on": [
+          "s_s1_sel1",
+          "s_s1_sel2"
+        ],
+        "t_order": 5.0,
+        "t_order_basis": "interval",
+        "in_report2": false,
+        "term": "g_operator_Bef",
+        "slots": {
+          "r": "s_s1_sel1",
+          "s": "s_s1_sel2"
+        },
+        "readings": [
+          {
+            "param": "δ",
+            "condition": "δ = ∞",
+            "phrase": "{s} starting at any time after {r} ends"
+          }
+        ]
+      },
+      {
+        "step_id": "s_s1_cc1",
+        "type": "identity",
+        "construct": "c_s1_cc1",
+        "refs": [
+          "c_s1_cc1",
+          "ent_3",
+          "ent_5",
+          "g_comparison_identity_ne"
+        ],
+        "role": "because",
+        "depends_on": [
+          "s_s1_sel1",
+          "s_s1_sel2"
+        ],
+        "t_order": 5.0,
+        "t_order_basis": "interval",
+        "in_report2": false,
+        "term": "g_comparison_identity_ne",
+        "slots": {
+          "left": "ent_3",
+          "right": "ent_5"
+        }
+      },
+      {
+        "step_id": "s_s1_cc2",
+        "type": "identity",
+        "construct": "c_s1_cc2",
+        "refs": [
+          "c_s1_cc2",
+          "ent_4",
+          "g_comparison_identity_eq"
+        ],
+        "role": "because",
+        "depends_on": [
+          "s_s1_sel1",
+          "s_s1_sel2"
+        ],
+        "t_order": 5.0,
+        "t_order_basis": "interval",
+        "in_report2": false,
+        "term": "g_comparison_identity_eq",
+        "slots": {
+          "left": "ent_4",
+          "right": "ent_4"
+        }
+      },
+      {
+        "step_id": "s_s1_proj",
+        "type": "conclusion",
+        "construct": "c_s1_proj",
+        "refs": [
+          "c_s1_proj",
+          "ev_beffcb6f2a6e",
+          "ent_3",
+          "ent_5",
+          "ent_4",
+          "g_event_model_handoff"
+        ],
+        "depends_on": [
+          "s_s1_cc1",
+          "s_s1_cc2",
+          "s_s1_op1"
+        ],
+        "t_order": 5.0,
+        "t_order_basis": "interval",
+        "in_report2": true,
+        "term": "g_event_model_handoff"
+      }
+    ],
+    "bindings": [
+      {
+        "branch": "s1",
+        "variable": "M1",
+        "status": "attributed",
+        "interval_ids": [
+          "iv_v59"
+        ],
+        "basis": [
+          "engine_lineage"
+        ]
+      },
+      {
+        "branch": "s1",
+        "variable": "M2",
+        "status": "attributed",
+        "interval_ids": [
+          "iv_v60"
+        ],
+        "basis": [
+          "engine_lineage"
+        ]
+      }
+    ],
+    "plan_report": {
+      "excluded_constructs": [],
+      "unbound_intervals": [],
+      "unmatched_readings": [],
+      "notes": []
+    }
+  },
+  "values": {
+    "c_s1_sel1.text": "σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M1)",
+    "iv_v59.start": "0:01",
+    "iv_v59.end": "0:04",
+    "iv_v59.start_frame": "24",
+    "iv_v59.end_frame": "96",
+    "iv_v59.predicate": "carrying",
+    "iv_v59.confidence": {
+      "value": null,
+      "reason": "the system does not record a confidence for visual intervals"
+    },
+    "ent_3": "person 1",
+    "ent_4": "object 1",
+    "g_predicate_carrying.term": "carrying",
+    "g_predicate_carrying.definition": "The person is holding, carrying, or transporting any object of class 'object' (package, suitcase, bag, backpack). Report for ANY person touching or holding a transportable item, even briefly.",
+    "c_s1_sel2.text": "σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M2)",
+    "iv_v60.start": "0:05",
+    "iv_v60.end": "0:08",
+    "iv_v60.start_frame": "120",
+    "iv_v60.end_frame": "192",
+    "iv_v60.predicate": "carrying",
+    "iv_v60.confidence": {
+      "value": null,
+      "reason": "the system does not record a confidence for visual intervals"
+    },
+    "ent_5": "person 2",
+    "c_s1_op1.text": "Bef(δ:∞; ζ:<=, ρ:0)",
+    "c_s1_op1.δ": "∞",
+    "c_s1_op1.ζ": "<=",
+    "c_s1_op1.ρ": "0 seconds",
+    "g_operator_Bef.term": "Bef",
+    "g_operator_Bef.definition": "r.Te ζ s.Ts, s.Ts − r.Te ≤ δ",
+    "c_s1_cc1.text": "M1.arg1≠M2.arg1",
+    "g_comparison_identity_ne.term": "identity_ne",
+    "g_comparison_identity_ne.definition": "left ≠ right",
+    "c_s1_cc2.text": "M1.arg2=M2.arg2",
+    "g_comparison_identity_eq.term": "identity_eq",
+    "g_comparison_identity_eq.definition": "left = right",
+    "c_s1_proj.text": "π_{M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et}",
+    "ev_beffcb6f2a6e.model_id": {
+      "value": "handoff/A",
+      "label": "identifier of the WatchOut rule that made the detection"
+    },
+    "ev_beffcb6f2a6e.start": "0:01",
+    "ev_beffcb6f2a6e.end": "0:08",
+    "ev_beffcb6f2a6e.start_frame": "24",
+    "ev_beffcb6f2a6e.end_frame": "192",
+    "g_event_model_handoff.term": "handoff",
+    "g_event_model_handoff.definition": "π_{M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et} (\n  σ_{M1.arg1≠M2.arg1 ∧ M1.arg2=M2.arg2} (\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M1)\n    Bef(δ:∞; ζ:<=, ρ:0)\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M2)\n  ))"
+  },
+  "entities": {
+    "ent_3": {
+      "class": "person",
+      "description": "man in dark blue hoodie carrying a box",
+      "label": "person 1",
+      "roles": [
+        "M1.arg1"
+      ]
+    },
+    "ent_4": {
+      "class": "object",
+      "description": "cardboard box",
+      "label": "object 1",
+      "roles": [
+        "M1.arg2"
+      ]
+    },
+    "ent_5": {
+      "class": "person",
+      "description": "man in grey jacket and dark trousers holding a box",
+      "label": "person 2",
+      "roles": [
+        "M2.arg1"
+      ]
+    }
+  },
+  "glossary": {
+    "g_predicate_carrying": {
+      "kind": "predicate",
+      "term": "carrying",
+      "phrase": "{arg1} carries {arg2}"
+    },
+    "g_operator_Bef": {
+      "kind": "operator",
+      "term": "Bef",
+      "phrase": "{r} ends before {s} starts"
+    },
+    "g_comparison_identity_ne": {
+      "kind": "comparison",
+      "term": "identity_ne",
+      "phrase": "{left} and {right} are different"
+    },
+    "g_comparison_identity_eq": {
+      "kind": "comparison",
+      "term": "identity_eq",
+      "phrase": "{left} is the same in both observations"
+    },
+    "g_event_model_handoff": {
+      "kind": "event_model",
+      "term": "handoff",
+      "phrase": "an object passing from one person to another"
+    }
+  },
+  "codes": {
+    "engine_lineage": "WatchOut's lineage query, which records the intervals that produced the detection row",
+    "attributed": "the engine records exactly one interval for the variable"
+  }
+}
+

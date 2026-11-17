@@ -821,7 +821,7 @@
     },
     "IntervalRecord": {
       "additionalProperties": false,
-      "description": "An interval row that produces the event row, as WatchOut's lineage query returns it.",
+      "description": "An interval row that produces the event row, as WatchOut's lineage query returns it",
       "properties": {
         "interval_id": {
           "$ref": "#/$defs/IntervalId"

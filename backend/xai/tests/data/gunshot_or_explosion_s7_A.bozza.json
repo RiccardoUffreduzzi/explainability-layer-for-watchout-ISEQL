@@ -72,7 +72,7 @@
         }
       }
     },
-    "glossary_version": "glossary.yaml@0.2.0#91ca24285312+relation_vocab@2026-08-30 16:51:22+audio_taxonomy@2026-08-15 22:01:29",
+    "glossary_version": "glossary.yaml@0.2.4#1b2936cb8e18+relation_vocab@2026-08-30 16:51:22+audio_taxonomy@2026-08-15 22:01:29",
     "params_origin": "rule_defaults",
     "sources": {
       "glossary_version": {
@@ -322,11 +322,11 @@
       "term_id": "g_event_model_gunshot_or_explosion",
       "kind": "event_model",
       "term": "gunshot_or_explosion",
-      "definition": "π_{M1.arg1, M1.st, M1.et} (\n  σ_{(pred=\"gunshot_visible\" ∧ arg1=\"person\") ∨ (pred=\"explosion_visible\" ∧ arg1=\"vehicle\" ∨ arg1=\"object\")}(M1)\n)",
+      "definition": "π_{M1.arg1, M1.st, M1.et} (\n  σ_{(pred=\"gunshot_visible\" ∧ arg1=\"person\") ∨ (pred=\"explosion_visible\" ∧ (arg1=\"vehicle\" ∨ arg1=\"object\"))}(M1)\n)",
       "plain_template": "a gunshot or an explosion",
       "source": {
         "stage": "iseql",
-        "record_id": "EventSpec/gunshot_or_explosion/A#/iseql_text",
+        "record_id": "EventSpec/gunshot_or_explosion/A",
         "mode": "read"
       },
       "sources": {

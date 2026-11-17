@@ -120,7 +120,7 @@
             {
               "param": "δ",
               "condition": "δ = ∞",
-              "phrase": "at any time after"
+              "phrase": "{s} starting at any time after {r} ends"
             }
           ]
         },

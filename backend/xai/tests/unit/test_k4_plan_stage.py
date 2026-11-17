@@ -108,13 +108,15 @@ def test_write_plan_replaces_an_older_plan(tmp_path: Path) -> None:
 
 
 class _Boom:
-    """A stage between K2 and K4 that fails on one event type."""
+    """K2 failing on one event type."""
 
-    name = "boom"
+    name = "k2"
+    reads_from = "k1"
 
     def process(self, draft: ContractDraft, draft_path: Path) -> None:
         if draft.event.label == "handoff":
             raise RuntimeError("boom")
+        K2Stage().process(draft, draft_path)
 
 
 def test_a_failure_before_k4_spares_the_other_drafts(tmp_path: Path) -> None:
@@ -123,7 +125,7 @@ def test_a_failure_before_k4_spares_the_other_drafts(tmp_path: Path) -> None:
         (i, SimpleNamespace(draft=draft, event_id=f"ev_{i:012x}")) for i, draft in enumerate(drafts, start=1)
     ]
     outcome = SimpleNamespace(drafts=lambda: results)
-    pipeline = ReportPipeline(harvester=None, stages=(K2Stage(), _Boom(), K4Stage()))  # type: ignore[arg-type]
+    pipeline = ReportPipeline(harvester=None, stages=(_Boom(), K4Stage()))  # type: ignore[arg-type]
 
     pipeline._later_stages(outcome, AnalysisFolder(tmp_path, ANALYSIS))  # type: ignore[arg-type]
 

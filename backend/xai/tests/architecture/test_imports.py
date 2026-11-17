@@ -5,6 +5,9 @@
 - The K1 core (``xai.k1_harvester``) does not import adapters, the CLI or the pipeline.
 - The K4 core (``xai.k4_planner``) imports only ``xai.contract``, itself, the standard library
   and pydantic (NFR-K4-01); only its pipeline stage (``xai.k4_planner.stage``) may import more.
+- The core of the reports (``xai.reporting``) and the profiles of the reports (``xai.k5_report1``)
+  import only ``xai.contract``, the core of the reports, the standard library and pydantic; only the
+  pipeline stage of a report (``xai.k5_report1.stage``) may import more.
 - The paths of the pipeline (``xai.pipeline.paths``) use the standard library only, so that any
   stage can import them without importing another stage.
 - No WatchOut module imports ``xai``.
@@ -26,6 +29,9 @@ from xai.tests.support import WATCHOUT_SRC_DIR, XAI_DIR
 THIRD_PARTY_ALLOWED_IN_CONTRACT = {"pydantic", "pydantic_core", "annotated_types", "typing_extensions"}
 K4_STAGE_MODULES = ("xai.k4_planner.stage",)
 """The adapter of K4 to the pipeline, outside its core."""
+REPORT_PACKAGES = ("xai.reporting", "xai.k5_report1")
+REPORT_STAGE_MODULES = ("xai.k5_report1.stage",)
+"""The adapters of the reports to the pipeline, outside their core."""
 
 
 @dataclass(frozen=True)
@@ -129,6 +135,19 @@ def violations(module: Module, watchout: frozenset[str]) -> list[str]:
             found.append(
                 f"{module.name} imports {sorted(outside)}: the K4 core reads only the contract (NFR-K4-01)"
             )
+    if any(is_within(module.name, p) for p in REPORT_PACKAGES) and module.name not in REPORT_STAGE_MODULES:
+        outside = {
+            i
+            for i in module.imports
+            if not is_within(i, "xai.contract")
+            and not any(is_within(i, p) for p in REPORT_PACKAGES)
+            and top(i) not in sys.stdlib_module_names
+            and top(i) not in THIRD_PARTY_ALLOWED_IN_CONTRACT
+        }
+        if outside:
+            found.append(
+                f"{module.name} imports {sorted(outside)}: the core of the reports reads only the contract"
+            )
     if module.name == "xai.pipeline.paths":
         outside = {i for i in module.imports if top(i) not in sys.stdlib_module_names}
         if outside:
@@ -176,6 +195,19 @@ def test_watchout_packages_are_found() -> None:
         ("xai.k4_planner.planner", {"xai.pipeline.paths"}, "the K4 core reads only the contract"),
         ("xai.k4_planner.limits", {"xai.k2.stage"}, "the K4 core reads only the contract"),
         ("xai.pipeline.paths", {"xai.k2.stage"}, "the paths use the standard library only"),
+        (
+            "xai.reporting.writer",
+            {"xai.adapters.watchout.llm"},
+            "the core of the reports reads only the contract",
+        ),
+        ("xai.reporting.values", {"yaml"}, "the core of the reports reads only the contract"),
+        ("xai.reporting.files", {"xai.pipeline.paths"}, "the core of the reports reads only the contract"),
+        (
+            "xai.k5_report1.profile",
+            {"xai.k4_planner.view"},
+            "the core of the reports reads only the contract",
+        ),
+        ("xai.reporting.renderer", {"utils.vlm_client"}, "only xai.adapters.watchout may"),
     ],
 )
 def test_rules_catch_forbidden_imports(name: str, imports: set[str], expected: str) -> None:
@@ -195,6 +227,9 @@ def test_rules_catch_forbidden_imports(name: str, imports: set[str], expected: s
         ("xai.k4_planner.stage", {"xai.pipeline.runner", "xai.contract.plan"}),
         ("xai.k4_planner.stage", {"xai.pipeline.paths", "xai.k4_planner.planner"}),
         ("xai.pipeline.paths", {"pathlib"}),
+        ("xai.reporting.writer", {"logging", "xai.contract.plan", "xai.reporting.ports"}),
+        ("xai.k5_report1.stage", {"xai.pipeline.paths", "xai.reporting.files"}),
+        ("xai.adapters.watchout.llm", {"utils.vlm_client", "xai.reporting.ports"}),
     ],
 )
 def test_rules_allow_permitted_imports(name: str, imports: set[str]) -> None:

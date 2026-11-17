@@ -53,3 +53,14 @@ def _write(case: GoldenCase, data: dict[str, Any]) -> None:
         comment = json.loads(case.path.read_text(encoding="utf-8")).get("$comment", comment)
     text = json.dumps({"$comment": comment, **data}, ensure_ascii=False, indent=2)
     case.path.write_text(text + "\n", encoding="utf-8", newline="\n")
+
+
+@pytest.mark.parametrize("case", GOLDEN_CASES, ids=lambda c: c.name)
+def test_the_event_model_is_defined_by_the_executed_rule(case: GoldenCase) -> None:
+    """The ``iseql_text`` saved by WatchOut may differ from the executed structure: the
+    gunshot rule saves the alternative of ``arg1`` without its parentheses."""
+    draft = load_example(case.path)
+    (event,) = [entry for entry in draft["glossary"] if entry["kind"] == "event_model"]
+
+    assert event["definition"] == draft["rule"]["expression"]
+    assert event["source"]["record_id"] == draft["rule"]["structure_ref"]["record_id"]

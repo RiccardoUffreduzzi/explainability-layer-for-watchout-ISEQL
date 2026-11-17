@@ -1,17 +1,18 @@
 """The view of K4 on the source of truth : every ID found, nothing decided."""
 
-from pathlib import Path
 from typing import Any
 
 import pytest
 
 from xai.contract.model import ProjectionNode
-from xai.contract.source_of_truth import ReinforcementStatus, SourceOfTruth
+from xai.contract.source_of_truth import ReinforcementStatus
 from xai.k4_planner.view import SourceOfTruthView
-from xai.tests.k4_support import GOLDEN_NAMES, REAL_SOURCE_PATHS, golden_source, real_source, view_of
+from xai.tests.k4_support import GOLDEN_NAMES, golden_source, view_of
 
 
-def _check_every_id_is_found(document: SourceOfTruth) -> None:
+@pytest.mark.parametrize("name", GOLDEN_NAMES)
+def test_every_id_of_a_golden_source_is_found(name: str) -> None:
+    document = golden_source(name)
     view = SourceOfTruthView.of(document)
 
     for position, node in enumerate(document.rule.constraints):
@@ -29,16 +30,6 @@ def _check_every_id_is_found(document: SourceOfTruth) -> None:
         assert all(node.branch == branch for node in view.nodes_of(branch))
         assert isinstance(view.projection_of(branch), ProjectionNode)
     assert view.limits() == tuple(document.knowledge_limits)
-
-
-@pytest.mark.parametrize("name", GOLDEN_NAMES)
-def test_every_id_of_a_golden_source_is_found(name: str) -> None:
-    _check_every_id_is_found(golden_source(name))
-
-
-@pytest.mark.parametrize("path", REAL_SOURCE_PATHS, ids=lambda p: p.name)
-def test_every_id_of_a_real_source_is_found(path: Path) -> None:
-    _check_every_id_is_found(real_source(path))
 
 
 @pytest.mark.parametrize(

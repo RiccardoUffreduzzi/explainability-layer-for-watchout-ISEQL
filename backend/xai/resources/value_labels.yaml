@@ -1,0 +1,91 @@
+# Labels of the values the reports cite (K5, K6)
+#
+# English words for what the LLM would otherwise have to guess.
+# - fields: what a value is, by the name the reports give it (a value of the event by its path,
+#   event.model_id). A noun phrase, so that it still reads well if the LLM copies it.
+# - values: coded values -> words, by value name.
+# - reasons: the reasons of the contract -> why a value is missing.
+# - missing_fields: the paths of harvest_report.missing_fields -> the data they name.
+# - codes: the codes of the plan's bindings (basis and status) -> what they mean.
+version: 0.1.0
+
+fields:
+  event.model_id: identifier of the WatchOut rule that made the detection
+  pipeline_config.vlm_backend: provider and model of the video model
+  pipeline_config.audio_backend: provider and model of the audio model
+  pipeline_config.sampling.source_fps: frame rate of the video
+  pipeline_config.sampling.sample_every_n: sampling stride, in frames of the video
+  pipeline_config.sampling.effective_hz: rate of the analysed frames
+  pipeline_config.audio_window.window_s: length of each audio window analysed
+  pipeline_config.audio_window.hop_s: step between the starts of two audio windows
+  pipeline_config.merge_tolerance_s: largest gap between two detections merged into one interval
+  pipeline_config.determinism.temperature: sampling temperature of the video model
+  pipeline_config.determinism.seed: random seed of the video model
+  pipeline_config.detection_mode: modality of the detection (visual, audio or multimodal)
+  params_origin: origin of the parameters of the rule
+  contract_hash: hash of the source of truth the report is written from
+  reinforcement.status: relation in time between the video and the audio detections of the event
+  missing_fields: data the system does not save, each with the reason
+
+values:
+  params_origin:
+    rule_defaults: rule defaults
+    saved_by_gui: parameters saved in the GUI
+  reinforcement.status:
+    both_overlapping: detected by both video and audio, at overlapping times
+    both_disjoint: detected by both video and audio, at different times
+    only_visual: detected by video only
+    only_audio: detected by audio only
+    not_comparable: detected by both video and audio, but their times cannot be compared
+    no_counterpart: the other modality has no rule for this event
+    not_multimodal: the detection does not combine video and audio
+
+reasons:
+  keyframes_not_persisted: this WatchOut version does not store key frames
+  vlm_output_not_persisted: the system does not store the video model's output for that frame
+  reid_similarity_not_persisted: the system does not store the Re-ID similarity and gallery match
+  visual_confidence_not_recorded: the system does not record a confidence for visual intervals
+  fps_not_recorded: the frame rate of the analysis is not recorded
+  analysis_record_missing: the record of the analysis does not have this value
+  modality_rule_absent: the event has no rule for this modality
+  glossary_definition_not_in_system: the term has no definition in the system
+  conflicting_records: two records of the system give different values
+  entity_not_described: the video model did not describe this entity in the analysis
+
+missing_fields:
+  contract_meta.pipeline_config.vlm_backend: video model
+  contract_meta.pipeline_config.audio_backend: audio model
+  contract_meta.pipeline_config.sampling.source_fps: frame rate of the video
+  contract_meta.pipeline_config.sampling.sample_every_n: sampling stride
+  contract_meta.pipeline_config.sampling.effective_hz: frames analysed per second
+  contract_meta.pipeline_config.audio_window: audio window
+  contract_meta.pipeline_config.merge_tolerance_s: merge tolerance
+  event.modality_rules.visual: video rule
+  event.modality_rules.audio: audio rule
+  event.interval.start_s: start of the event in seconds
+  event.interval.end_s: end of the event in seconds
+  event.interval.start_frame: first frame of the event
+  event.interval.end_frame: last frame of the event
+  event.modality_detections[*].interval.start_s: start of a detection in seconds
+  event.modality_detections[*].interval.end_s: end of a detection in seconds
+  event.modality_detections[*].interval.start_frame: first frame of a detection
+  event.modality_detections[*].interval.end_frame: last frame of a detection
+  intervals[*].anchor.start_s: start of an interval in seconds
+  intervals[*].anchor.end_s: end of an interval in seconds
+  intervals[*].anchor.start_frame: first frame of an interval
+  intervals[*].anchor.end_frame: last frame of an interval
+  intervals[*].confidence: interval confidence
+  entities[*].reid_evidence: Re-ID similarity
+  entities[*].vlm_description: description of an entity by the video model
+  glossary[kind=predicate].definition: definition of a predicate
+  glossary[kind=audio_class].definition: definition of an audio class
+  glossary[kind=operator].definition: definition of a temporal operator
+  glossary[kind=comparison].definition: definition of a comparison
+  glossary[kind=event_model].definition: rule of the event
+  actions: key frames
+
+codes:
+  engine_lineage: WatchOut's lineage query, which records the intervals that produced the detection row
+  attributed: the engine records exactly one interval for the variable
+  ambiguous: the engine records more than one interval for the variable, each a witness of the same row
+  not_found: the engine records no interval for the variable

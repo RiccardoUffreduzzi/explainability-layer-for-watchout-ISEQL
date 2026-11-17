@@ -1,0 +1,29 @@
+# The sentences the system writes in Report 1, in the sections the LLM does not write
+# (SectionSpec.by_system): method and provenance, limits.
+# {name} cites a value of the table, as in the LLM's text; <slot> is filled by the system.
+
+# one sentence for each step of method and provenance
+steps:
+  s_prov_sampling: "The video was sampled at {pipeline_config.sampling.effective_hz}: one frame in every {pipeline_config.sampling.sample_every_n} of a {pipeline_config.sampling.source_fps} video."
+  s_prov_merge_tolerance: "Detections of the same relation at most {pipeline_config.merge_tolerance_s} apart were merged into one interval."
+  s_prov_determinism: "The video model ran with temperature {pipeline_config.determinism.temperature} and seed {pipeline_config.determinism.seed}."
+  s_prov_detection_mode: "Detection mode: {pipeline_config.detection_mode}."
+  s_prov_params_origin: "Rule parameters: {params_origin}."
+  s_prov_bindings: "WatchOut's lineage of this detection records <bindings>."
+  s_prov_contract_hash: "Source of truth: contract {contract_hash}."
+
+# each variable of the rule in <bindings>, by the status of its binding
+bindings:
+  attributed: "<variable> as the interval <intervals>"
+  ambiguous: "<variable> as one of the intervals <intervals>, each a witness of the same detection row"
+  not_found: "no interval for <variable>"
+
+intervals:
+  span: "from <start> to <end>"
+  at: "at <at>"
+
+# a short sentence before the limits that concern the same steps, then each limit as a list item
+limits:
+  whole_detection: "These limits concern the whole detection."
+  constructs: "These limits concern the conditions <constructs> of the rule."
+  missing_fields: "Not available here: {missing_fields}."

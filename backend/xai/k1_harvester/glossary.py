@@ -60,7 +60,7 @@ class GlossaryHarvester:
                 entries.append(self._predicate(term, ctx.vocabulary.descriptions))
         entries.extend(self._operator(name, unit) for name, unit in operators.items())
         entries.extend(self._comparison(name) for name in dict.fromkeys(comparisons))
-        entries.append(self._event(event.label, rule, ctx))
+        entries.append(self._event(event.label, rule))
         return sorted(entries, key=lambda e: e.term_id)
 
     def _source(self, section: str, term: str, found: bool) -> SourceRef:
@@ -150,19 +150,18 @@ class GlossaryHarvester:
             else {"definition": self._missing("glossary.yaml has no definition of this comparison")},
         )
 
-    def _event(self, label: str, rule: RuleRecord, ctx: HarvestContext) -> GlossaryEntry:
-        # The event is defined by its rule: the text saved in EventSpec, or the rendered
-        # structure when the model has no iseql_text (rule.expression_saved says the same).
+    def _event(self, label: str, rule: RuleRecord) -> GlossaryEntry:
+        # The event is defined by the rule that was executed, rendered from its structure:
+        # the iseql_text saved by WatchOut may differ from it (saved_text_diverges_from_structure),
+        # and the report shows the selections, conditions and projection of the structure.
         text = self.glossary.events.get(label)
-        saved = ctx.rule.model.get("iseql_text")
-        has_saved = isinstance(saved, str) and bool(saved.strip())
         return GlossaryEntry(
             term_id=term_id("event_model", label),
             kind="event_model",
             term=label,
-            definition=rule.expression_saved,
+            definition=rule.expression,
             plain_template=text.plain_template if text else label,
-            source=ctx.rule.source("/iseql_text") if has_saved else rule.structure_ref,
+            source=rule.structure_ref,
             sources={"plain_template": self._source("events", label, text is not None)},
         )
 

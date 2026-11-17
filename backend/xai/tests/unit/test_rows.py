@@ -105,8 +105,6 @@ def test_class_id(value: object, expected: int | None) -> None:
 
 # ----------------------------------------------------------------------------- branches and columns
 
-NO_EXTENT = Extent(start_seconds=None, end_seconds=None, start_frames=None, end_frames=None)
-
 
 def _branch(name: str, fields: tuple[ProjectedField, ...], extent: Extent) -> Branch:
     return Branch(
@@ -143,7 +141,6 @@ def _layout(columns: tuple[ResultColumn, ...] | None) -> RuleLayout:
         form="F3",
         branches=(LEFT, RIGHT),
         set_operation=None,
-        multiset=False,
         columns=columns,
         columns_problem=None if columns else "a column holds a different field on each side",
         extent=LEFT.extent,

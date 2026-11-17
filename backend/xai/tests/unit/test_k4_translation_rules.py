@@ -95,7 +95,9 @@ def test_handoff_operator(handoff: SourceOfTruthView) -> None:
         "in_report2": False,
         "term": "g_operator_Bef",
         "slots": {"r": "s_s1_sel1", "s": "s_s1_sel2"},
-        "readings": [{"param": "δ", "condition": "δ = ∞", "phrase": "at any time after"}],
+        "readings": [
+            {"param": "δ", "condition": "δ = ∞", "phrase": "{s} starting at any time after {r} ends"}
+        ],
     }
 
 

@@ -1,0 +1,280 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:watchout-xai:report:0.2.0-k5",
+  "$defs": {
+    "CitedEntity": {
+      "additionalProperties": false,
+      "description": "An entity the sentence names, with the words the LLM chose for it.",
+      "properties": {
+        "entity_id": {
+          "$ref": "#/$defs/EntityId"
+        },
+        "text": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "entity_id",
+        "text"
+      ],
+      "title": "CitedEntity",
+      "type": "object"
+    },
+    "CitedValue": {
+      "additionalProperties": false,
+      "description": "A value the sentence cites by name; the renderer wrote ``text`` in its place.",
+      "properties": {
+        "name": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "ref": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "text": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "form": {
+          "enum": [
+            "plain",
+            "code",
+            "quote",
+            "block"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "ref",
+        "text",
+        "form"
+      ],
+      "title": "CitedValue",
+      "type": "object"
+    },
+    "EntityId": {
+      "description": "ID of an entity: ent_ + the ClassID of VisualParticipant.",
+      "pattern": "^ent_[0-9]+$",
+      "type": "string"
+    },
+    "EventId": {
+      "description": "ID of the detection: ev_ + 12 hex digits of the request and the row.",
+      "pattern": "^ev_[0-9a-f]{12}$",
+      "type": "string"
+    },
+    "LlmSettings": {
+      "additionalProperties": false,
+      "description": "The model that wrote the text and how it was called.",
+      "properties": {
+        "provider": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "model": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "temperature": {
+          "type": "number"
+        },
+        "seed": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "provider",
+        "model",
+        "temperature",
+        "seed"
+      ],
+      "title": "LlmSettings",
+      "type": "object"
+    },
+    "ReportMeta": {
+      "additionalProperties": false,
+      "properties": {
+        "report_version": {
+          "const": "0.2.0-k5",
+          "type": "string"
+        },
+        "report": {
+          "enum": [
+            1,
+            2
+          ],
+          "type": "integer"
+        },
+        "event_id": {
+          "$ref": "#/$defs/EventId"
+        },
+        "model_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "plan_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "contract_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "prompt_version": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "sentences_version": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "llm": {
+          "$ref": "#/$defs/LlmSettings"
+        },
+        "attempts": {
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        "verification": {
+          "const": "not_run",
+          "type": "string"
+        }
+      },
+      "required": [
+        "report_version",
+        "report",
+        "event_id",
+        "model_id",
+        "label",
+        "plan_hash",
+        "contract_hash",
+        "prompt_version",
+        "sentences_version",
+        "llm",
+        "attempts",
+        "verification"
+      ],
+      "title": "ReportMeta",
+      "type": "object"
+    },
+    "Section": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "written_by": {
+          "enum": [
+            "llm",
+            "system"
+          ],
+          "type": "string"
+        },
+        "sentences": {
+          "items": {
+            "$ref": "#/$defs/Sentence"
+          },
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "title",
+        "written_by",
+        "sentences"
+      ],
+      "title": "Section",
+      "type": "object"
+    },
+    "Sentence": {
+      "additionalProperties": false,
+      "properties": {
+        "llm_text": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "text": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "step_ids": {
+          "items": {
+            "$ref": "#/$defs/StepId"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "values": {
+          "items": {
+            "$ref": "#/$defs/CitedValue"
+          },
+          "type": "array"
+        },
+        "entities": {
+          "items": {
+            "$ref": "#/$defs/CitedEntity"
+          },
+          "type": "array"
+        },
+        "block": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "list_item": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "llm_text",
+        "text",
+        "step_ids",
+        "values",
+        "entities",
+        "block",
+        "list_item"
+      ],
+      "title": "Sentence",
+      "type": "object"
+    },
+    "StepId": {
+      "description": "ID of a step: s_ + the rule node without c_ (s_s1_op1), s_lim_<code>, ...",
+      "pattern": "^s_[A-Za-z0-9_]+$",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "One report of one detection.",
+  "properties": {
+    "report_meta": {
+      "$ref": "#/$defs/ReportMeta"
+    },
+    "sections": {
+      "items": {
+        "$ref": "#/$defs/Section"
+      },
+      "minItems": 1,
+      "type": "array"
+    }
+  },
+  "required": [
+    "report_meta",
+    "sections"
+  ],
+  "title": "Report",
+  "type": "object"
+}

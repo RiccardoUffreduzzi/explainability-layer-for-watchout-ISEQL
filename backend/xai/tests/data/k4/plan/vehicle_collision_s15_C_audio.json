@@ -27,12 +27,12 @@
     "branches": [
       "s1"
     ],
-    "contract_hash": "148250684a7e3a5feaa5ee008d6cd0feda165d2b0300900b7558b9681c7a9ffd",
+    "contract_hash": "b2689362bb2e2ff726798b0e652c16138e8f244d635950aa4a0d829d9447f82f",
     "contract_version": "0.4.0-k1",
     "event_id": "ev_cb96ebb2235a",
     "label": "vehicle_collision",
     "model_id": "vehicle_collision/C",
-    "plan_hash": "97ff6ae474d27b1f89cb9ddd38adf0e237c2bb1a9183665220cfc3b4652b2263",
+    "plan_hash": "063848c462fbc4bdb22e6dd520e5b10c79dd24b62db12d9327fad5ca08505335",
     "plan_version": "0.1.0-k4",
     "source_of_truth_version": "0.2.0-k2"
   },
@@ -107,7 +107,7 @@
         {
           "condition": "δ = ∞",
           "param": "δ",
-          "phrase": "at any time while {r} is ongoing"
+          "phrase": "at any time after the start of {r}"
         }
       ],
       "refs": [

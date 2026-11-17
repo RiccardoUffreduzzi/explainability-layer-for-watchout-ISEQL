@@ -27,12 +27,12 @@
     "branches": [
       "s1"
     ],
-    "contract_hash": "c6a86d1a012892abad138321f213da1929329e45fde71b12401b29a82b2f8036",
+    "contract_hash": "3bd9134d95371422726d6279e45af9a8357846dfdfcf297510ecbefbeb96eb33",
     "contract_version": "0.4.0-k1",
     "event_id": "ev_beffcb6f2a6e",
     "label": "handoff",
     "model_id": "handoff/A",
-    "plan_hash": "08ba794d4db0c3652e17ec09d0e74f372ca586ebdb96ee9b206ef57f4820f50b",
+    "plan_hash": "7175bac0e03ff9c35ce1e2de6e169a7ac1a9369916a1e8ca70d6c9c58abca6fa",
     "plan_version": "0.1.0-k4",
     "source_of_truth_version": "0.2.0-k2"
   },
@@ -98,7 +98,7 @@
         {
           "condition": "δ = ∞",
           "param": "δ",
-          "phrase": "at any time after"
+          "phrase": "{s} starting at any time after {r} ends"
         }
       ],
       "refs": [

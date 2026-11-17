@@ -19,6 +19,20 @@ if TYPE_CHECKING:
     from xai.k1_harvester.service import StageHarvester
 
 
+@pytest.fixture(autouse=True)
+def no_real_llm(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> None:
+    """No test builds a client of a real LLM, even with a provider's key in the environment."""
+    if request.node.get_closest_marker("real_llm_client") is not None:
+        return
+    from xai.adapters.watchout import llm
+    from xai.reporting.ports import LlmUnavailable
+
+    def refuse(config: object) -> None:
+        raise LlmUnavailable("the tests never call a real LLM")
+
+    monkeypatch.setattr(llm, "new_client", refuse)
+
+
 @pytest.fixture(params=EXAMPLE_PATHS, ids=[p.name for p in EXAMPLE_PATHS])
 def example(request: pytest.FixtureRequest) -> dict[str, Any]:
     """Each example draft of tests/data, as JSON data."""

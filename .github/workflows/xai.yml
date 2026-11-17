@@ -46,8 +46,12 @@ jobs:
         run: ruff format --check xai
       - name: Types (mypy --strict)
         run: mypy --config-file xai/mypy.ini xai
-      - name: JSON schema matches the model
-        run: python -m xai.contract.json_schema --check
+      - name: JSON schemas match the models
+        run: |
+          python -m xai.contract.json_schema --check
+          python -m xai.contract.source_of_truth_schema --check
+          python -m xai.contract.plan_schema --check
+          python -m xai.contract.report_schema --check
       - name: Tests (pytest)
         working-directory: backend/xai
         run: python -m pytest

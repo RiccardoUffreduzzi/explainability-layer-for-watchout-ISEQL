@@ -1,0 +1,15 @@
+## Event and rule
+
+The system detected an event with rule {ev_69409d7b3e1a.model_id}, from {ev_69409d7b3e1a.start} to {ev_69409d7b3e1a.end} (frames {ev_69409d7b3e1a.start_frame}–{ev_69409d7b3e1a.end_frame}). [s_s1_proj]
+In plain words, a person lingered suspiciously near a vehicle. [s_s1_proj]
+In the rule, M1.arg1 is the [person in a dark hooded jacket](ent_6) and M1.arg2 is the [silver sedan](ent_1). [s_s1_proj]
+The rule that was executed: {g_event_model_suspicious_near_vehicle.definition} [s_s1_proj]
+
+## What was observed
+
+From {iv_v54.start} to {iv_v54.end} (frames {iv_v54.start_frame}–{iv_v54.end_frame}), the video model saw the [person in a dark hooded jacket](ent_6) lingering suspiciously around the [silver sedan](ent_1), selected by {c_s1_sel1.text}. [s_s1_sel1]
+For the video model, {g_predicate_suspicious_near_vehicle.term} means: {g_predicate_suspicious_near_vehicle.definition} [s_s1_sel1]
+
+## Why it was flagged
+
+The observation lasts at least {c_s1_cc1.value} {c_s1_cc1.unit}, as the condition {c_s1_cc1.text} requires (defined as {g_comparison_duration_ge.definition}). [s_s1_cc1]

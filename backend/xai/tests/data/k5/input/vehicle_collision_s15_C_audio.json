@@ -1,0 +1,291 @@
+{
+  "plan": {
+    "plan_meta": {
+      "plan_version": "0.1.0-k4",
+      "contract_hash": "b2689362bb2e2ff726798b0e652c16138e8f244d635950aa4a0d829d9447f82f",
+      "source_of_truth_version": "0.2.0-k2",
+      "contract_version": "0.4.0-k1",
+      "event_id": "ev_cb96ebb2235a",
+      "model_id": "vehicle_collision/C",
+      "label": "vehicle_collision",
+      "branches": [
+        "s1"
+      ],
+      "plan_hash": "063848c462fbc4bdb22e6dd520e5b10c79dd24b62db12d9327fad5ca08505335"
+    },
+    "steps": [
+      {
+        "step_id": "s_s1_sel1",
+        "type": "observation",
+        "construct": "c_s1_sel1",
+        "refs": [
+          "c_s1_sel1",
+          "iv_a21",
+          "g_audio_class_horn"
+        ],
+        "role": "because",
+        "depends_on": [],
+        "t_order": 0.0,
+        "t_order_basis": "interval",
+        "in_report2": true,
+        "term": "g_audio_class_horn",
+        "alternatives": [
+          "g_audio_class_horn",
+          "g_audio_class_skidding"
+        ]
+      },
+      {
+        "step_id": "s_s1_sel2",
+        "type": "observation",
+        "construct": "c_s1_sel2",
+        "refs": [
+          "c_s1_sel2",
+          "iv_a22",
+          "g_audio_class_glass_breaking"
+        ],
+        "role": "because",
+        "depends_on": [],
+        "t_order": 2.5,
+        "t_order_basis": "interval",
+        "in_report2": true,
+        "term": "g_audio_class_glass_breaking",
+        "alternatives": [
+          "g_audio_class_impact",
+          "g_audio_class_glass_breaking"
+        ]
+      },
+      {
+        "step_id": "s_s1_op1",
+        "type": "temporal",
+        "construct": "c_s1_op1",
+        "refs": [
+          "c_s1_op1",
+          "g_operator_SP"
+        ],
+        "role": "because",
+        "depends_on": [
+          "s_s1_sel1",
+          "s_s1_sel2"
+        ],
+        "t_order": 2.5,
+        "t_order_basis": "interval",
+        "in_report2": false,
+        "term": "g_operator_SP",
+        "slots": {
+          "r": "s_s1_sel1",
+          "s": "s_s1_sel2"
+        },
+        "readings": [
+          {
+            "param": "δ",
+            "condition": "δ = ∞",
+            "phrase": "at any time after the start of {r}"
+          }
+        ]
+      },
+      {
+        "step_id": "s_s1_proj",
+        "type": "conclusion",
+        "construct": "c_s1_proj",
+        "refs": [
+          "c_s1_proj",
+          "ev_cb96ebb2235a",
+          "g_event_model_vehicle_collision"
+        ],
+        "depends_on": [
+          "s_s1_op1"
+        ],
+        "t_order": 2.5,
+        "t_order_basis": "interval",
+        "in_report2": true,
+        "term": "g_event_model_vehicle_collision"
+      },
+      {
+        "step_id": "s_reinforcement",
+        "type": "reinforcement",
+        "refs": [
+          "ev_cb96ebb2235a",
+          "#/event/modality_detections/0",
+          "#/event/modality_detections/1",
+          "#/event/modality_detections/2",
+          "#/event/modality_detections/3"
+        ],
+        "role": "context",
+        "depends_on": [
+          "s_s1_proj"
+        ],
+        "t_order": 2.5,
+        "t_order_basis": "interval",
+        "in_report2": true,
+        "fixed_text": "The event was detected by both video and audio, in the same time interval."
+      },
+      {
+        "step_id": "s_prov_modality_association",
+        "type": "provenance",
+        "refs": [
+          "#/event/reinforcement"
+        ],
+        "role": "context",
+        "depends_on": [],
+        "t_order": null,
+        "t_order_basis": "none",
+        "in_report2": false
+      },
+      {
+        "step_id": "s_prov_confidences",
+        "type": "provenance",
+        "refs": [
+          "iv_a21",
+          "iv_a22"
+        ],
+        "role": "context",
+        "depends_on": [],
+        "t_order": null,
+        "t_order_basis": "none",
+        "in_report2": false
+      }
+    ],
+    "bindings": [
+      {
+        "branch": "s1",
+        "variable": "M1",
+        "status": "attributed",
+        "interval_ids": [
+          "iv_a21"
+        ],
+        "basis": [
+          "engine_lineage"
+        ]
+      },
+      {
+        "branch": "s1",
+        "variable": "M2",
+        "status": "attributed",
+        "interval_ids": [
+          "iv_a22"
+        ],
+        "basis": [
+          "engine_lineage"
+        ]
+      }
+    ],
+    "plan_report": {
+      "excluded_constructs": [
+        {
+          "constraint_id": "c_set1",
+          "reason": "set_operation"
+        },
+        {
+          "constraint_id": "c_s2_proj",
+          "reason": "other_branch"
+        },
+        {
+          "constraint_id": "c_s2_sel1",
+          "reason": "other_branch"
+        }
+      ],
+      "unbound_intervals": [],
+      "unmatched_readings": [],
+      "notes": []
+    }
+  },
+  "values": {
+    "c_s1_sel1.text": "σ_{(pred=\"horn\") ∨ (pred=\"skidding\")}(M1)",
+    "iv_a21.start": "0:00",
+    "iv_a21.end": "0:05",
+    "iv_a21.start_frame": "0",
+    "iv_a21.end_frame": "120",
+    "iv_a21.predicate": "horn",
+    "iv_a21.confidence": "1.0",
+    "g_audio_class_horn.term": "horn",
+    "g_audio_class_horn.definition": "WatchOut assigns this class when the audio model answers with one of: horn, honk, honking.",
+    "g_audio_class_skidding.term": "skidding",
+    "g_audio_class_skidding.definition": "WatchOut assigns this class when the audio model answers with one of: skidding, skid.",
+    "c_s1_sel2.text": "σ_{(pred=\"impact\") ∨ (pred=\"glass_breaking\")}(M2)",
+    "iv_a22.start": "0:02.5",
+    "iv_a22.end": "0:07.5",
+    "iv_a22.start_frame": "60",
+    "iv_a22.end_frame": "180",
+    "iv_a22.predicate": "glass_breaking",
+    "iv_a22.confidence": "1.0",
+    "g_audio_class_glass_breaking.term": "glass_breaking",
+    "g_audio_class_glass_breaking.definition": "WatchOut assigns this class when the audio model answers with one of: glass, glass_breaking, shatter, shattering.",
+    "g_audio_class_impact.term": "impact",
+    "g_audio_class_impact.definition": "WatchOut assigns this class when the audio model answers with one of: impact, thump, thud, bang, slam, smash, crash, punch, hit.",
+    "c_s1_op1.text": "SP(δ:∞; ζ:<=, ρ:0)",
+    "c_s1_op1.δ": "∞",
+    "c_s1_op1.ζ": "<=",
+    "c_s1_op1.ρ": "0 seconds",
+    "g_operator_SP.term": "SP",
+    "g_operator_SP.definition": "r.Ts ζ s.Ts < r.Te, s.Ts − r.Ts ≤ δ",
+    "c_s1_proj.text": "π_{M1.st, M2.et}",
+    "ev_cb96ebb2235a.model_id": {
+      "value": "vehicle_collision/C",
+      "label": "identifier of the WatchOut rule that made the detection"
+    },
+    "ev_cb96ebb2235a.start": "0:00",
+    "ev_cb96ebb2235a.end": "0:07.5",
+    "ev_cb96ebb2235a.start_frame": "0",
+    "ev_cb96ebb2235a.end_frame": "180",
+    "g_event_model_vehicle_collision.term": "vehicle_collision",
+    "g_event_model_vehicle_collision.definition": "π_{M1.st, M2.et} (\n  σ_{(pred=\"horn\") ∨ (pred=\"skidding\")}(M1)\n  SP(δ:∞; ζ:<=, ρ:0)\n  σ_{(pred=\"impact\") ∨ (pred=\"glass_breaking\")}(M2)\n)\n∪\nπ_{M1.arg1, M1.st, M1.et} (\n  σ_{pred=\"vehicle_collision\" ∧ arg1=\"vehicle\"}(M1)\n)",
+    "s_reinforcement.fixed_text": "The event was detected by both video and audio, in the same time interval.",
+    "modality_detections.0.modality": "visual",
+    "modality_detections.0.at": "0:05",
+    "modality_detections.0.frame": "120",
+    "modality_detections.1.modality": "visual",
+    "modality_detections.1.at": "0:05",
+    "modality_detections.1.frame": "120",
+    "modality_detections.2.modality": "visual",
+    "modality_detections.2.start": "0:06",
+    "modality_detections.2.end": "0:10",
+    "modality_detections.2.start_frame": "144",
+    "modality_detections.2.end_frame": "240",
+    "modality_detections.3.modality": "audio",
+    "modality_detections.3.start": "0:00",
+    "modality_detections.3.end": "0:07.5",
+    "modality_detections.3.start_frame": "0",
+    "modality_detections.3.end_frame": "180",
+    "reinforcement.status": {
+      "value": "detected by both video and audio, at overlapping times",
+      "label": "relation in time between the video and the audio detections of the event"
+    }
+  },
+  "entities": {},
+  "glossary": {
+    "g_audio_class_horn": {
+      "kind": "audio_class",
+      "term": "horn",
+      "phrase": "the sound of a horn"
+    },
+    "g_audio_class_skidding": {
+      "kind": "audio_class",
+      "term": "skidding",
+      "phrase": "the sound of tyres skidding"
+    },
+    "g_audio_class_glass_breaking": {
+      "kind": "audio_class",
+      "term": "glass_breaking",
+      "phrase": "the sound of glass breaking"
+    },
+    "g_audio_class_impact": {
+      "kind": "audio_class",
+      "term": "impact",
+      "phrase": "the sound of an impact"
+    },
+    "g_operator_SP": {
+      "kind": "operator",
+      "term": "SP",
+      "phrase": "{s} starts while {r} is ongoing"
+    },
+    "g_event_model_vehicle_collision": {
+      "kind": "event_model",
+      "term": "vehicle_collision",
+      "phrase": "a vehicle collision"
+    }
+  },
+  "codes": {
+    "engine_lineage": "WatchOut's lineage query, which records the intervals that produced the detection row",
+    "attributed": "the engine records exactly one interval for the variable"
+  }
+}

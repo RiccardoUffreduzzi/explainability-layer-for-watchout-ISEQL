@@ -16,12 +16,12 @@
     "branches": [
       "right"
     ],
-    "contract_hash": "af29f4caf77258aaa251fc57cace5d56c463c0380e796de147e8aaca7a9e1d6b",
+    "contract_hash": "d91f61e4396d4403efd8f8cf1af6357511bcd541f8d3f0888a942a204d4553ec",
     "contract_version": "0.4.0-k1",
     "event_id": "ev_f61f6c2d9945",
     "label": "vehicle_collision",
     "model_id": "vehicle_collision/C",
-    "plan_hash": "74c5142275d4459a28a6a712db4b213dabf27a2db6c00b7209efdf28a38bffb9",
+    "plan_hash": "0fcd9820ea71560fa373b73a69fd88db5cf693c299ac78217acf4f13b289174f",
     "plan_version": "0.1.0-k4",
     "source_of_truth_version": "0.2.0-k2"
   },

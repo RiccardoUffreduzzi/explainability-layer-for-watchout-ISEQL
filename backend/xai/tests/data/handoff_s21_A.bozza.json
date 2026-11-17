@@ -72,7 +72,7 @@
         }
       }
     },
-    "glossary_version": "glossary.yaml@0.2.0#91ca24285312+relation_vocab@2026-08-30 16:51:22+audio_taxonomy@2026-08-15 22:01:29",
+    "glossary_version": "glossary.yaml@0.2.4#1b2936cb8e18+relation_vocab@2026-08-30 16:51:22+audio_taxonomy@2026-08-15 22:01:29",
     "params_origin": "rule_defaults",
     "sources": {
       "glossary_version": {
@@ -579,7 +579,7 @@
       "kind": "comparison",
       "term": "identity_eq",
       "definition": "left = right",
-      "plain_template": "{left} and {right} are the same",
+      "plain_template": "{left} is the same in both observations",
       "source": {
         "stage": "code",
         "record_id": "glossary.yaml/comparisons.identity_eq",
@@ -603,10 +603,10 @@
       "kind": "event_model",
       "term": "handoff",
       "definition": "π_{M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et} (\n  σ_{M1.arg1≠M2.arg1 ∧ M1.arg2=M2.arg2} (\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M1)\n    Bef(δ:∞; ζ:<=, ρ:0)\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M2)\n  ))",
-      "plain_template": "an object passes from one person to another",
+      "plain_template": "an object passing from one person to another",
       "source": {
         "stage": "iseql",
-        "record_id": "EventSpec/handoff/A#/iseql_text",
+        "record_id": "EventSpec/handoff/A",
         "mode": "read"
       },
       "sources": {
@@ -626,11 +626,11 @@
       "parameter_readings": [
         {
           "condition": "δ = ∞",
-          "phrase": "at any time after"
+          "phrase": "{s} starting at any time after {r} ends"
         },
         {
           "condition": "δ = d",
-          "phrase": "within d seconds"
+          "phrase": "{s} starting within d seconds of the end of {r}"
         }
       ],
       "source": {

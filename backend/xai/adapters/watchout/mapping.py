@@ -79,7 +79,6 @@ def to_layout(plan: CompiledPlan) -> RuleLayout:
         form=plan.form,
         branches=tuple(to_branch(b) for b in plan.branches),
         set_operation=None if plan.set_tree is None else to_set_operation(plan.set_tree),
-        multiset=plan.form == "F2" and plan.set_tree is not None,
         columns=None if plan.columns is None else tuple(to_column(c) for c in plan.columns),
         columns_problem=plan.columns_problem,
         extent=alias_extent(plan.extent.start, plan.extent.end),

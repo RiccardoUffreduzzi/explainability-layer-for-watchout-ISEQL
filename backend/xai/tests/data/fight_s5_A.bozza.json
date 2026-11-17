@@ -72,7 +72,7 @@
         }
       }
     },
-    "glossary_version": "glossary.yaml@0.2.0#91ca24285312+relation_vocab@2026-08-30 16:51:22+audio_taxonomy@2026-08-15 22:01:29",
+    "glossary_version": "glossary.yaml@0.2.4#1b2936cb8e18+relation_vocab@2026-08-30 16:51:22+audio_taxonomy@2026-08-15 22:01:29",
     "params_origin": "rule_defaults",
     "sources": {
       "glossary_version": {
@@ -396,7 +396,7 @@
       "plain_template": "a fight",
       "source": {
         "stage": "iseql",
-        "record_id": "EventSpec/fight/A#/iseql_text",
+        "record_id": "EventSpec/fight/A",
         "mode": "read"
       },
       "sources": {

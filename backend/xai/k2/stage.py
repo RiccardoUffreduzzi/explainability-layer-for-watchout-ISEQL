@@ -1,4 +1,4 @@
-"""``K2Stage``: the stage that ``ReportPipeline`` runs on each draft after K1.
+"""stage that ``ReportPipeline`` runs on each draft after K1.
 
 K1's file is never touched. The source of truth is written in a folder of its own::
 
@@ -21,9 +21,9 @@ def k2_path(draft_path: Path) -> Path:
 
 
 class K2Stage:
-    """Satisfies ``xai.pipeline.runner.ReportStage``."""
 
     name = "k2"
+    reads_from = "k1"
 
     def process(self, draft: ContractDraft, draft_path: Path) -> None:
         text = dump_source_of_truth(build_source_of_truth(draft), indent=2) + "\n"

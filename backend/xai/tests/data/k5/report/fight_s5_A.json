@@ -1,0 +1,561 @@
+{
+  "report_meta": {
+    "attempts": 1,
+    "contract_hash": "9118e7309af73ec54a32bdd623eb6257d12686195fe7f20c1f5b3e90a2ed935f",
+    "event_id": "ev_d966ffea748d",
+    "label": "fight",
+    "llm": {
+      "model": "scripted",
+      "provider": "test",
+      "seed": null,
+      "temperature": 0.0
+    },
+    "model_id": "fight/A",
+    "plan_hash": "423a5257f586c34d12111bcac540bdc3b75d71d597de75d5903b80b8b4a71247",
+    "prompt_version": "report1@830cf043a1ae",
+    "report": 1,
+    "report_version": "0.2.0-k5",
+    "sentences_version": "report1@ac52072d368b",
+    "verification": "not_run"
+  },
+  "sections": [
+    {
+      "sentences": [
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "The system detected an event with rule {ev_d966ffea748d.model_id}, from {ev_d966ffea748d.start} to {ev_d966ffea748d.end} (frames {ev_d966ffea748d.start_frame}–{ev_d966ffea748d.end_frame}). [s_s1_proj]",
+          "step_ids": [
+            "s_s1_proj"
+          ],
+          "text": "The system detected an event with rule fight/A, from 0:00 to 0:05 (frames 0–120).",
+          "values": [
+            {
+              "form": "code",
+              "name": "ev_d966ffea748d.model_id",
+              "ref": "#/event/model_id",
+              "text": "fight/A"
+            },
+            {
+              "form": "plain",
+              "name": "ev_d966ffea748d.start",
+              "ref": "#/event/interval/start_s",
+              "text": "0:00"
+            },
+            {
+              "form": "plain",
+              "name": "ev_d966ffea748d.end",
+              "ref": "#/event/interval/end_s",
+              "text": "0:05"
+            },
+            {
+              "form": "plain",
+              "name": "ev_d966ffea748d.start_frame",
+              "ref": "#/event/interval/start_frame",
+              "text": "0"
+            },
+            {
+              "form": "plain",
+              "name": "ev_d966ffea748d.end_frame",
+              "ref": "#/event/interval/end_frame",
+              "text": "120"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "In plain words, the event is a fight. [s_s1_proj]",
+          "step_ids": [
+            "s_s1_proj"
+          ],
+          "text": "In plain words, the event is a fight.",
+          "values": []
+        },
+        {
+          "block": 0,
+          "entities": [
+            {
+              "entity_id": "ent_1",
+              "text": "man in a grey hooded sweatshirt and khaki pants"
+            },
+            {
+              "entity_id": "ent_2",
+              "text": "man in a dark jacket and blue jeans"
+            }
+          ],
+          "list_item": false,
+          "llm_text": "In the rule, M1.arg1 is the [man in a grey hooded sweatshirt and khaki pants](ent_1) and M1.arg2 is the [man in a dark jacket and blue jeans](ent_2). [s_s1_proj]",
+          "step_ids": [
+            "s_s1_proj"
+          ],
+          "text": "In the rule, M1.arg1 is the man in a grey hooded sweatshirt and khaki pants and M1.arg2 is the man in a dark jacket and blue jeans.",
+          "values": []
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "The rule that was executed: {g_event_model_fight.definition} [s_s1_proj]",
+          "step_ids": [
+            "s_s1_proj"
+          ],
+          "text": "The rule that was executed: π_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{M1.arg1≠M1.arg2} (\n    σ_{pred=\"physical_altercation\" ∧ arg1=\"person\" ∧ arg2=\"person\"}(M1)\n  ))",
+          "values": [
+            {
+              "form": "block",
+              "name": "g_event_model_fight.definition",
+              "ref": "#/glossary/1/definition",
+              "text": "π_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{M1.arg1≠M1.arg2} (\n    σ_{pred=\"physical_altercation\" ∧ arg1=\"person\" ∧ arg2=\"person\"}(M1)\n  ))"
+            }
+          ]
+        }
+      ],
+      "title": "Event and rule",
+      "written_by": "llm"
+    },
+    {
+      "sentences": [
+        {
+          "block": 0,
+          "entities": [
+            {
+              "entity_id": "ent_1",
+              "text": "man in a grey hooded sweatshirt and khaki pants"
+            },
+            {
+              "entity_id": "ent_2",
+              "text": "man in a dark jacket and blue jeans"
+            }
+          ],
+          "list_item": false,
+          "llm_text": "From {iv_v6.start} to {iv_v6.end} (frames {iv_v6.start_frame}–{iv_v6.end_frame}), the video model saw the [man in a grey hooded sweatshirt and khaki pants](ent_1) and the [man in a dark jacket and blue jeans](ent_2) fight, selected by {c_s1_sel1.text}. [s_s1_sel1]",
+          "step_ids": [
+            "s_s1_sel1"
+          ],
+          "text": "From 0:00 to 0:05 (frames 0–120), the video model saw the man in a grey hooded sweatshirt and khaki pants and the man in a dark jacket and blue jeans fight, selected by σ_{pred=\"physical_altercation\" ∧ arg1=\"person\" ∧ arg2=\"person\"}(M1).",
+          "values": [
+            {
+              "form": "plain",
+              "name": "iv_v6.start",
+              "ref": "#/intervals/0/anchor/start_s",
+              "text": "0:00"
+            },
+            {
+              "form": "plain",
+              "name": "iv_v6.end",
+              "ref": "#/intervals/0/anchor/end_s",
+              "text": "0:05"
+            },
+            {
+              "form": "plain",
+              "name": "iv_v6.start_frame",
+              "ref": "#/intervals/0/anchor/start_frame",
+              "text": "0"
+            },
+            {
+              "form": "plain",
+              "name": "iv_v6.end_frame",
+              "ref": "#/intervals/0/anchor/end_frame",
+              "text": "120"
+            },
+            {
+              "form": "code",
+              "name": "c_s1_sel1.text",
+              "ref": "#/rule/constraints/2/text",
+              "text": "σ_{pred=\"physical_altercation\" ∧ arg1=\"person\" ∧ arg2=\"person\"}(M1)"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "For the video model, {g_predicate_physical_altercation.term} means: {g_predicate_physical_altercation.definition} [s_s1_sel1]",
+          "step_ids": [
+            "s_s1_sel1"
+          ],
+          "text": "For the video model, physical_altercation means: Two or more people are involved in aggressive behavior: fighting, pushing, hitting, punching, making aggressive gestures, or throwing objects at each other. Include IDs of all people involved.",
+          "values": [
+            {
+              "form": "code",
+              "name": "g_predicate_physical_altercation.term",
+              "ref": "#/glossary/2/term",
+              "text": "physical_altercation"
+            },
+            {
+              "form": "quote",
+              "name": "g_predicate_physical_altercation.definition",
+              "ref": "#/glossary/2/definition",
+              "text": "Two or more people are involved in aggressive behavior: fighting, pushing, hitting, punching, making aggressive gestures, or throwing objects at each other. Include IDs of all people involved."
+            }
+          ]
+        }
+      ],
+      "title": "What was observed",
+      "written_by": "llm"
+    },
+    {
+      "sentences": [
+        {
+          "block": 0,
+          "entities": [
+            {
+              "entity_id": "ent_1",
+              "text": "man in a grey hooded sweatshirt"
+            },
+            {
+              "entity_id": "ent_2",
+              "text": "man in a dark jacket"
+            }
+          ],
+          "list_item": false,
+          "llm_text": "The two arguments of the same interval are different people ({c_s1_cc1.text}, defined as {g_comparison_identity_ne.definition}): the [man in a grey hooded sweatshirt](ent_1) and the [man in a dark jacket](ent_2). [s_s1_cc1]",
+          "step_ids": [
+            "s_s1_cc1"
+          ],
+          "text": "The two arguments of the same interval are different people (M1.arg1≠M1.arg2, defined as left ≠ right): the man in a grey hooded sweatshirt and the man in a dark jacket.",
+          "values": [
+            {
+              "form": "code",
+              "name": "c_s1_cc1.text",
+              "ref": "#/rule/constraints/1/text",
+              "text": "M1.arg1≠M1.arg2"
+            },
+            {
+              "form": "code",
+              "name": "g_comparison_identity_ne.definition",
+              "ref": "#/glossary/0/definition",
+              "text": "left ≠ right"
+            }
+          ]
+        }
+      ],
+      "title": "Why it was flagged",
+      "written_by": "llm"
+    },
+    {
+      "sentences": [
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "The video was sampled at {pipeline_config.sampling.effective_hz}: one frame in every {pipeline_config.sampling.sample_every_n} of a {pipeline_config.sampling.source_fps} video. [s_prov_sampling]",
+          "step_ids": [
+            "s_prov_sampling"
+          ],
+          "text": "The video was sampled at 1.0 Hz: one frame in every 24 of a 24 fps video.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "pipeline_config.sampling.effective_hz",
+              "ref": "#/contract_meta/pipeline_config/sampling/effective_hz",
+              "text": "1.0 Hz"
+            },
+            {
+              "form": "plain",
+              "name": "pipeline_config.sampling.sample_every_n",
+              "ref": "#/contract_meta/pipeline_config/sampling/sample_every_n",
+              "text": "24"
+            },
+            {
+              "form": "plain",
+              "name": "pipeline_config.sampling.source_fps",
+              "ref": "#/contract_meta/pipeline_config/sampling/source_fps",
+              "text": "24 fps"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "Detections of the same relation at most {pipeline_config.merge_tolerance_s} apart were merged into one interval. [s_prov_merge_tolerance]",
+          "step_ids": [
+            "s_prov_merge_tolerance"
+          ],
+          "text": "Detections of the same relation at most 2 s apart were merged into one interval.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "pipeline_config.merge_tolerance_s",
+              "ref": "#/contract_meta/pipeline_config/merge_tolerance_s",
+              "text": "2 s"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "The video model ran with temperature {pipeline_config.determinism.temperature} and seed {pipeline_config.determinism.seed}. [s_prov_determinism]",
+          "step_ids": [
+            "s_prov_determinism"
+          ],
+          "text": "The video model ran with temperature 0.0 and seed 42.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "pipeline_config.determinism.temperature",
+              "ref": "#/contract_meta/pipeline_config/determinism/temperature",
+              "text": "0.0"
+            },
+            {
+              "form": "plain",
+              "name": "pipeline_config.determinism.seed",
+              "ref": "#/contract_meta/pipeline_config/determinism/seed",
+              "text": "42"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "Detection mode: {pipeline_config.detection_mode}. [s_prov_detection_mode]",
+          "step_ids": [
+            "s_prov_detection_mode"
+          ],
+          "text": "Detection mode: visual.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "pipeline_config.detection_mode",
+              "ref": "#/contract_meta/pipeline_config/detection_mode",
+              "text": "visual"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "Rule parameters: {params_origin}. [s_prov_params_origin]",
+          "step_ids": [
+            "s_prov_params_origin"
+          ],
+          "text": "Rule parameters: rule defaults.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "params_origin",
+              "ref": "#/contract_meta/params_origin",
+              "text": "rule defaults"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "WatchOut's lineage of this detection records M1 as the interval from {iv_v6.start} to {iv_v6.end}. [s_prov_bindings]",
+          "step_ids": [
+            "s_prov_bindings"
+          ],
+          "text": "WatchOut's lineage of this detection records M1 as the interval from 0:00 to 0:05.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "iv_v6.start",
+              "ref": "#/intervals/0/anchor/start_s",
+              "text": "0:00"
+            },
+            {
+              "form": "plain",
+              "name": "iv_v6.end",
+              "ref": "#/intervals/0/anchor/end_s",
+              "text": "0:05"
+            }
+          ]
+        },
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "Source of truth: contract {contract_hash}. [s_prov_contract_hash]",
+          "step_ids": [
+            "s_prov_contract_hash"
+          ],
+          "text": "Source of truth: contract 9118e7309af73ec54a32bdd623eb6257d12686195fe7f20c1f5b3e90a2ed935f.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "contract_hash",
+              "ref": "#/contract_meta/contract_hash",
+              "text": "9118e7309af73ec54a32bdd623eb6257d12686195fe7f20c1f5b3e90a2ed935f"
+            }
+          ]
+        }
+      ],
+      "title": "Method and provenance",
+      "written_by": "system"
+    },
+    {
+      "sentences": [
+        {
+          "block": 0,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "These limits concern the conditions {c_s1_cc1.text} of the rule. [s_lim_reid_dependence][s_lim_reid_evidence_unavailable]",
+          "step_ids": [
+            "s_lim_reid_dependence",
+            "s_lim_reid_evidence_unavailable"
+          ],
+          "text": "These limits concern the conditions M1.arg1≠M1.arg2 of the rule.",
+          "values": [
+            {
+              "form": "code",
+              "name": "c_s1_cc1.text",
+              "ref": "#/rule/constraints/1/text",
+              "text": "M1.arg1≠M1.arg2"
+            }
+          ]
+        },
+        {
+          "block": 1,
+          "entities": [],
+          "list_item": true,
+          "llm_text": "{s_lim_reid_dependence.fixed_text} [s_lim_reid_dependence]",
+          "step_ids": [
+            "s_lim_reid_dependence"
+          ],
+          "text": "The rule relies on matching the same person across frames (Re-ID).",
+          "values": [
+            {
+              "form": "plain",
+              "name": "s_lim_reid_dependence.fixed_text",
+              "ref": "#/knowledge_limits/3/sentence",
+              "text": "The rule relies on matching the same person across frames (Re-ID)."
+            }
+          ]
+        },
+        {
+          "block": 2,
+          "entities": [],
+          "list_item": true,
+          "llm_text": "{s_lim_reid_evidence_unavailable.fixed_text} [s_lim_reid_evidence_unavailable]",
+          "step_ids": [
+            "s_lim_reid_evidence_unavailable"
+          ],
+          "text": "The evidence behind the Re-ID matches is not saved by the system.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "s_lim_reid_evidence_unavailable.fixed_text",
+              "ref": "#/knowledge_limits/4/sentence",
+              "text": "The evidence behind the Re-ID matches is not saved by the system."
+            }
+          ]
+        },
+        {
+          "block": 3,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "These limits concern the whole detection. [s_lim_visual_confidence_unavailable][s_lim_perceptual_attribution_unavailable][s_lim_temporal_resolution][s_lim_data_not_available]",
+          "step_ids": [
+            "s_lim_visual_confidence_unavailable",
+            "s_lim_perceptual_attribution_unavailable",
+            "s_lim_temporal_resolution",
+            "s_lim_data_not_available"
+          ],
+          "text": "These limits concern the whole detection.",
+          "values": []
+        },
+        {
+          "block": 4,
+          "entities": [],
+          "list_item": true,
+          "llm_text": "{s_lim_visual_confidence_unavailable.fixed_text} [s_lim_visual_confidence_unavailable]",
+          "step_ids": [
+            "s_lim_visual_confidence_unavailable"
+          ],
+          "text": "The system does not record a confidence value for visual detections.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "s_lim_visual_confidence_unavailable.fixed_text",
+              "ref": "#/knowledge_limits/0/sentence",
+              "text": "The system does not record a confidence value for visual detections."
+            }
+          ]
+        },
+        {
+          "block": 5,
+          "entities": [],
+          "list_item": true,
+          "llm_text": "{s_lim_perceptual_attribution_unavailable.fixed_text} [s_lim_perceptual_attribution_unavailable]",
+          "step_ids": [
+            "s_lim_perceptual_attribution_unavailable"
+          ],
+          "text": "The system does not record what in the images led to each visual detection.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "s_lim_perceptual_attribution_unavailable.fixed_text",
+              "ref": "#/knowledge_limits/1/sentence",
+              "text": "The system does not record what in the images led to each visual detection."
+            }
+          ]
+        },
+        {
+          "block": 6,
+          "entities": [],
+          "list_item": true,
+          "llm_text": "{s_lim_temporal_resolution.fixed_text} [s_lim_temporal_resolution]",
+          "step_ids": [
+            "s_lim_temporal_resolution"
+          ],
+          "text": "Times are approximate: they depend on the sampling rate of the video analysis.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "s_lim_temporal_resolution.fixed_text",
+              "ref": "#/knowledge_limits/2/sentence",
+              "text": "Times are approximate: they depend on the sampling rate of the video analysis."
+            }
+          ]
+        },
+        {
+          "block": 7,
+          "entities": [],
+          "list_item": true,
+          "llm_text": "{s_lim_data_not_available.fixed_text} [s_lim_data_not_available]",
+          "step_ids": [
+            "s_lim_data_not_available"
+          ],
+          "text": "Some information is not saved by the system and is reported as not available.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "s_lim_data_not_available.fixed_text",
+              "ref": "#/knowledge_limits/5/sentence",
+              "text": "Some information is not saved by the system and is reported as not available."
+            }
+          ]
+        },
+        {
+          "block": 7,
+          "entities": [],
+          "list_item": true,
+          "llm_text": "Not available here: {missing_fields}. [s_lim_data_not_available]",
+          "step_ids": [
+            "s_lim_data_not_available"
+          ],
+          "text": "Not available here: Re-ID similarity (Chroma stores the embeddings, not the match similarity); interval confidence (VisualPerInterval has no confidence column); key frames (this WatchOut version does not store key frames).",
+          "values": [
+            {
+              "form": "plain",
+              "name": "missing_fields",
+              "ref": "#/harvest_report/missing_fields",
+              "text": "Re-ID similarity (Chroma stores the embeddings, not the match similarity); interval confidence (VisualPerInterval has no confidence column); key frames (this WatchOut version does not store key frames)"
+            }
+          ]
+        }
+      ],
+      "title": "Limits",
+      "written_by": "system"
+    }
+  ]
+}

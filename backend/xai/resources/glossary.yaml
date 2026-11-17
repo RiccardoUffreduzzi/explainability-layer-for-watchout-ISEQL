@@ -3,7 +3,8 @@
 # This file holds only what WatchOut does not have: the report phrases and the formulas.
 #
 # - predicates: only the report phrase; the definition is read from the text given to the VLM.
-# - audio_classes: only the report phrase; the definition is read from the keywords of
+# - audio_classes: only the report phrase, a noun ("the sound of ..."), since it also fills
+#   {r} or {s} of an operator; the definition is read from the keywords of
 #   AppConfig.audio_taxonomy, with which WatchOut maps the audio model's answer to a class.
 # - operators: definition of WatchOut's SQL (iseql/helpers.py) with rho = 0,
 #   report phrase and readings of the parameters. {r} and {s} are the two operands,
@@ -13,10 +14,11 @@
 #   duration nodes), named <node kind>_<operator>: eq (=), ne (≠), lt (<), le (<=),
 #   gt (>), ge (>=); xai.contract.ids.comparison_term gives the name of a node.
 #   Definition as a formula. {left} and {right} are the two sides; a duration has
-#   {x} (what lasts), {value} and {unit}.
+#   {x} (what lasts), {value} and {unit}. identity_eq names only {left}: in a detection its
+#   two sides are one entity, since the entity IDs come from the track IDs the engine compares.
 #
 # Placeholders {arg1}, {arg2} are the arguments of a predicate in signature order.
-version: 0.2.0
+version: 0.2.4
 
 predicates:
   running:
@@ -38,40 +40,40 @@ predicates:
 
 audio_classes:
   shout:
-    plain_template: a shout is heard
+    plain_template: the sound of a shout
   impact:
-    plain_template: an impact is heard
+    plain_template: the sound of an impact
   gunshot_or_explosion:
-    plain_template: a gunshot or an explosion is heard
+    plain_template: the sound of a gunshot or an explosion
   engine:
-    plain_template: an engine is heard
+    plain_template: the sound of an engine
   tire_squeal:
-    plain_template: tyres squealing are heard
+    plain_template: the sound of tyres squealing
   glass_breaking:
-    plain_template: glass breaking is heard
+    plain_template: the sound of glass breaking
   horn:
-    plain_template: a horn is heard
+    plain_template: the sound of a horn
   skidding:
-    plain_template: tyres skidding are heard
+    plain_template: the sound of tyres skidding
 
 operators:
   Bef:
     definition: "r.Te ζ s.Ts, s.Ts − r.Te ≤ δ"
     plain_template: "{r} ends before {s} starts"
     parameter_readings:
-      - {condition: "δ = ∞", phrase: "at any time after"}
-      - {condition: "δ = d", phrase: "within d {unit}"}
+      - {condition: "δ = ∞", phrase: "{s} starting at any time after {r} ends"}
+      - {condition: "δ = d", phrase: "{s} starting within d {unit} of the end of {r}"}
   Aft:
     definition: "s.Te ζ r.Ts, r.Ts − s.Te ≤ δ"
     plain_template: "{r} starts after {s} ends"
     parameter_readings:
-      - {condition: "δ = ∞", phrase: "at any time after"}
-      - {condition: "δ = d", phrase: "within d {unit}"}
+      - {condition: "δ = ∞", phrase: "{r} starting at any time after {s} ends"}
+      - {condition: "δ = d", phrase: "{r} starting within d {unit} of the end of {s}"}
   SP:
     definition: "r.Ts ζ s.Ts < r.Te, s.Ts − r.Ts ≤ δ"
     plain_template: "{s} starts while {r} is ongoing"
     parameter_readings:
-      - {condition: "δ = ∞", phrase: "at any time while {r} is ongoing"}
+      - {condition: "δ = ∞", phrase: "at any time after the start of {r}"}
       - {condition: "δ = d", phrase: "within d {unit} of the start of {r}"}
   EF:
     definition: "r.Ts < s.Te η r.Te, r.Te − s.Te ≤ ε"
@@ -118,7 +120,7 @@ events:
   gunshot_or_explosion:
     plain_template: a gunshot or an explosion
   handoff:
-    plain_template: an object passes from one person to another
+    plain_template: an object passing from one person to another
   suspicious_near_vehicle:
     plain_template: a person lingering suspiciously near a vehicle
   vehicle_collision:
@@ -129,7 +131,7 @@ events:
 comparisons:
   identity_eq:
     definition: "left = right"
-    plain_template: "{left} and {right} are the same"
+    plain_template: "{left} is the same in both observations"
   identity_ne:
     definition: "left ≠ right"
     plain_template: "{left} and {right} are different"
