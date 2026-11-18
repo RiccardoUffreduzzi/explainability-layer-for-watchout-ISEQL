@@ -1,13 +1,13 @@
 <script lang="ts">
   import Button from '$lib/components/ui/button.svelte';
   import Input from '$lib/components/ui/input.svelte';
-  import Select from '$lib/components/ui/select.svelte';
+  import * as Select from '$lib/components/ui/select/index.js';
   import Label from '$lib/components/ui/label.svelte';
   import Field from '$lib/components/ui/field.svelte';
   import ExprEditor from '$lib/components/expr-editor.svelte';
   import type { Condition } from '$lib/types';
   import { parseBoolExpr, boolTextFromSelection, tokenizeBoolExpr, predicateLabel, type Vocabulary, type EditorToken } from '$lib/iseql-model';
-  import { inputInt, selectValue } from '$lib/dom-helpers';
+  import { inputInt } from '$lib/dom-helpers';
 
   interface IntervalDraft {
     pred: string;
@@ -49,6 +49,10 @@
       .filter((p) => condition === 'C' || (condition === 'A' ? p.modality === 'visual' : p.modality === 'audio'))
       .map((p) => ({ value: p.name, label: p.name })),
   );
+  const setOptions = $derived([
+    { value: '', label: 'No set' },
+    ...groupOptions.map((g) => ({ value: g, label: g })),
+  ]);
 
   function vocabSlots(name: string): string[][] {
     return vocabulary.predicates.find((p) => p.name === name)?.args ?? [];
@@ -128,7 +132,7 @@
 {#if open}
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4" role="presentation" onkeydown={(e) => { if (e.key === 'Escape') onClose(); }}>
     <div class="absolute inset-0 bg-black/40" onclick={onClose} role="presentation"></div>
-    <div class="relative z-10 w-full max-w-md rounded-lg border bg-background p-4 shadow-lg" role="dialog" aria-modal="true" tabindex="-1">
+    <div class="relative z-10 w-full max-w-md rounded-2xl border bg-card p-5 shadow-float" role="dialog" aria-modal="true" tabindex="-1">
       <div class="mb-3 flex items-center justify-between">
         <div class="text-sm font-semibold">Interval</div>
       </div>
@@ -150,7 +154,16 @@
         </div>
         <Field>
           <Label>Set</Label>
-          <Select options={[{ value: '', label: 'No set' }, ...groupOptions.map((g) => ({ value: g, label: g }))]} value={group} onchange={(e) => (group = selectValue(e, ''))} />
+          <Select.Root type="single" items={setOptions} value={group} onValueChange={(value: string | undefined) => (group = value ?? '')}>
+            <Select.Trigger>
+              {setOptions.find((option) => option.value === group)?.label ?? 'No set'}
+            </Select.Trigger>
+            <Select.Content>
+              {#each setOptions as option (option.value)}
+                <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+              {/each}
+            </Select.Content>
+          </Select.Root>
         </Field>
       </div>
 
@@ -165,7 +178,7 @@
 {#if confirm}
   <div class="fixed inset-0 z-[60] flex items-center justify-center p-4" role="presentation" onkeydown={(e) => { if (e.key === 'Escape') confirm = null; }}>
     <div class="absolute inset-0 bg-black/40" onclick={() => (confirm = null)} role="presentation"></div>
-    <div class="relative z-10 w-full max-w-sm rounded-lg border bg-background p-4 shadow-lg" role="dialog" aria-modal="true" tabindex="-1">
+    <div class="relative z-10 w-full max-w-sm rounded-2xl border bg-card p-5 shadow-float" role="dialog" aria-modal="true" tabindex="-1">
       <div class="mb-2 text-sm font-semibold">Open configuration</div>
       <p class="mb-3 text-xs text-muted-foreground">
         Open the {confirm.modality === 'audio' ? 'audio class' : 'relation'} configuration for <span class="font-mono text-foreground">{confirm.name}</span>?

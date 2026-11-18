@@ -7,8 +7,9 @@ class IntervalService(ABC):
     def build_visual_and_save(
         self,
         conn: sqlite3.Connection,
-        sampling_rate: int,
+        frame_step: int,
         analysis_id: str = "",
         log_fn: Callable[[str], None] = print,
+        merge_gap_frames: int | None = None,
     ) -> Iterator[str]:
         pass

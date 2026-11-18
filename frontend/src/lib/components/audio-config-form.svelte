@@ -1,10 +1,10 @@
 <script lang="ts">
   import Input from '$lib/components/ui/input.svelte';
   import Label from '$lib/components/ui/label.svelte';
-  import Select from '$lib/components/ui/select.svelte';
+  import * as Select from '$lib/components/ui/select/index.js';
   import Field from '$lib/components/ui/field.svelte';
   import type { AudioConfig } from '$lib/types';
-  import { inputFloat, selectValue } from '$lib/dom-helpers';
+  import { inputFloat } from '$lib/dom-helpers';
 
   const DEFAULT_AUDIO_MODELS: Record<string, string> = {
     huggingface: 'Qwen/Qwen2-Audio-7B-Instruct',
@@ -46,8 +46,7 @@
     }
   });
 
-  function handleProviderChange(e: Event) {
-    const newProvider = selectValue(e);
+  function handleProviderChange(newProvider: string) {
     const cfg = DEFAULT_CONFIGS[newProvider] || DEFAULT_CONFIGS.panns;
     patch({ provider: newProvider, model: DEFAULT_AUDIO_MODELS[newProvider] || '', window: cfg.window, hop: cfg.hop });
   }
@@ -64,18 +63,21 @@
 <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
   <Field>
     <Label for="audio-provider">Audio Provider</Label>
-    <Select
-      id="audio-provider"
-      options={providerOptions}
-      value={provider}
-      onchange={handleProviderChange}
-      {disabled}
-    />
+    <Select.Root type="single" items={providerOptions} value={provider} onValueChange={(next: string | undefined) => next && handleProviderChange(next)} {disabled}>
+      <Select.Trigger id="audio-provider">
+        {providerOptions.find((option) => option.value === provider)?.label ?? provider}
+      </Select.Trigger>
+      <Select.Content>
+        {#each providerOptions as option (option.value)}
+          <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+        {/each}
+      </Select.Content>
+    </Select.Root>
   </Field>
 
   <Field>
     <Label for="audio-model">Model</Label>
-    <div class="flex h-9 items-center rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">
+    <div class="flex h-9 items-center rounded-lg border border-input bg-muted px-3 text-sm text-muted-foreground">
       {DEFAULT_AUDIO_MODELS[provider] || ''}
     </div>
   </Field>
@@ -101,13 +103,16 @@
   {#if isHuggingface}
     <Field class="lg:col-span-2">
       <Label for="audio-quantization">Quantization</Label>
-      <Select
-        id="audio-quantization"
-        options={QUANTIZATION_OPTIONS}
-        value={value.quantization}
-        onchange={(e) => patch({ quantization: (e.currentTarget as HTMLSelectElement).value })}
-        {disabled}
-      />
+      <Select.Root type="single" items={QUANTIZATION_OPTIONS} value={value.quantization} onValueChange={(next: string | undefined) => next && patch({ quantization: next })} {disabled}>
+        <Select.Trigger id="audio-quantization">
+          {QUANTIZATION_OPTIONS.find((option) => option.value === value.quantization)?.label ?? value.quantization}
+        </Select.Trigger>
+        <Select.Content>
+          {#each QUANTIZATION_OPTIONS as option (option.value)}
+            <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+          {/each}
+        </Select.Content>
+      </Select.Root>
     </Field>
   {/if}
 </div>

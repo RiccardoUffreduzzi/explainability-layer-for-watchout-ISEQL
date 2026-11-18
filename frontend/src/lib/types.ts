@@ -29,6 +29,7 @@ export interface AnalysisStartResponse {
   analysis_id: string;
   condition: Condition;
   stage: AnalysisStage;
+  frame_rate: number;
   sampling_rate: number;
 }
 
@@ -92,6 +93,7 @@ export interface VlmConfig {
   model: string;
   grid_rows: number;
   grid_cols: number;
+  sampling_rate: number;
   vlm_delay: number;
   max_retries: number;
   embed_provider: string;
@@ -118,6 +120,7 @@ export interface AnalysisRecord {
   video_filename: string;
   condition: string;
   stage: string;
+  frame_rate?: number;
   sampling_rate: number;
   created_at: string;
   completed_at?: string;

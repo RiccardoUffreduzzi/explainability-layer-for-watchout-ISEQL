@@ -25,21 +25,21 @@
       description: 'VLM + ISEQL, no audio.',
       icon: Eye,
       badge: 'A',
-      badgeClass: 'bg-sky-500/15 text-sky-300 border-sky-500/40',
+      badgeClass: 'bg-info/15 text-info border-info/40',
     }, {
       id: 'B' as Condition,
       label: 'Audio only',
       description: `${audioLabel} + ISEQL, no VLM.`,
       icon: Ear,
       badge: 'B',
-      badgeClass: 'bg-amber-500/15 text-amber-300 border-amber-500/40',
+      badgeClass: 'bg-warning/15 text-warning border-warning/40',
     }, {
       id: 'C' as Condition,
       label: 'Full multimodal',
       description: `VLM + ${audioLabel} + ISEQL.`,
       icon: Layers,
       badge: 'C',
-      badgeClass: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40',
+      badgeClass: 'bg-success/15 text-success border-success/40',
     },
   ]);
 </script>
@@ -52,7 +52,7 @@
       {@const Icon = c.icon}
       <label
         class={[
-          'flex cursor-pointer items-start gap-3 rounded-md border p-3 text-left transition-colors',
+          'flex cursor-pointer items-start gap-3 rounded-lg border p-3 text-left transition-colors',
           selected
             ? 'border-primary/60 bg-primary/10'
             : 'border-border bg-muted/30 hover:bg-muted/50',
@@ -73,7 +73,7 @@
           <div class="flex items-center gap-2">
             <Icon class="size-4 text-foreground" />
             <span class="text-sm font-medium text-foreground">{c.label}</span>
-            <span class={['rounded border px-1.5 py-0.5 text-[10px] font-semibold', c.badgeClass].join(' ')}>
+            <span class={['rounded-md border px-1.5 py-0.5 text-[10px] font-semibold', c.badgeClass].join(' ')}>
               {c.badge}
             </span>
           </div>

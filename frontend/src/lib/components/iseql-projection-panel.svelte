@@ -128,8 +128,8 @@
     <div class="flex items-center justify-between">
       <span class="text-xs font-semibold">Projection</span>
       <div class="flex items-center gap-1">
-        <button type="button" class="rounded border px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted" title="Reset to auto" onclick={reset}>⟲</button>
-        <button type="button" class="rounded border px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted" title="Add field" onclick={() => (pickerOpen = true)}>＋</button>
+        <button type="button" class="rounded-md border px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted" title="Reset to auto" onclick={reset}>⟲</button>
+        <button type="button" class="rounded-md border px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted" title="Add field" onclick={() => (pickerOpen = true)}>＋</button>
       </div>
     </div>
 
@@ -139,7 +139,7 @@
         <div
           data-field-row="true"
           class={[
-            'flex cursor-grab items-center gap-1 rounded border px-1.5 py-0.5 font-mono text-xs transition-all',
+            'flex cursor-grab items-center gap-1 rounded-md border px-1.5 py-0.5 font-mono text-xs transition-all',
             dragIndex === i ? 'opacity-40' : '',
           ].join(' ')}
           draggable="true"
@@ -160,17 +160,17 @@
   {#if pickerOpen}
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4" role="presentation" onkeydown={(e) => { if (e.key === 'Escape') pickerOpen = false; }}>
       <div class="absolute inset-0 bg-black/40" onclick={() => (pickerOpen = false)} role="presentation"></div>
-      <div class="relative z-10 w-full max-w-xs rounded-lg border bg-background p-3 shadow-lg" role="dialog" aria-modal="true" tabindex="-1">
+      <div class="relative z-10 w-full max-w-xs rounded-2xl border bg-card p-4 shadow-float" role="dialog" aria-modal="true" tabindex="-1">
         <div class="mb-2 text-sm font-semibold">Add projection field</div>
         <div class="grid max-h-72 grid-cols-2 gap-1 overflow-y-auto">
           {#each availableFields as f (f)}
-            <button type="button" class="rounded border px-2 py-1 font-mono text-xs hover:bg-muted" onclick={() => pick(f)}>{f}</button>
+            <button type="button" class="rounded-md border px-2 py-1 font-mono text-xs hover:bg-muted" onclick={() => pick(f)}>{f}</button>
           {:else}
             <p class="col-span-2 text-xs text-muted-foreground">No fields left to add.</p>
           {/each}
         </div>
         <div class="mt-2 flex justify-end">
-          <button type="button" class="rounded border px-2 py-1 text-xs text-muted-foreground hover:bg-muted" onclick={() => (pickerOpen = false)}>Cancel</button>
+          <button type="button" class="rounded-md border px-2 py-1 text-xs text-muted-foreground hover:bg-muted" onclick={() => (pickerOpen = false)}>Cancel</button>
         </div>
       </div>
     </div>

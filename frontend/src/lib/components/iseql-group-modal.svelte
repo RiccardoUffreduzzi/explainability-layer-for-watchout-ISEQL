@@ -46,7 +46,7 @@
 {#if open && group}
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4" role="presentation" onkeydown={(e) => { if (e.key === 'Escape') onClose(); }}>
     <div class="absolute inset-0 bg-black/40" onclick={onClose} role="presentation"></div>
-    <div class="relative z-10 flex max-h-[85dvh] w-full max-w-md flex-col rounded-lg border bg-background p-4 shadow-lg" role="dialog" aria-modal="true" tabindex="-1">
+    <div class="relative z-10 flex max-h-[85dvh] w-full max-w-md flex-col rounded-2xl border bg-card p-5 shadow-float" role="dialog" aria-modal="true" tabindex="-1">
       <div class="mb-3 text-sm font-semibold">{isNew ? 'New Set' : 'Set'}</div>
 
       <div class="min-h-0 flex-1 space-y-4 overflow-y-auto px-1">
@@ -60,7 +60,7 @@
           {#if draft.intervals.length}
             <div class="max-h-32 space-y-1 overflow-y-auto pr-1">
               {#each draft.intervals as iv, i (iv.id)}
-                <div class="rounded border px-2 py-1 font-mono text-xs">
+                <div class="rounded-md border px-2 py-1 font-mono text-xs">
                   <span class="text-muted-foreground">M{i + 1}(arg1{iv.args.length > 1 ? ', arg2' : ''})</span>
                   <span class="mx-1 text-muted-foreground">=</span>
                   <span>{intervalLabel(iv)}</span>

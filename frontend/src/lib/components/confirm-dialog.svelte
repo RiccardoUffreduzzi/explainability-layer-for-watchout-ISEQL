@@ -20,8 +20,8 @@
     tabindex="-1"
     onkeydown={(e) => { if (e.key === 'Escape') resolveConfirm(false); }}
   >
-    <div class="absolute inset-0 bg-black/60" role="presentation" onclick={() => resolveConfirm(false)}></div>
-    <div class="relative z-10 w-full max-w-sm rounded-lg border bg-background p-4 shadow-xl">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" role="presentation" onclick={() => resolveConfirm(false)}></div>
+    <div class="relative z-10 w-full max-w-sm rounded-2xl border bg-card p-5 shadow-float">
       <h2 id="confirm-title" class="text-sm font-semibold">{confirmState.title}</h2>
       <p id="confirm-message" class="mt-2 text-xs leading-relaxed text-muted-foreground">{confirmState.message}</p>
       <div class="mt-4 flex justify-end gap-2">

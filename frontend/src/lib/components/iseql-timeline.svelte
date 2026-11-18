@@ -788,7 +788,7 @@
 
 <div class="flex min-h-0 flex-1 flex-col gap-2">
   <!-- toolbar -->
-  <div class="flex shrink-0 flex-wrap items-center gap-2 rounded-md border px-2 py-1 text-xs">
+  <div class="flex shrink-0 flex-wrap items-center gap-2 rounded-lg border px-2 py-1 text-xs">
     <span class="text-muted-foreground">Zoom</span>
     <input type="range" min="2" max="48" value={scale} oninput={(e) => setScale(Number((e.currentTarget as HTMLInputElement).value))} class="w-32" />
     <span class="font-mono text-muted-foreground">{scale}px</span>
@@ -800,7 +800,7 @@
 
   <!-- main area -->
   <div class="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden lg:flex-row">
-    <div bind:this={scroller} class="min-h-0 flex-1 overflow-auto rounded-md border" data-tour="editor-canvas">
+    <div bind:this={scroller} class="min-h-0 flex-1 overflow-auto rounded-lg border" data-tour="editor-canvas">
       <canvas
         bind:this={canvas}
         class="block touch-none select-none"
@@ -823,21 +823,21 @@
       ></canvas>
     </div>
 
-    <div class="flex w-full shrink-0 flex-col gap-2 overflow-y-auto rounded-md border p-2 lg:w-80" data-tour="editor-intervals">
+    <div class="flex w-full shrink-0 flex-col gap-2 overflow-y-auto rounded-lg border p-2 lg:w-80" data-tour="editor-intervals">
       <!-- Intervals card -->
-      <div class="rounded-md border p-2">
+      <div class="rounded-lg border p-2">
         <div class="mb-1 flex items-center gap-1">
           <span class="shrink-0 text-xs font-semibold">Intervals</span>
           <CountBadge filtered={filteredFlat.length} total={flat.length} filtering={intervalSearch.trim() !== ''} />
           <Input class="h-6 min-w-0 flex-1 font-mono text-xs" placeholder="Search intervals…" value={intervalSearch} oninput={(e) => (intervalSearch = (e.currentTarget as HTMLInputElement).value)} />
-          <button type="button" class="shrink-0 rounded border px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted" title="Add interval" disabled={activeGroupIdx < 0} onclick={() => addInterval(activeGroupIdx)}>＋</button>
+          <button type="button" class="shrink-0 rounded-md border px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted" title="Add interval" disabled={activeGroupIdx < 0} onclick={() => addInterval(activeGroupIdx)}>＋</button>
         </div>
         <DeleteHint />
         <div class="max-h-40 space-y-1 overflow-y-auto pr-1">
           {#each filteredFlat as f (f.globalIndex)}
             <button
               type="button"
-              class="w-full select-none touch-callout-none rounded border px-2 py-1 text-left font-mono text-xs hover:bg-muted"
+              class="w-full select-none touch-callout-none rounded-md border px-2 py-1 text-left font-mono text-xs hover:bg-muted"
               onclick={() => (intervalModal = { gi: groups.findIndex((g) => g.name === f.group), ii: f.localIndex })}
               oncontextmenu={(e) => { e.preventDefault(); ctxMenu = { x: e.clientX, y: e.clientY, gi: groups.findIndex((g) => g.name === f.group), ii: f.localIndex }; }}
               use:longpress={{ onLongPress: (e) => { ctxMenu = { x: e.clientX, y: e.clientY, gi: groups.findIndex((g) => g.name === f.group), ii: f.localIndex }; } }}
@@ -851,19 +851,19 @@
       </div>
 
       <!-- Sets list card -->
-      <div class="rounded-md border p-2">
+      <div class="rounded-lg border p-2">
         <div class="mb-1 flex items-center gap-1">
           <span class="shrink-0 text-xs font-semibold">Sets</span>
           <CountBadge filtered={filteredSetNames.length} total={setNames.length} filtering={setSearch.trim() !== ''} />
           <Input class="h-6 min-w-0 flex-1 font-mono text-xs" placeholder="Search sets…" value={setSearch} oninput={(e) => (setSearch = (e.currentTarget as HTMLInputElement).value)} />
-          <button type="button" class="shrink-0 rounded border px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted" title="Add set" onclick={newGroup}>＋</button>
+          <button type="button" class="shrink-0 rounded-md border px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted" title="Add set" onclick={newGroup}>＋</button>
         </div>
         <DeleteHint />
         <div class="max-h-40 space-y-1 overflow-y-auto pr-1">
           {#each filteredSetNames as name (name)}
             <button
               type="button"
-              class="w-full select-none touch-callout-none rounded border px-2 py-1 text-left font-mono text-xs hover:bg-muted"
+              class="w-full select-none touch-callout-none rounded-md border px-2 py-1 text-left font-mono text-xs hover:bg-muted"
               onclick={() => openGroupModal(name)}
               oncontextmenu={(e) => { e.preventDefault(); setCtxMenu = { x: e.clientX, y: e.clientY, name }; }}
               use:longpress={{ onLongPress: (e) => { setCtxMenu = { x: e.clientX, y: e.clientY, name }; } }}
@@ -875,7 +875,7 @@
       </div>
 
       <!-- Set expression card -->
-      <div class="rounded-md border p-2">
+      <div class="rounded-lg border p-2">
         <div class="mb-1 text-xs font-semibold">Set Expression</div>
         <IseqlExprTree
           {expr}
@@ -923,14 +923,14 @@
   <!-- context menu -->
   {#if ctxMenu}
     <div class="fixed inset-0 z-50" role="presentation" onclick={() => (ctxMenu = null)} oncontextmenu={(e) => { e.preventDefault(); ctxMenu = null; }}></div>
-    <div class="fixed z-50 w-44 rounded-md border bg-background py-1 text-xs shadow-lg" style="left: {ctxMenu.x}px; top: {ctxMenu.y}px">
+    <div class="fixed z-50 w-44 rounded-xl border bg-popover py-1 text-xs shadow-float" style="left: {ctxMenu.x}px; top: {ctxMenu.y}px">
       <button type="button" class="block w-full px-3 py-1 text-left hover:bg-muted" onclick={async () => { if (await askConfirm('Delete this interval?', { title: 'Delete interval' })) removeInterval(ctxMenu!.gi, ctxMenu!.ii); ctxMenu = null; }}>Delete</button>
     </div>
   {/if}
 
   {#if setCtxMenu}
     <div class="fixed inset-0 z-50" role="presentation" onclick={() => (setCtxMenu = null)} oncontextmenu={(e) => { e.preventDefault(); setCtxMenu = null; }}></div>
-    <div class="fixed z-50 w-44 rounded-md border bg-background py-1 text-xs shadow-lg" style="left: {setCtxMenu.x}px; top: {setCtxMenu.y}px">
+    <div class="fixed z-50 w-44 rounded-xl border bg-popover py-1 text-xs shadow-float" style="left: {setCtxMenu.x}px; top: {setCtxMenu.y}px">
       <button type="button" class="block w-full px-3 py-1 text-left hover:bg-muted" onclick={async () => { if (await askConfirm(`Delete set '${setCtxMenu!.name}'? Its intervals move to the unassigned lane.`, { title: 'Delete set' })) deleteSetByName(setCtxMenu!.name); setCtxMenu = null; }}>Delete</button>
     </div>
   {/if}

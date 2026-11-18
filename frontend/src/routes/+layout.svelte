@@ -56,7 +56,7 @@
   }
 </script>
 
-<ModeWatcher defaultMode="dark" />
+<ModeWatcher defaultMode="system" themeColors={{ light: '#fbfbfd', dark: '#0f0f0f' }} />
 {@render children?.()}
 <TourOverlay />
 <ConfirmDialog />
@@ -64,7 +64,7 @@
 {#if !backendStatus.ready}
   <div class="fixed inset-0 z-[95] flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-background/80 backdrop-blur-sm"></div>
-    <div class="relative z-10 flex w-full max-w-sm flex-col items-center gap-3 rounded-lg border bg-card p-6 text-center shadow-xl">
+    <div class="relative z-10 flex w-full max-w-sm flex-col items-center gap-3 rounded-2xl border bg-card p-6 text-center shadow-float">
       <Loader2 class="size-8 animate-spin text-muted-foreground" />
       <div class="text-sm font-semibold">{isHpc ? 'Waiting for the GPU node' : 'Connecting to backend'}</div>
       <p class="text-xs leading-relaxed text-muted-foreground">

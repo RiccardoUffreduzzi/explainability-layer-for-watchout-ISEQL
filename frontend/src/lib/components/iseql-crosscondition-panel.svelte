@@ -1,6 +1,7 @@
 <script lang="ts">
+  import * as Select from '$lib/components/ui/select/index.js';
   import { nextId, aliasOf, TEMPORAL_ATTRS, type CrossCondition, type FlatInterval } from '$lib/iseql-model';
-  import { inputInt, selectValue } from '$lib/dom-helpers';
+  import { inputInt } from '$lib/dom-helpers';
 
   type Props = {
     crossConditions: CrossCondition[];
@@ -10,6 +11,12 @@
   let { crossConditions, flatIntervals, onChange }: Props = $props();
 
   const CC_OPS = ['=', '≠', '<', '<=', '>', '>='];
+  const TYPE_OPTIONS = [
+    { value: 'attr', label: 'inequality' },
+    { value: 'duration', label: 'duration' },
+  ];
+  const OP_OPTIONS = CC_OPS.map((op) => ({ value: op, label: op }));
+  const TEMPORAL_OPTIONS = TEMPORAL_ATTRS.map((attr) => ({ value: attr, label: attr }));
 
   const aliasOptions = $derived(flatIntervals.map((f) => ({ value: aliasOf(f.globalIndex), label: aliasOf(f.globalIndex) })));
 
@@ -29,9 +36,15 @@
     return attrsByAlias.get(alias ?? '') ?? [];
   }
 
-  const hasIntervals = $derived(flatIntervals.length > 0);
+  function attrOptions(alias: string | undefined) {
+    return attrsFor(alias).map((attr) => ({ value: attr, label: attr }));
+  }
 
-  const sel = 'h-7 rounded border bg-background px-1 py-0 font-mono text-xs';
+  function labelOf(options: { value: string; label: string }[], value: string): string {
+    return options.find((option) => option.value === value)?.label ?? value;
+  }
+
+  const hasIntervals = $derived(flatIntervals.length > 0);
 
   function patch(i: number, p: Partial<CrossCondition>) {
     onChange(crossConditions.map((c, k) => (k === i ? { ...c, ...p } : c)));
@@ -65,7 +78,7 @@
 <div class="space-y-2">
   <div class="flex items-center justify-between">
     <span class="text-xs font-semibold">Cross-conditions</span>
-    <button type="button" class="rounded border px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted disabled:opacity-40" title="Add cross-condition" disabled={!hasIntervals} onclick={add}>＋</button>
+    <button type="button" class="rounded-md border px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted disabled:opacity-40" title="Add cross-condition" disabled={!hasIntervals} onclick={add}>＋</button>
   </div>
 
   {#if !hasIntervals}
@@ -73,52 +86,106 @@
   {:else}
     <div class="max-h-40 space-y-1.5 overflow-y-auto pr-1">
       {#each crossConditions as c, i (c.id)}
-      <div class="rounded border p-1.5">
+      <div class="rounded-lg border p-1.5">
         <div class="mb-1 flex items-center justify-between">
-          <select class={sel + ' w-28'} value={c.type} onchange={(e) => patch(i, { type: selectValue(e, 'attr') as 'attr' | 'duration' })}>
-            <option value="attr">inequality</option>
-            <option value="duration">duration</option>
-          </select>
+          <Select.Root type="single" items={TYPE_OPTIONS} value={c.type} onValueChange={(next: string | undefined) => next && patch(i, { type: next as 'attr' | 'duration' })}>
+            <Select.Trigger class="h-7 w-28 font-mono text-xs">{labelOf(TYPE_OPTIONS, c.type)}</Select.Trigger>
+            <Select.Content>
+              {#each TYPE_OPTIONS as option (option.value)}
+                <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+              {/each}
+            </Select.Content>
+          </Select.Root>
           <button type="button" class="px-0.5 text-xs text-muted-foreground hover:text-foreground" title="remove" onclick={() => remove(i)}>✕</button>
         </div>
 
         {#if c.type === 'duration'}
           <div class="flex flex-wrap items-center gap-1">
-            <select class={sel} value={c.left_alias} onchange={(e) => patch(i, { left_alias: selectValue(e) })}>
-              {#each aliasOptions as o (o.value)}<option value={o.value}>{o.label}</option>{/each}
-            </select>
-            <select class={sel + ' w-14'} value={c.left_attr} onchange={(e) => patch(i, { left_attr: selectValue(e) })}>
-              {#each TEMPORAL_ATTRS as a (a)}<option value={a}>{a}</option>{/each}
-            </select>
+            <Select.Root type="single" items={aliasOptions} value={c.left_alias} onValueChange={(next: string | undefined) => next && patch(i, { left_alias: next })}>
+              <Select.Trigger class="h-7 w-28 font-mono text-xs">{labelOf(aliasOptions, c.left_alias)}</Select.Trigger>
+              <Select.Content>
+                {#each aliasOptions as option (option.value)}
+                  <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+            <Select.Root type="single" items={TEMPORAL_OPTIONS} value={c.left_attr} onValueChange={(next: string | undefined) => next && patch(i, { left_attr: next })}>
+              <Select.Trigger class="h-7 w-16 font-mono text-xs">{labelOf(TEMPORAL_OPTIONS, c.left_attr)}</Select.Trigger>
+              <Select.Content>
+                {#each TEMPORAL_OPTIONS as option (option.value)}
+                  <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
             <span class="text-xs text-muted-foreground">−</span>
-            <select class={sel} value={c.right_alias ?? ''} onchange={(e) => patch(i, { right_alias: selectValue(e) })}>
-              {#each aliasOptions as o (o.value)}<option value={o.value}>{o.label}</option>{/each}
-            </select>
-            <select class={sel + ' w-14'} value={c.right_attr ?? ''} onchange={(e) => patch(i, { right_attr: selectValue(e) })}>
-              {#each TEMPORAL_ATTRS as a (a)}<option value={a}>{a}</option>{/each}
-            </select>
-            <select class={sel + ' w-16'} value={c.op} onchange={(e) => patch(i, { op: selectValue(e, '=') })}>
-              {#each CC_OPS as o (o)}<option value={o}>{o}</option>{/each}
-            </select>
-            <input class="h-7 w-16 rounded border bg-background px-1 py-0 font-mono text-xs" type="number" value={c.value ?? 0} onchange={(e) => patch(i, { value: inputInt(e, 0) })} />
+            <Select.Root type="single" items={aliasOptions} value={c.right_alias ?? ''} onValueChange={(next: string | undefined) => next && patch(i, { right_alias: next })}>
+              <Select.Trigger class="h-7 w-28 font-mono text-xs">{labelOf(aliasOptions, c.right_alias ?? '')}</Select.Trigger>
+              <Select.Content>
+                {#each aliasOptions as option (option.value)}
+                  <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+            <Select.Root type="single" items={TEMPORAL_OPTIONS} value={c.right_attr ?? ''} onValueChange={(next: string | undefined) => next && patch(i, { right_attr: next })}>
+              <Select.Trigger class="h-7 w-16 font-mono text-xs">{labelOf(TEMPORAL_OPTIONS, c.right_attr ?? '')}</Select.Trigger>
+              <Select.Content>
+                {#each TEMPORAL_OPTIONS as option (option.value)}
+                  <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+            <Select.Root type="single" items={OP_OPTIONS} value={c.op} onValueChange={(next: string | undefined) => next && patch(i, { op: next })}>
+              <Select.Trigger class="h-7 w-16 font-mono text-xs">{labelOf(OP_OPTIONS, c.op)}</Select.Trigger>
+              <Select.Content>
+                {#each OP_OPTIONS as option (option.value)}
+                  <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+            <input class="h-7 w-16 rounded-lg border bg-card px-1 py-0 font-mono text-xs" type="number" value={c.value ?? 0} onchange={(e) => patch(i, { value: inputInt(e, 0) })} />
           </div>
         {:else}
           <div class="flex flex-wrap items-center gap-1">
-            <select class={sel} value={c.left_alias} onchange={(e) => patch(i, { left_alias: selectValue(e) })}>
-              {#each aliasOptions as o (o.value)}<option value={o.value}>{o.label}</option>{/each}
-            </select>
-            <select class={sel + ' w-16'} value={c.left_attr} onchange={(e) => patch(i, { left_attr: selectValue(e) })}>
-              {#each attrsFor(c.left_alias) as a (a)}<option value={a}>{a}</option>{/each}
-            </select>
-            <select class={sel + ' w-16'} value={c.op} onchange={(e) => patch(i, { op: selectValue(e, '=') })}>
-              {#each CC_OPS as o (o)}<option value={o}>{o}</option>{/each}
-            </select>
-            <select class={sel} value={c.right_alias ?? ''} onchange={(e) => patch(i, { right_alias: selectValue(e) })}>
-              {#each aliasOptions as o (o.value)}<option value={o.value}>{o.label}</option>{/each}
-            </select>
-            <select class={sel + ' w-16'} value={c.right_attr ?? ''} onchange={(e) => patch(i, { right_attr: selectValue(e) })}>
-              {#each attrsFor(c.right_alias) as a (a)}<option value={a}>{a}</option>{/each}
-            </select>
+            <Select.Root type="single" items={aliasOptions} value={c.left_alias} onValueChange={(next: string | undefined) => next && patch(i, { left_alias: next })}>
+              <Select.Trigger class="h-7 w-28 font-mono text-xs">{labelOf(aliasOptions, c.left_alias)}</Select.Trigger>
+              <Select.Content>
+                {#each aliasOptions as option (option.value)}
+                  <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+            <Select.Root type="single" items={attrOptions(c.left_alias)} value={c.left_attr} onValueChange={(next: string | undefined) => next && patch(i, { left_attr: next })}>
+              <Select.Trigger class="h-7 w-16 font-mono text-xs">{labelOf(attrOptions(c.left_alias), c.left_attr)}</Select.Trigger>
+              <Select.Content>
+                {#each attrOptions(c.left_alias) as option (option.value)}
+                  <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+            <Select.Root type="single" items={OP_OPTIONS} value={c.op} onValueChange={(next: string | undefined) => next && patch(i, { op: next })}>
+              <Select.Trigger class="h-7 w-16 font-mono text-xs">{labelOf(OP_OPTIONS, c.op)}</Select.Trigger>
+              <Select.Content>
+                {#each OP_OPTIONS as option (option.value)}
+                  <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+            <Select.Root type="single" items={aliasOptions} value={c.right_alias ?? ''} onValueChange={(next: string | undefined) => next && patch(i, { right_alias: next })}>
+              <Select.Trigger class="h-7 w-28 font-mono text-xs">{labelOf(aliasOptions, c.right_alias ?? '')}</Select.Trigger>
+              <Select.Content>
+                {#each aliasOptions as option (option.value)}
+                  <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+            <Select.Root type="single" items={attrOptions(c.right_alias)} value={c.right_attr ?? ''} onValueChange={(next: string | undefined) => next && patch(i, { right_attr: next })}>
+              <Select.Trigger class="h-7 w-16 font-mono text-xs">{labelOf(attrOptions(c.right_alias), c.right_attr ?? '')}</Select.Trigger>
+              <Select.Content>
+                {#each attrOptions(c.right_alias) as option (option.value)}
+                  <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
           </div>
         {/if}
       </div>

@@ -22,6 +22,7 @@
   let suppress = false;
   let search = $state('');
   let menu = $state<{ x: number; y: number; name: string } | null>(null);
+  let opMenu = $state<{ x: number; y: number; value: string; anchor: HTMLElement } | null>(null);
   let dragging = $state<{ type: 'reorder' | 'insert'; name: string } | null>(null);
   let dropIndex = $state<number | null>(null);
   let overPalette = $state(false);
@@ -84,9 +85,9 @@
   function tokenHtml(t: EditorToken): string {
     switch (t.type) {
       case 'item':
-        return `<span contenteditable="false" draggable="false" data-item="${esc(t.name)}" class="mx-0.5 inline-flex select-none touch-none align-middle"><button type="button" class="rounded border border-sky-400/40 bg-sky-400/10 px-1.5 py-0.5 font-mono text-xs">${esc(display(t.name))}</button></span>`;
+        return `<span contenteditable="false" draggable="false" data-item="${esc(t.name)}" class="mx-0.5 inline-flex select-none touch-none align-middle"><button type="button" class="rounded-md border border-primary/40 bg-primary/10 px-1.5 py-0.5 font-mono text-xs">${esc(display(t.name))}</button></span>`;
       case 'op':
-        return `<select contenteditable="false" class="mx-0.5 h-6 rounded border bg-background px-0.5 py-0 align-middle font-mono text-xs">${operators.map((o) => `<option${o === t.op ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+        return `<button type="button" contenteditable="false" data-op="${esc(t.op)}" class="mx-0.5 h-6 rounded-md border bg-card px-1 align-middle font-mono text-xs">${esc(t.op)}</button>`;
       case 'open':
         return '<span class="text-muted-foreground">(</span>';
       case 'close':
@@ -97,7 +98,7 @@
   function extractText(node: Node): string {
     if (node.nodeType === Node.TEXT_NODE) return node.textContent ?? '';
     const el = node as HTMLElement;
-    if (el.tagName === 'SELECT') return (el as HTMLSelectElement).value;
+    if (el.hasAttribute?.('data-op')) return el.dataset.op ?? '';
     if (el.hasAttribute && el.hasAttribute('data-item')) return el.dataset.item ?? '';
     let out = '';
     node.childNodes.forEach((c) => { out += extractText(c); });
@@ -115,8 +116,8 @@
     if (!el) return;
     const chips = [...el.querySelectorAll('[data-item]')];
     const op = operators[0] ?? '';
-    const chip = `<span contenteditable="false" draggable="false" data-item="${esc(name)}" class="mx-0.5 inline-flex select-none touch-none align-middle"><button type="button" class="rounded border border-sky-400/40 bg-sky-400/10 px-1.5 py-0.5 font-mono text-xs">${esc(display(name))}</button></span>`;
-    const opHtml = `<select contenteditable="false" class="mx-0.5 h-6 rounded border bg-background px-0.5 py-0 align-middle font-mono text-xs">${operators.map((o) => `<option>${esc(o)}</option>`).join('')}</select>`;
+    const chip = `<span contenteditable="false" draggable="false" data-item="${esc(name)}" class="mx-0.5 inline-flex select-none touch-none align-middle"><button type="button" class="rounded-md border border-primary/40 bg-primary/10 px-1.5 py-0.5 font-mono text-xs">${esc(display(name))}</button></span>`;
+    const opHtml = `<button type="button" contenteditable="false" data-op="${esc(op)}" class="mx-0.5 h-6 rounded-md border bg-card px-1 align-middle font-mono text-xs">${esc(op)}</button>`;
     const hasContent = extractText(el).trim().length > 0;
     if (!hasContent) {
       el.innerHTML = chip;
@@ -255,7 +256,26 @@
     menu = { x: e.clientX, y: e.clientY, name: chip.dataset.item ?? '' };
   }
 
+  function openOpMenu(btn: HTMLElement) {
+    const rect = btn.getBoundingClientRect();
+    opMenu = { x: rect.left, y: rect.bottom + 4, value: btn.dataset.op ?? '', anchor: btn };
+  }
+
+  function chooseOp(next: string) {
+    if (!opMenu) return;
+    opMenu.anchor.dataset.op = next;
+    opMenu.anchor.textContent = next;
+    opMenu = null;
+    sync();
+  }
+
   function onClick(e: MouseEvent) {
+    const opBtn = (e.target as HTMLElement).closest('[data-op]') as HTMLElement | null;
+    if (opBtn) {
+      e.preventDefault();
+      openOpMenu(opBtn);
+      return;
+    }
     const btn = (e.target as HTMLElement).closest('button');
     if (!btn) return;
     const chip = btn.closest('[data-item]') as HTMLElement | null;
@@ -264,6 +284,12 @@
 
   function onKeydown(e: KeyboardEvent) {
     if (e.key === 'Enter' || e.key === ' ') {
+      const opBtn = (e.target as HTMLElement).closest('[data-op]') as HTMLElement | null;
+      if (opBtn) {
+        e.preventDefault();
+        openOpMenu(opBtn);
+        return;
+      }
       const btn = (e.target as HTMLElement).closest('button');
       if (btn) {
         const chip = btn.closest('[data-item]') as HTMLElement | null;
@@ -304,7 +330,7 @@
     aria-multiline="false"
     tabindex="0"
     class={[
-      'min-h-9 w-full rounded border border-dashed bg-background px-2 py-1 font-mono text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring',
+      'flex min-h-9 w-full flex-wrap items-center rounded-lg border border-dashed bg-card px-2 py-1 font-mono text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring',
       dragging?.type === 'insert' ? 'ring-1 ring-primary' : '',
     ].join(' ')}
     oninput={onInput}
@@ -322,14 +348,14 @@
   <input
     type="text"
     placeholder="Search…"
-    class="h-6 w-full rounded border bg-background px-1.5 text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring"
+    class="h-6 w-full rounded-lg border bg-card px-1.5 text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring"
     bind:value={search}
   />
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     bind:this={paletteEl}
     class={[
-      'flex max-h-36 touch-pan-y flex-col gap-1 overflow-y-auto rounded pr-1',
+      'flex max-h-36 touch-pan-y flex-col gap-1 overflow-y-auto rounded-lg p-1',
       overPalette ? 'ring-1 ring-primary bg-primary/5' : '',
     ].join(' ')}
   >
@@ -337,7 +363,7 @@
       <button
         type="button"
         data-palette-item={name}
-        class="inline-flex cursor-grab touch-none items-center rounded border border-sky-400/40 bg-sky-400/10 px-2 py-0.5 font-mono text-xs"
+        class="inline-flex cursor-grab touch-none items-center rounded-md border border-primary/40 bg-primary/10 px-2 py-0.5 font-mono text-xs"
         title="Drag into the expression · click to configure"
         onclick={() => onOpen(name)}
         onmouseenter={() => onHover([name])}
@@ -356,11 +382,28 @@
     onclick={() => (menu = null)}
     oncontextmenu={(e) => { e.preventDefault(); menu = null; }}
   ></div>
-  <div class="fixed z-50 w-44 rounded-md border bg-background py-1 text-xs shadow-lg" style="left: {menu.x}px; top: {menu.y}px">
+  <div class="fixed z-50 w-44 rounded-xl border bg-popover py-1 text-xs shadow-float" style="left: {menu.x}px; top: {menu.y}px">
     <button
       type="button"
       class="block w-full px-3 py-1 text-left hover:bg-muted"
       onclick={() => { removeItem(menu!.name); menu = null; }}
     >Delete from expression</button>
+  </div>
+{/if}
+
+{#if opMenu}
+  <div
+    class="fixed inset-0 z-50"
+    role="presentation"
+    onclick={() => (opMenu = null)}
+  ></div>
+  <div class="fixed z-50 w-20 rounded-lg border bg-popover p-1 text-xs shadow-float" style="left: {opMenu.x}px; top: {opMenu.y}px">
+    {#each operators as op (op)}
+      <button
+        type="button"
+        class="block w-full rounded-md px-2 py-1 text-left font-mono {opMenu.value === op ? 'bg-accent text-accent-foreground' : 'text-popover-foreground hover:bg-accent hover:text-accent-foreground'}"
+        onclick={() => chooseOp(op)}
+      >{op}</button>
+    {/each}
   </div>
 {/if}

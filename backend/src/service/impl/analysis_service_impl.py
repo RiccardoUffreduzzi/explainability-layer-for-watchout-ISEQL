@@ -12,7 +12,7 @@ from typing import Callable
 
 from fastapi import HTTPException
 
-from models.analysis import AnalysisStage, RunState
+from models.analysis import AnalysisStage, RunState, frame_step_for
 from service.analysis_service import AnalysisService
 from service.post_analysis_hook import notify_analysis_done
 from utils.api_logger import get_logger
@@ -183,7 +183,8 @@ def _row_to_runstate(row: sqlite3.Row | dict) -> RunState:
         model=_col("Model"),
         grid_rows=_as_int("GridRows"),
         grid_cols=_as_int("GridCols"),
-        sampling_rate=_as_int("SamplingRate"),
+        frame_rate=_as_float("FrameRate") or 24.0,
+        sampling_rate=_as_float("SamplingRate") or 1.0,
         vlm_delay=_as_float("VLMDelay"),
         max_retries=_as_int("MaxRetries"),
         embed_provider=_as_str("EmbedProvider", "huggingface"),
@@ -296,7 +297,8 @@ class AnalysisServiceImpl(AnalysisService):
         model: str,
         grid_rows: int,
         grid_cols: int,
-        sampling_rate: int,
+        frame_rate: float,
+        sampling_rate: float,
         vlm_delay: float,
         max_retries: int,
         embed_provider: str = "huggingface",
@@ -323,6 +325,7 @@ class AnalysisServiceImpl(AnalysisService):
             model=model,
             grid_rows=grid_rows,
             grid_cols=grid_cols,
+            frame_rate=frame_rate,
             sampling_rate=sampling_rate,
             vlm_delay=vlm_delay,
             max_retries=max_retries,
@@ -353,7 +356,7 @@ class AnalysisServiceImpl(AnalysisService):
             conn = _get_db_conn(cfg)
             conn.row_factory = sqlite3.Row
             rows = conn.execute(
-                "SELECT ID, VideoFilename, Condition, VLMProvider, Model, Stage, SamplingRate, "
+                "SELECT ID, VideoFilename, Condition, VLMProvider, Model, Stage, FrameRate, SamplingRate, "
                 "GridRows, GridCols, VLMDelay, MaxRetries, "
                 "EmbedProvider, EmbedModel, MemoryN, MemoryTopK, "
                 "AudioProvider, AudioModel, AudioQuantization, AudioWindow, AudioHop, "
@@ -370,6 +373,7 @@ class AnalysisServiceImpl(AnalysisService):
                     "vlm_provider": r["VLMProvider"],
                     "model": r["Model"],
                     "stage": r["Stage"],
+                    "frame_rate": r["FrameRate"],
                     "sampling_rate": r["SamplingRate"],
                     "grid_rows": r["GridRows"],
                     "grid_cols": r["GridCols"],
@@ -464,7 +468,7 @@ class AnalysisServiceImpl(AnalysisService):
             conn.row_factory = sqlite3.Row
             row = conn.execute(
                 "SELECT ID, VideoPath, VideoFilename, Condition, VLMProvider, Model, "
-                "GridRows, GridCols, SamplingRate, VLMDelay, MaxRetries, "
+                "GridRows, GridCols, FrameRate, SamplingRate, VLMDelay, MaxRetries, "
                 "EmbedProvider, EmbedModel, MemoryN, MemoryTopK, AudioProvider, AudioModel, AudioQuantization, Stage "
                 "FROM Analyses ORDER BY CreatedAt DESC LIMIT 1"
             ).fetchone()
@@ -490,7 +494,7 @@ class AnalysisServiceImpl(AnalysisService):
             conn.row_factory = sqlite3.Row
             row = conn.execute(
                 "SELECT ID, VideoPath, VideoFilename, Condition, VLMProvider, Model, "
-                "GridRows, GridCols, SamplingRate, VLMDelay, MaxRetries, "
+                "GridRows, GridCols, FrameRate, SamplingRate, VLMDelay, MaxRetries, "
                 "EmbedProvider, EmbedModel, MemoryN, MemoryTopK, AudioProvider, AudioModel, AudioQuantization, Stage "
                 "FROM Analyses WHERE ID = ?",
                 (analysis_id,),
@@ -508,13 +512,13 @@ class AnalysisServiceImpl(AnalysisService):
             conn = _get_db_conn(cfg)
             conn.execute(
                 "INSERT INTO Analyses (ID, VideoPath, VideoFilename, Condition, VLMProvider, Model, "
-                "GridRows, GridCols, SamplingRate, VLMDelay, MaxRetries, "
+                "GridRows, GridCols, FrameRate, SamplingRate, VLMDelay, MaxRetries, "
                 "EmbedProvider, EmbedModel, MemoryN, MemoryTopK, "
                 "AudioProvider, AudioModel, AudioQuantization, AudioWindow, AudioHop, Stage, CreatedAt) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (run.id, str(run.video_path), run.video_filename, run.condition,
                  run.vlm_provider, run.model, run.grid_rows, run.grid_cols,
-                 run.sampling_rate, run.vlm_delay, run.max_retries,
+                 run.frame_rate, run.sampling_rate, run.vlm_delay, run.max_retries,
                  run.embed_provider, run.embed_model, run.memory_n, run.memory_top_k,
                  run.audio_provider, run.audio_model, run.audio_quantization,
                  run.audio_window, run.audio_hop,
@@ -533,9 +537,13 @@ class AnalysisServiceImpl(AnalysisService):
 
         run.stage = AnalysisStage.VLM
         persist_stage("vlm")
+        frame_step = frame_step_for(run.frame_rate, run.sampling_rate)
+        merge_gap_frames = max(1, int(run.frame_rate * 2 + 0.5))
         _log(f">>> CONDITION {run.condition}: visual perception (VLM)")
         _log(f"     Provider: {run.vlm_provider}, Model: {run.model or '(default)'}, "
-             f"Grid: {run.grid_rows}x{run.grid_cols}, Sampling: every {run.sampling_rate} frames"
+             f"Grid: {run.grid_rows}x{run.grid_cols}, Sampling: {run.sampling_rate:g} Hz "
+             f"(every {frame_step} frames at {run.frame_rate:g} FPS), "
+             f"Merge gap: {merge_gap_frames} frames (2s)"
              f", Delay: {run.vlm_delay}s")
         _log(f"     Object tracking: enabled | Embedding: "
              f"{run.embed_provider}:{run.embed_model}")
@@ -572,7 +580,8 @@ class AnalysisServiceImpl(AnalysisService):
                     client=client,
                     grid_rows=run.grid_rows,
                     grid_cols=run.grid_cols,
-                    sampling_rate=run.sampling_rate,
+                    frame_step=frame_step,
+                    merge_gap_frames=merge_gap_frames,
                     min_interval=run.vlm_delay,
                     analysis_id=run.id,
                     track_objects=True,
@@ -623,7 +632,7 @@ class AnalysisServiceImpl(AnalysisService):
                 video_path=run.video_path,
                 conn=conn,
                 out_dir=out_dir,
-                fps=run.sampling_rate,
+                fps=run.frame_rate,
                 analysis_id=run.id,
                 log_fn=_log,
             )

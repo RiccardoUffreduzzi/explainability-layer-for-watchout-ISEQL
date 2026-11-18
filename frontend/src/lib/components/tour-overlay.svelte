@@ -119,7 +119,7 @@
     {#if targetRect && hasTarget}
       <!-- spotlight (dim everything except the target) -->
       <div
-        class="absolute rounded-lg shadow-[0_0_0_9999px_rgba(0,0,0,0.6)]"
+        class="absolute rounded-xl shadow-[0_0_0_9999px_rgba(0,0,0,0.6)]"
         style="left: {targetRect.left}px; top: {targetRect.top}px; width: {targetRect.width}px; height: {targetRect.height}px;"
       ></div>
     {:else}
@@ -129,7 +129,7 @@
 
     <div
       bind:this={tooltipEl}
-        class="absolute max-h-[calc(100dvh-24px)] overflow-y-auto rounded-lg border bg-popover p-4 text-popover-foreground shadow-xl"
+        class="absolute max-h-[calc(100dvh-24px)] overflow-y-auto rounded-xl border bg-popover p-4 text-popover-foreground shadow-float"
       style={tooltipStyle()}
     >
       <div class="mb-3 h-1 w-full overflow-hidden rounded-full bg-muted">
@@ -140,7 +140,7 @@
       <div class="mt-3 flex items-center justify-between gap-3">
         <button
           type="button"
-          class="rounded border px-2.5 py-1 text-xs text-muted-foreground hover:bg-muted"
+          class="rounded-lg border px-2.5 py-1 text-xs text-muted-foreground hover:bg-muted"
           onclick={tourEnd}
         >Skip</button>
         <div class="flex items-center gap-2">
@@ -148,13 +148,13 @@
           {#if tour.index > 0}
             <button
               type="button"
-              class="rounded border px-2.5 py-1 text-xs text-muted-foreground hover:bg-muted"
+              class="rounded-lg border px-2.5 py-1 text-xs text-muted-foreground hover:bg-muted"
               onclick={tourPrev}
             >Back</button>
           {/if}
           <button
             type="button"
-            class="rounded bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90"
+            class="rounded-lg bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90"
             onclick={tourNext}
           >
             {tour.index < tour.steps.length - 1 ? 'Next' : 'Done'}

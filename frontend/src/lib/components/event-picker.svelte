@@ -2,8 +2,8 @@
   import Input from '$lib/components/ui/input.svelte';
   import Label from '$lib/components/ui/label.svelte';
   import Field from '$lib/components/ui/field.svelte';
-  import Select from '$lib/components/ui/select.svelte';
-  import Checkbox from '$lib/components/ui/checkbox.svelte';
+  import * as Select from '$lib/components/ui/select/index.js';
+  import { Checkbox } from '$lib/components/ui/checkbox/index.js';
   import type { Condition, Deltas, EventTypeInfo, Unit } from '$lib/types';
   import { inputInt } from '$lib/dom-helpers';
   import { Database } from 'lucide-svelte';
@@ -123,9 +123,9 @@
   };
 </script>
 
-<div class="rounded-md border border-border bg-muted/30 p-3 text-xs mb-4">
+<div class="rounded-lg border border-border bg-muted/30 p-3 text-xs mb-4">
   <p class="flex items-center gap-1 font-medium text-foreground">
-    <Database class="size-3.5 text-sky-500" /> All events auto-detected via ISEQL SQL queries
+    <Database class="size-3.5 text-info" /> All events auto-detected via ISEQL SQL queries
   </p>
 </div>
 
@@ -136,7 +136,7 @@
       {#if shown.length}
         {@const hasVisual = shown.some((f) => f.modality === 'visual')}
         {@const hasAudio = shown.some((f) => f.modality === 'audio')}
-        <div class="rounded border border-border bg-muted/30 p-2">
+        <div class="rounded-lg border border-border bg-muted/30 p-2">
           <p class="text-xs font-medium text-foreground mb-1.5">{event.id}</p>
           {#each MODALITY_GROUPS as modality}
             {@const group = shown.filter((f) => f.modality === modality)}
@@ -152,11 +152,22 @@
                     {#if f.kind === 'zeta' || f.kind === 'eta'}
                       <Field>
                         <Label for={fieldId(f)} title={f.key}>{fieldLabel(f)}</Label>
-                        <Select id={fieldId(f)}
-                          options={STRICTNESS_OPTIONS}
+                        <Select.Root
+                          type="single"
+                          items={STRICTNESS_OPTIONS}
                           value={strValue(f.key, '<=')}
-                          disabled={disabled}
-                          onchange={(ev) => patch({ [f.key]: (ev.currentTarget as HTMLSelectElement).value })} />
+                          onValueChange={(next: string | undefined) => next && patch({ [f.key]: next })}
+                          {disabled}
+                        >
+                          <Select.Trigger id={fieldId(f)}>
+                            {STRICTNESS_OPTIONS.find((option) => option.value === strValue(f.key, '<='))?.label ?? strValue(f.key, '<=')}
+                          </Select.Trigger>
+                          <Select.Content>
+                            {#each STRICTNESS_OPTIONS as option (option.value)}
+                              <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+                            {/each}
+                          </Select.Content>
+                        </Select.Root>
                       </Field>
                     {:else if f.kind === 'delta' || f.kind === 'epsilon'}
                       <Field>
@@ -170,7 +181,7 @@
                           <label class="flex items-center gap-1 text-[11px] text-muted-foreground whitespace-nowrap">
                             <Checkbox checked={isUnbounded(f.key)}
                               disabled={disabled}
-                              onCheckedChange={(c) => {
+                              onCheckedChange={(c: boolean) => {
                                 if (c) patch({ [f.key]: 'inf' });
                                 else {
                                   const def = defaultDeltas[f.key];

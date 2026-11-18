@@ -648,15 +648,16 @@ class VisualServiceImpl(VisualService):
         client: VLMClient,
         grid_rows: int,
         grid_cols: int,
-        sampling_rate: int,
+        frame_step: int,
         min_interval: float = 0.0,
         analysis_id: str = "",
         track_objects: bool = False,
         log: Callable[[str], None] = print,
+        merge_gap_frames: int | None = None,
     ) -> None:
         log(f"Starting video analysis: {video_path}")
         log(f"Provider: {client.provider}, Model: {client.model}, Grid: {grid_rows}x{grid_cols}")
-        log(f"Sampling rate: 1 frame every {sampling_rate} video frames")
+        log(f"Visual sampling: 1 frame every {frame_step} source frames")
         if track_objects:
             embed = self.memory._embed_provider if self.memory else "huggingface"
             model = self.memory._embed_model if self.memory else "google/siglip-base-patch16-224"
@@ -680,7 +681,7 @@ class VisualServiceImpl(VisualService):
                 ok, frame = cap.read()
                 if not ok:
                     break
-                if frame_count % sampling_rate == 0:
+                if frame_count % frame_step == 0:
                     log(f"--- FRAME {frame_count} ---")
                     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     pil = Image.fromarray(rgb)
@@ -715,6 +716,12 @@ class VisualServiceImpl(VisualService):
         log(f"VLM analysis complete. {frame_count} video frames processed.")
         # Build intervals atomically (frame-level + interval-level in one commit)
         interval_svc = IntervalServiceImpl()
-        for msg in interval_svc.build_visual_and_save(conn, sampling_rate, analysis_id=analysis_id, log_fn=log):
+        for msg in interval_svc.build_visual_and_save(
+            conn,
+            frame_step,
+            analysis_id=analysis_id,
+            log_fn=log,
+            merge_gap_frames=merge_gap_frames,
+        ):
             log(msg)
         conn.commit()

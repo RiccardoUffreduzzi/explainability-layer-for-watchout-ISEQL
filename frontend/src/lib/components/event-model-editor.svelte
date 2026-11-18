@@ -1,10 +1,10 @@
 <script lang="ts">
   import Input from '$lib/components/ui/input.svelte';
   import Label from '$lib/components/ui/label.svelte';
-  import Select from '$lib/components/ui/select.svelte';
+  import * as Select from '$lib/components/ui/select/index.js';
   import Field from '$lib/components/ui/field.svelte';
   import Button from '$lib/components/ui/button.svelte';
-  import { inputFloat, inputInt, inputStr, selectValue } from '$lib/dom-helpers';
+  import { inputFloat, inputInt, inputStr } from '$lib/dom-helpers';
 
   interface ModelInterval {
     pred: string;
@@ -44,6 +44,20 @@
     { value: 'ROJ', label: 'Right Overlap (ROJ)' },
   ];
   const CC_OPS = ['=', '≠', '<', '<=', '>', '>='];
+  const SIDE_OPTIONS = [
+    { value: 'none', label: 'no side' },
+    { value: 'left', label: 'left' },
+    { value: 'right', label: 'right' },
+  ];
+  const ZETA_OPTIONS = [
+    { value: '<=', label: '<=' },
+    { value: '<', label: '<' },
+  ];
+  const CC_OPTIONS = CC_OPS.map((op) => ({ value: op, label: op }));
+
+  function labelOf(options: { value: string; label: string }[], value: string): string {
+    return options.find((option) => option.value === value)?.label ?? value;
+  }
 
   // editable state (starts from a sensible enter/exit example)
   let predicates = $state<{ name: string; args: string }[]>([{ name: 'enter_or_exit_vehicle', args: 'person, vehicle' }]);
@@ -148,7 +162,7 @@
     </div>
     <div class="space-y-2">
       {#each predicates as p, pi (p.name)}
-        <div class="flex items-center gap-2 rounded-md border p-2">
+        <div class="flex items-center gap-2 rounded-lg border p-2">
           <Input class="w-40 font-mono" value={p.name} onchange={(e) => {
             const old = p.name; const next = inputStr(e);
             predicates = predicates.map((x, idx) => (idx === pi ? { ...x, name: next } : x));
@@ -170,23 +184,29 @@
     </div>
     <div class="space-y-2">
       {#each intervals as iv, i (i)}
-        <div class="rounded-md border p-2">
+        <div class="rounded-lg border p-2">
           <div class="flex items-center gap-2">
             <span class="w-6 text-center font-mono text-xs text-muted-foreground">M{i + 1}</span>
-            <Select options={predOptions} value={iv.pred} onchange={(e) => patchInterval(i, { pred: selectValue(e) })} />
+            <Select.Root type="single" items={predOptions} value={iv.pred} onValueChange={(next: string | undefined) => next && patchInterval(i, { pred: next })}>
+              <Select.Trigger>{labelOf(predOptions, iv.pred)}</Select.Trigger>
+              <Select.Content>
+                {#each predOptions as option (option.value)}
+                  <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
             <Input class="w-20" type="number" min="0" value={iv.ts} onchange={(e) => patchInterval(i, { ts: inputInt(e, 0) })} />
             <span class="text-xs text-muted-foreground">to</span>
             <Input class="w-20" type="number" min="0" value={iv.te} onchange={(e) => patchInterval(i, { te: inputInt(e, 100) })} />
             <Input class="w-28" placeholder="group" value={iv.group} onchange={(e) => patchInterval(i, { group: inputStr(e) })} />
-            <Select
-              options={[
-                { value: 'none', label: 'no side' },
-                { value: 'left', label: 'left' },
-                { value: 'right', label: 'right' },
-              ]}
-              value={iv.side}
-              onchange={(e) => patchInterval(i, { side: selectValue(e, 'none') })}
-            />
+            <Select.Root type="single" items={SIDE_OPTIONS} value={iv.side} onValueChange={(next: string | undefined) => patchInterval(i, { side: next ?? 'none' })}>
+              <Select.Trigger>{labelOf(SIDE_OPTIONS, iv.side)}</Select.Trigger>
+              <Select.Content>
+                {#each SIDE_OPTIONS as option (option.value)}
+                  <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
             <button type="button" class="text-xs text-destructive underline" onclick={() => removeInterval(i)}>x</button>
           </div>
         </div>
@@ -201,16 +221,26 @@
       <Label>Operators between intervals</Label>
       <div class="space-y-2">
         {#each operators as op, i (i)}
-          <div class="flex items-center gap-2 rounded-md border p-2">
+          <div class="flex items-center gap-2 rounded-lg border p-2">
             <span class="font-mono text-xs text-muted-foreground">M{i + 1} → M{i + 2}</span>
-            <Select options={OPERATOR_OPTIONS} value={op.op} onchange={(e) => patchOp(i, { op: selectValue(e, 'auto') })} />
+            <Select.Root type="single" items={OPERATOR_OPTIONS} value={op.op} onValueChange={(next: string | undefined) => patchOp(i, { op: next ?? 'auto' })}>
+              <Select.Trigger>{labelOf(OPERATOR_OPTIONS, op.op)}</Select.Trigger>
+              <Select.Content>
+                {#each OPERATOR_OPTIONS as option (option.value)}
+                  <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
             <Input class="w-44 font-mono" placeholder="delta key (e.g. delta_visual_handoff)" value={op.deltaKey} onchange={(e) => patchOp(i, { deltaKey: inputStr(e) })} />
             {#if op.deltaKey}
-              <Select
-                options={[{ value: '<=', label: '<=' }, { value: '<', label: '<' }]}
-                value={op.zeta}
-                onchange={(e) => patchOp(i, { zeta: selectValue(e, '<=') })}
-              />
+              <Select.Root type="single" items={ZETA_OPTIONS} value={op.zeta} onValueChange={(next: string | undefined) => patchOp(i, { zeta: next ?? '<=' })}>
+                <Select.Trigger>{labelOf(ZETA_OPTIONS, op.zeta)}</Select.Trigger>
+                <Select.Content>
+                  {#each ZETA_OPTIONS as option (option.value)}
+                    <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+                  {/each}
+                </Select.Content>
+              </Select.Root>
               <Input class="w-20" type="number" min="0" value={op.rho} onchange={(e) => patchOp(i, { rho: inputFloat(e, 0) })} />
             {/if}
           </div>
@@ -226,11 +256,18 @@
     </div>
     <div class="space-y-2">
       {#each crossConditions as c, i (i)}
-        <div class="flex items-center gap-2 rounded-md border p-2 font-mono text-sm">
+        <div class="flex items-center gap-2 rounded-lg border p-2 font-mono text-sm">
           <Input class="w-16" value={c.left} onchange={(e) => patchCc(i, { left: inputStr(e) })} />
           <span class="text-xs">.</span>
           <Input class="w-20" value={c.leftAttr} onchange={(e) => patchCc(i, { leftAttr: inputStr(e) })} />
-          <Select options={CC_OPS.map((o) => ({ value: o, label: o }))} value={c.op} onchange={(e) => patchCc(i, { op: selectValue(e, '=') })} />
+          <Select.Root type="single" items={CC_OPTIONS} value={c.op} onValueChange={(next: string | undefined) => patchCc(i, { op: next ?? '=' })}>
+            <Select.Trigger>{labelOf(CC_OPTIONS, c.op)}</Select.Trigger>
+            <Select.Content>
+              {#each CC_OPTIONS as option (option.value)}
+                <Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>
+              {/each}
+            </Select.Content>
+          </Select.Root>
           <Input class="w-16" value={c.right} onchange={(e) => patchCc(i, { right: inputStr(e) })} />
           <span class="text-xs">.</span>
           <Input class="w-20" value={c.rightAttr} onchange={(e) => patchCc(i, { rightAttr: inputStr(e) })} />

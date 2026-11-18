@@ -479,24 +479,24 @@
   }
 
   const textareaClass =
-    'h-full w-full resize-none rounded-md border border-input bg-background p-2 font-mono text-xs leading-relaxed ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+    'h-full w-full resize-none rounded-lg border border-input bg-card p-2 font-mono text-xs leading-relaxed ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 </script>
 
 <div class="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden">
-  <div class="flex shrink-0 flex-wrap items-center gap-2 rounded-md border p-2">
+  <div class="flex shrink-0 flex-wrap items-center gap-2 rounded-lg border p-2">
     <Button type="button" size="icon" variant="ghost" class="h-8 w-8" title="Back to events" onclick={onBack}>⌂</Button>
     <Input class="w-48 font-mono" placeholder="event_name" value={eventId} onchange={(e) => (eventId = inputStr(e))} />
 
     <span class="text-xs text-muted-foreground">Mode</span>
-    <div class="hidden h-7 items-center gap-0.5 rounded-md border border-border p-0.5 text-xs sm:flex" data-tour="editor-mode">
+    <div class="hidden h-7 items-center gap-0.5 rounded-lg border border-border p-0.5 text-xs sm:flex" data-tour="editor-mode">
       <button
         type="button"
-        class={['h-full rounded px-2', view === 'text' ? 'bg-primary/10 font-medium text-foreground' : 'text-muted-foreground hover:bg-muted/40'].join(' ')}
+        class={['h-full rounded-md px-2', view === 'text' ? 'bg-primary/10 font-medium text-foreground' : 'text-muted-foreground hover:bg-muted/40'].join(' ')}
         onclick={() => setView('text')}
       >Text</button>
       <button
         type="button"
-        class={['h-full rounded px-2', view === 'timeline' ? 'bg-primary/10 font-medium text-foreground' : 'text-muted-foreground hover:bg-muted/40'].join(' ')}
+        class={['h-full rounded-md px-2', view === 'timeline' ? 'bg-primary/10 font-medium text-foreground' : 'text-muted-foreground hover:bg-muted/40'].join(' ')}
         onclick={() => setView('timeline')}
       >Timeline</button>
     </div>
@@ -510,12 +510,12 @@
   </div>
 
   {#if error}
-    <div class="flex shrink-0 items-start gap-2.5 rounded-md border border-red-500/50 bg-red-500/10 px-3 py-2.5" role="alert">
-      <AlertTriangle class="mt-0.5 size-4 shrink-0 text-red-400" />
-      <p class="min-w-0 flex-1 break-words text-xs leading-relaxed text-red-300">{error}</p>
+    <div class="flex shrink-0 items-start gap-2.5 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5" role="alert">
+      <AlertTriangle class="mt-0.5 size-4 shrink-0 text-destructive" />
+      <p class="min-w-0 flex-1 break-words text-xs leading-relaxed text-destructive">{error}</p>
       <button
         type="button"
-        class="shrink-0 rounded px-1 text-red-400 transition-colors hover:text-red-200"
+        class="shrink-0 rounded-md px-1 text-destructive transition-colors hover:text-destructive/80"
         title="Dismiss"
         aria-label="Dismiss error"
         onclick={() => (error = null)}
@@ -523,9 +523,9 @@
     </div>
   {/if}
   {#if status}
-    <div class="flex shrink-0 items-start gap-2.5 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-2.5" role="status">
-      <CircleCheck class="mt-0.5 size-4 shrink-0 text-emerald-400" />
-      <p class="min-w-0 flex-1 break-words text-xs leading-relaxed text-emerald-300">{status}</p>
+    <div class="flex shrink-0 items-start gap-2.5 rounded-lg border border-success/40 bg-success/10 px-3 py-2.5" role="status">
+      <CircleCheck class="mt-0.5 size-4 shrink-0 text-success" />
+      <p class="min-w-0 flex-1 break-words text-xs leading-relaxed text-success">{status}</p>
     </div>
   {/if}
 
@@ -540,10 +540,10 @@
       {onOpenPredicate}
     />
   {:else}
-    <div class="flex shrink-0 items-center gap-1 overflow-x-auto rounded-md border px-2 py-1 text-xs text-muted-foreground">
+    <div class="flex shrink-0 items-center gap-1 overflow-x-auto rounded-lg border px-2 py-1 text-xs text-muted-foreground">
       <span class="mr-1 shrink-0">Insert:</span>
       {#each SYMBOLS as s (s)}
-        <button type="button" class="shrink-0 rounded border px-1.5 py-0.5 font-mono hover:bg-muted" onclick={() => insertText(symbolInsertText(s))} title={`Insert ${symbolInsertText(s)}`}>{s}</button>
+        <button type="button" class="shrink-0 rounded-md border px-1.5 py-0.5 font-mono hover:bg-muted" onclick={() => insertText(symbolInsertText(s))} title={`Insert ${symbolInsertText(s)}`}>{s}</button>
       {/each}
       <span class="ml-2 hidden shrink-0 md:inline">
         π projection · σ selection · ∪/∖/∩ set ops · ∨ or · operators SP EF Bef Aft DJ RDJ LOJ ROJ with δ/ε/ζ/η/ρ
@@ -551,7 +551,7 @@
     </div>
 
     <div class="grid min-h-0 flex-1 grid-cols-1 grid-rows-2 gap-2 lg:grid-cols-2 lg:grid-rows-1">
-      <div class="flex min-h-0 flex-col rounded-md border" data-tour="editor-query">
+      <div class="flex min-h-0 flex-col rounded-lg border" data-tour="editor-query">
         <div class="shrink-0 border-b px-2 py-1 text-sm font-semibold">ISEQL Query</div>
         <div class="relative min-h-0 flex-1 p-2">
           <textarea
@@ -566,7 +566,7 @@
             onblur={() => setTimeout(() => (menu = null), 150)}
           ></textarea>
           {#if menu}
-            <div bind:this={menuEl} class="absolute z-20 max-h-56 w-72 overflow-y-auto rounded-md border bg-background py-1 shadow-lg" style="left: {menuPos.left}px; top: {menuPos.top}px;">
+            <div bind:this={menuEl} class="absolute z-20 max-h-56 w-72 overflow-y-auto rounded-xl border bg-popover py-1 shadow-float" style="left: {menuPos.left}px; top: {menuPos.top}px;">
               {#each menu.items as item, i (`${item.label}-${i}`)}
                 <button
                   type="button"
@@ -582,7 +582,7 @@
           {/if}
         </div>
       </div>
-      <div class="flex min-h-0 flex-col rounded-md border">
+      <div class="flex min-h-0 flex-col rounded-lg border">
         <div class="shrink-0 border-b px-2 py-1 text-sm font-semibold">SQL</div>
         <pre class="min-h-0 flex-1 overflow-auto p-2 font-mono text-xs leading-relaxed">{sql || '-- compile to see the SQL conversion'}</pre>
       </div>

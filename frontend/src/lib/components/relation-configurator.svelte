@@ -141,15 +141,15 @@
   }
 
   const textareaClass =
-    'w-full resize-y rounded-md border border-input bg-background px-3 py-2 font-mono text-xs leading-relaxed ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+    'w-full resize-y rounded-lg border border-input bg-card px-3 py-2 font-mono text-xs leading-relaxed ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 </script>
 
 <div class="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden pt-1">
   {#if error}<p class="text-sm text-destructive">{error}</p>{/if}
   {#if savedMsg}
-    <div class="flex shrink-0 items-start gap-2.5 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-2.5" role="status">
-      <CircleCheck class="mt-0.5 size-4 shrink-0 text-emerald-400" />
-      <p class="min-w-0 flex-1 break-words text-xs leading-relaxed text-emerald-300">{savedMsg}</p>
+    <div class="flex shrink-0 items-start gap-2.5 rounded-lg border border-success/40 bg-success/10 px-3 py-2.5" role="status">
+      <CircleCheck class="mt-0.5 size-4 shrink-0 text-success" />
+      <p class="min-w-0 flex-1 break-words text-xs leading-relaxed text-success">{savedMsg}</p>
     </div>
   {/if}
 
@@ -157,7 +157,7 @@
     <span class="text-sm font-semibold">Visual</span>
     <CountBadge filtered={filtered.length} total={rows.length} filtering={search.trim() !== ''} />
     <Input class="h-7 flex-1 font-mono text-xs" placeholder="Search predicates…" value={search} oninput={(e) => (search = (e.currentTarget as HTMLInputElement).value)} />
-    <button type="button" class="rounded border px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted" title="Add relation" onclick={openNew}>＋</button>
+    <button type="button" class="rounded-md border px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted" title="Add relation" onclick={openNew}>＋</button>
   </div>
   <DeleteHint />
 
@@ -166,7 +166,7 @@
       <div
         role="button"
         tabindex="0"
-        class="group flex cursor-pointer select-none touch-callout-none items-center gap-2 rounded-md border px-2 py-1.5 transition-colors hover:border-primary/50 hover:bg-muted/40"
+        class="group flex cursor-pointer select-none touch-callout-none items-center gap-2 rounded-lg border px-2 py-1.5 transition-colors hover:border-primary/50 hover:bg-muted/40"
         onclick={() => openEdit(rows.indexOf(r))}
         onkeydown={(ev) => { if (ev.key === 'Enter') openEdit(rows.indexOf(r)); }}
         oncontextmenu={(e) => { e.preventDefault(); ctxMenu = { x: e.clientX, y: e.clientY, index: rows.indexOf(r) }; }}
@@ -188,7 +188,7 @@
 {#if modal}
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4" role="presentation" onkeydown={(e) => { if (e.key === 'Escape') modal = null; }}>
     <div class="absolute inset-0 bg-black/40" onclick={() => (modal = null)} role="presentation"></div>
-    <div class="relative z-10 w-full max-w-md rounded-lg border bg-background p-4 shadow-lg" role="dialog" aria-modal="true" tabindex="-1">
+    <div class="relative z-10 w-full max-w-md rounded-2xl border bg-card p-5 shadow-float" role="dialog" aria-modal="true" tabindex="-1">
       <div class="mb-3 text-sm font-semibold">{modal.mode === 'new' ? 'New Visual Relation' : 'Edit Visual Relation'}</div>
       <div class="space-y-3">
         <Field>
@@ -202,7 +202,7 @@
           <div class="flex items-center gap-2">
             <button
               type="button"
-              class="rounded border border-input px-1.5 py-0.5 font-mono text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+              class="rounded-md border border-input px-1.5 py-0.5 font-mono text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
               title="Insert OR (∨)"
               onclick={insertOr}
             >∨</button>
@@ -211,7 +211,7 @@
             </p>
           </div>
           {#if argsWarn}
-            <p class="text-xs text-amber-600">{argsWarn}</p>
+            <p class="text-xs text-warning">{argsWarn}</p>
           {/if}
         </Field>
         <Field>
@@ -230,7 +230,7 @@
 
 {#if ctxMenu}
   <div class="fixed inset-0 z-50" role="presentation" onclick={() => (ctxMenu = null)} oncontextmenu={(e) => { e.preventDefault(); ctxMenu = null; }}></div>
-  <div class="fixed z-50 w-44 rounded-md border bg-background py-1 text-xs shadow-lg" style="left: {ctxMenu.x}px; top: {ctxMenu.y}px">
+  <div class="fixed z-50 w-44 rounded-xl border bg-popover py-1 text-xs shadow-float" style="left: {ctxMenu.x}px; top: {ctxMenu.y}px">
     <button type="button" class="block w-full px-3 py-1 text-left hover:bg-muted" onclick={() => { remove(ctxMenu!.index); ctxMenu = null; }}>Delete</button>
   </div>
 {/if}

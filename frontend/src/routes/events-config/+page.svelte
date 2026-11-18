@@ -9,6 +9,7 @@
   import RelationConfigurator from '$lib/components/relation-configurator.svelte';
   import AudioSettings from '$lib/components/audio-settings.svelte';
   import Button from '$lib/components/ui/button.svelte';
+  import ThemeToggle from '$lib/components/ui/theme-toggle.svelte';
   import { ArrowLeft } from 'lucide-svelte';
   import type { Condition } from '$lib/types';
   import { registerTourSteps, startTour, hasSeenTour, tour, type TourStep } from '$lib/tour.svelte';
@@ -52,11 +53,14 @@
         Define predicates (relations and audio classes) first, then author ISEQL events that use them.
       </p>
     </div>
-    <Button href="/" variant="outline" size="sm"><ArrowLeft /> Back to analysis</Button>
+    <div class="flex items-center gap-2">
+      <ThemeToggle size="sm" />
+      <Button href="/" variant="outline" size="sm"><ArrowLeft /> Back to analysis</Button>
+    </div>
   </header>
 
   {#if backendStatus.ready}
-    <Tabs bind:value={active} class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border">
+    <Tabs bind:value={active} class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border bg-card/50 shadow-soft">
     <TabsList class="shrink-0 border-b px-2 py-1" data-tour="events-config-tabs">
       <TabsTrigger value="predicates">Predicates</TabsTrigger>
       <TabsTrigger value="events" data-tour="events-config-events-tab">Events (ISEQL)</TabsTrigger>
@@ -64,12 +68,12 @@
 
     {#if active === 'predicates'}
       <TabsContent value="predicates" class="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden p-3">
-        <section class="flex min-h-0 flex-1 flex-col rounded-md border p-2" data-tour="events-config-visual">
+        <section class="flex min-h-0 flex-1 flex-col rounded-lg border bg-card p-2" data-tour="events-config-visual">
           <div class="flex min-h-0 flex-1 flex-col">
             <RelationConfigurator focusRelation={predicateFocus?.modality === 'visual' ? predicateFocus.name : null} onFocused={() => (predicateFocus = null)} />
           </div>
         </section>
-        <section class="flex min-h-0 flex-1 flex-col rounded-md border p-2" data-tour="events-config-audio">
+        <section class="flex min-h-0 flex-1 flex-col rounded-lg border bg-card p-2" data-tour="events-config-audio">
           <div class="flex min-h-0 flex-1 flex-col">
             <AudioSettings />
           </div>
@@ -90,7 +94,7 @@
               type="button"
               title={c.hint}
               class={[
-                'rounded-md border px-3 py-1 text-sm',
+                'rounded-lg border px-3 py-1 text-sm',
                 condition === c.id ? 'border-primary bg-primary/10 font-medium' : 'text-muted-foreground hover:bg-muted/40',
               ].join(' ')}
               onclick={() => { condition = c.id; editing = false; }}

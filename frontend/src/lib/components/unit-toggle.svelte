@@ -16,14 +16,14 @@
   ]);
 </script>
 
-<div class={cn('inline-flex h-7 items-center rounded-md border border-border bg-muted/30 p-0.5', className)}>
+<div class={cn('inline-flex h-7 items-center rounded-lg border border-border bg-muted/30 p-0.5', className)}>
   {#each OPTIONS as opt (opt.value)}
     <button
       type="button"
       class={cn(
-        'h-full rounded px-2 text-xs font-medium transition-colors',
+        'h-full rounded-md px-2 text-xs font-medium transition-colors',
         unit === opt.value
-          ? 'bg-background text-foreground shadow-sm'
+          ? 'bg-card text-foreground shadow-sm'
           : 'text-muted-foreground hover:text-foreground'
       )}
       onclick={() => onUnitChange(opt.value)}

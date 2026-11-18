@@ -62,7 +62,7 @@
     <span class="text-sm font-semibold">Events</span>
     <CountBadge filtered={filtered.length} total={events.length} filtering={search.trim() !== ''} />
     <Input class="h-7 flex-1 font-mono text-xs" placeholder="Search events…" value={search} oninput={(e) => (search = (e.currentTarget as HTMLInputElement).value)} />
-    <button type="button" class="rounded border px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted" title="Add event" onclick={onNew} data-tour="events-config-new-event">＋</button>
+    <button type="button" class="rounded-md border px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted" title="Add event" onclick={onNew} data-tour="events-config-new-event">＋</button>
   </div>
   <DeleteHint />
 
@@ -71,7 +71,7 @@
       <div
         role="button"
         tabindex="0"
-        class="group cursor-pointer select-none touch-callout-none rounded-md border p-2 transition-colors hover:border-primary/50 hover:bg-muted/40"
+        class="group cursor-pointer select-none touch-callout-none rounded-lg border p-2 transition-colors hover:border-primary/50 hover:bg-muted/40"
         onclick={() => onOpen(e.id)}
         onkeydown={(ev) => { if (ev.key === 'Enter') onOpen(e.id); }}
         oncontextmenu={(ev) => { ev.preventDefault(); ctxMenu = { x: ev.clientX, y: ev.clientY, id: e.id }; }}
@@ -90,7 +90,7 @@
 
 {#if ctxMenu}
   <div class="fixed inset-0 z-50" role="presentation" onclick={() => (ctxMenu = null)} oncontextmenu={(e) => { e.preventDefault(); ctxMenu = null; }}></div>
-  <div class="fixed z-50 w-44 rounded-md border bg-background py-1 text-xs shadow-lg" style="left: {ctxMenu.x}px; top: {ctxMenu.y}px">
+  <div class="fixed z-50 w-44 rounded-xl border bg-popover py-1 text-xs shadow-float" style="left: {ctxMenu.x}px; top: {ctxMenu.y}px">
     <button type="button" class="block w-full px-3 py-1 text-left hover:bg-muted" onclick={() => { removeById(ctxMenu!.id); ctxMenu = null; }}>Delete</button>
   </div>
 {/if}
