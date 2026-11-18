@@ -66,7 +66,7 @@
     <ThemeToggle variant="ghost" class="mt-2" menuSide="right" />
     <div class="mt-auto flex w-full flex-col items-center gap-1.5 px-1" title={`Status: ${currentStage}`}>
       <span class="text-xs tracking-wide text-muted-foreground">Status</span>
-      <Badge variant={STAGE_VARIANT[currentStage] || 'secondary'} class="max-w-10 truncate text-[10px]">
+      <Badge variant={STAGE_VARIANT[currentStage] || 'secondary'} class="w-full max-w-10 justify-center px-1.5 truncate text-center text-[10px]">
         {currentStage}
       </Badge>
     </div>
