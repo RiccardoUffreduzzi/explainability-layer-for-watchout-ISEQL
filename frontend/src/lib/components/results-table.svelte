@@ -6,7 +6,8 @@
   import Input from '$lib/components/ui/input.svelte';
   import CountBadge from '$lib/components/ui/count-badge.svelte';
   import UnitToggle from '$lib/components/unit-toggle.svelte';
-  import { DatabaseZap, ImageOff, LayoutGrid, List, MousePointerClick, Hand } from 'lucide-svelte';
+  import * as Popover from '$lib/components/ui/popover/index.js';
+  import { DatabaseZap, Hand, ImageOff, Info, LayoutGrid, List, MousePointerClick } from 'lucide-svelte';
   import { cn } from '$lib/utils';
   import type { DetectionResult, Unit } from '$lib/types';
 
@@ -57,6 +58,23 @@
     })
   );
 
+  function parseTimeValue(raw: unknown): number | null {
+    if (typeof raw === 'number') return Number.isFinite(raw) ? raw : null;
+    if (typeof raw !== 'string') return null;
+    const value = raw.trim();
+    const numeric = Number(value);
+    if (Number.isFinite(numeric)) return numeric;
+    const match = value.match(/^(\d+):(\d{2}):(\d{2})(?:\.(\d{1,3}))?$/);
+    if (!match) return null;
+    const [, hours, minutes, seconds, fraction = ''] = match;
+    return (
+      Number(hours) * 3600 +
+      Number(minutes) * 60 +
+      Number(seconds) +
+      Number(fraction.padEnd(3, '0')) / 1000
+    );
+  }
+
   // --- video + timeline ---
   let videoEl = $state<HTMLVideoElement | null>(null);
   let duration = $state(0);
@@ -81,26 +99,26 @@
       for (const k of Object.keys(row)) {
         const raw = row[k];
         if (raw === null || raw === undefined || raw === '') continue;
+        if (k.endsWith('.st') || k.endsWith('_st') || k === 'st') {
+          const value = parseTimeValue(raw);
+          if (value !== null) startSec = startSec === null ? value : Math.min(startSec, value);
+          continue;
+        }
+        if (k.endsWith('.et') || k.endsWith('_et') || k === 'et') {
+          const value = parseTimeValue(raw);
+          if (value !== null) endSec = endSec === null ? value : Math.max(endSec, value);
+          continue;
+        }
         const v = Number(raw);
         if (!Number.isFinite(v)) continue;
-        if (k.endsWith('.st') || k.endsWith('_st') || k === 'st') {
-          startSec = startSec === null ? v : Math.min(startSec, v);
-        } else if (k.endsWith('.et') || k.endsWith('_et') || k === 'et') {
-          endSec = endSec === null ? v : Math.max(endSec, v);
-        } else if (k.endsWith('.sf') || k.endsWith('_sf') || k === 'sf') {
+        if (k.endsWith('.sf') || k.endsWith('_sf') || k === 'sf') {
           startFrame = startFrame === null ? v : Math.min(startFrame, v);
-          if (fps > 0) {
-            const s = v / fps;
-            startSec = startSec === null ? s : Math.min(startSec, s);
-          }
         } else if (k.endsWith('.ef') || k.endsWith('_ef') || k === 'ef') {
           endFrame = endFrame === null ? v : Math.max(endFrame, v);
-          if (fps > 0) {
-            const e = v / fps;
-            endSec = endSec === null ? e : Math.max(endSec, e);
-          }
         }
       }
+      if (startSec === null && startFrame !== null && fps > 0) startSec = startFrame / fps;
+      if (endSec === null && endFrame !== null && fps > 0) endSec = endFrame / fps;
       if (startSec === null || endSec === null) return;
       out.push({
         key: `row-${i}`,
@@ -150,6 +168,11 @@
 
   function markThumbnailFailed(key: string) {
     failedThumbnails = { ...failedThumbnails, [key]: true };
+  }
+
+  function displayValue(value: unknown): string {
+    if (value === null || value === undefined) return '';
+    return typeof value === 'object' ? JSON.stringify(value) : String(value);
   }
 
   function formatEventTime(seconds: number) {
@@ -372,56 +395,74 @@
     {:else}
       <div class="grid grid-cols-1 gap-3 py-1 sm:grid-cols-2 xl:grid-cols-3">
         {#each galleryRows as item (item.key)}
-          <button
-            type="button"
-            class={cn(
-              'group flex min-w-0 flex-col overflow-hidden rounded-xl border bg-card text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-              selectedKey === item.key
-                ? 'border-primary/60 ring-1 ring-primary/30'
-                : 'border-border hover:border-primary/40 hover:bg-muted/20'
-            )}
-            onclick={() => seekRow(item.i)}
-          >
-            {#if item.previewFrame !== null && !failedThumbnails[item.thumbKey]}
-              <img
-                src={`/api/analysis/${analysisId}/thumbnail?frame=${item.previewFrame}`}
-                alt=""
-                loading="lazy"
-                class="aspect-video w-full bg-black object-cover"
-                onerror={() => markThumbnailFailed(item.thumbKey)}
-              />
-            {:else}
-              <span class="flex aspect-video w-full items-center justify-center bg-muted/40 text-muted-foreground">
-                <ImageOff class="size-5" />
-              </span>
-            {/if}
-            <span class="flex flex-1 flex-col gap-2 p-3">
-              <span class="flex flex-col gap-0.5">
-                <span class="truncate text-sm font-medium">{String(item.row['Event'] ?? 'Result')}</span>
-                {#if item.interval}
-                  <span class="font-mono text-[10px] text-muted-foreground">
-                    {formatIntervalRange(item.interval)}
+          <div class="relative min-w-0">
+            <button
+              type="button"
+              class={cn(
+                'group flex w-full min-w-0 flex-col overflow-hidden rounded-xl border bg-card text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                selectedKey === item.key
+                  ? 'border-primary/60 ring-1 ring-primary/30'
+                  : 'border-border hover:border-primary/40 hover:bg-muted/20'
+              )}
+              onclick={() => seekRow(item.i)}
+            >
+              {#if item.previewFrame !== null && !failedThumbnails[item.thumbKey]}
+                <img
+                  src={`/api/analysis/${analysisId}/thumbnail?frame=${item.previewFrame}`}
+                  alt=""
+                  loading="lazy"
+                  class="aspect-video w-full bg-black object-cover"
+                  onerror={() => markThumbnailFailed(item.thumbKey)}
+                />
+              {:else}
+                <span class="flex aspect-video w-full items-center justify-center bg-muted/40 text-muted-foreground">
+                  <ImageOff class="size-5" />
+                </span>
+              {/if}
+              <span class="flex flex-1 flex-col gap-2 p-3">
+                <span class="flex flex-col gap-0.5">
+                  <span class="truncate text-sm font-medium">{String(item.row['Event'] ?? 'Result')}</span>
+                  {#if item.interval}
+                    <span class="font-mono text-[10px] text-muted-foreground">
+                      {formatIntervalRange(item.interval)}
+                    </span>
+                  {/if}
+                </span>
+                {#if cardColumns.length > 0}
+                  <span class="grid grid-cols-2 gap-x-3 gap-y-1.5 border-t border-border/60 pt-2 text-[11px]">
+                    {#each cardColumns as c (c.key)}
+                      <span class="min-w-0">
+                        <span class="block truncate text-muted-foreground">{c.label}</span>
+                        <span class="block truncate font-mono text-foreground">
+                          {displayValue(item.row[c.key])}
+                        </span>
+                      </span>
+                    {/each}
                   </span>
                 {/if}
               </span>
-              {#if cardColumns.length > 0}
-                <span class="grid grid-cols-2 gap-x-3 gap-y-1.5 border-t border-border/60 pt-2 text-[11px]">
-                  {#each cardColumns as c (c.key)}
-                    <span class="min-w-0">
-                      <span class="block truncate text-muted-foreground">{c.label}</span>
-                      <span class="block truncate font-mono text-foreground">
-                        {#if typeof item.row[c.key] === 'object' && item.row[c.key] !== null}
-                          {JSON.stringify(item.row[c.key])}
-                        {:else}
-                          {item.row[c.key]}
-                        {/if}
-                      </span>
-                    </span>
+            </button>
+
+            <Popover.Root>
+              <Popover.Trigger
+                class="absolute right-2 top-2 z-20 inline-flex size-7 items-center justify-center rounded-md border border-border/60 bg-background/85 text-muted-foreground shadow-sm backdrop-blur transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                title="Show result metadata"
+                aria-label="Show result metadata"
+              >
+                <Info class="size-3.5" />
+              </Popover.Trigger>
+              <Popover.Content class="w-[22rem] max-w-[calc(100vw-2rem)] p-3" align="end">
+                <div class="max-h-64 space-y-1.5 overflow-y-auto pr-1">
+                  {#each cols as column (column.key)}
+                    <div class="grid grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] items-baseline gap-2 text-xs">
+                      <span class="truncate text-muted-foreground" title={column.key}>{column.label}</span>
+                      <span class="truncate text-right font-mono text-foreground" title={displayValue(item.row[column.key])}>{displayValue(item.row[column.key])}</span>
+                    </div>
                   {/each}
-                </span>
-              {/if}
-            </span>
-          </button>
+                </div>
+              </Popover.Content>
+            </Popover.Root>
+          </div>
         {/each}
       </div>
     {/if}
