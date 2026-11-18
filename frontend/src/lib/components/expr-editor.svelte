@@ -330,7 +330,7 @@
     aria-multiline="false"
     tabindex="0"
     class={[
-      'min-h-9 w-full rounded-lg border border-dashed bg-card px-2 py-1 font-mono text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring',
+      'flex min-h-9 w-full flex-wrap items-center rounded-lg border border-dashed bg-card px-2 py-1 font-mono text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring',
       dragging?.type === 'insert' ? 'ring-1 ring-primary' : '',
     ].join(' ')}
     oninput={onInput}
