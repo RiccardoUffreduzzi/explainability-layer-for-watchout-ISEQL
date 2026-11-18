@@ -370,7 +370,7 @@
         </table>
       </div>
     {:else}
-      <div class="grid grid-cols-1 gap-3 py-1 sm:grid-cols-2 xl:grid-cols-3">
+      <div class="grid grid-cols-1 gap-3 pb-1 pt-3 sm:grid-cols-2 xl:grid-cols-3">
         {#each galleryRows as item (item.key)}
           <button
             type="button"
