@@ -11,8 +11,8 @@ from typing import Any
 from xai.contract.plan import ExplanationPlan, PlanStep
 from xai.contract.source_of_truth import SourceOfTruth
 from xai.k4_planner.planner import ExplanationPlanner
-from xai.k4_planner.translation import Translation, translation_from_data
-from xai.tests.k4_support import Change, expected_translation, golden_source
+from xai.k4_planner.translation import Translation
+from xai.tests.k4_support import Change, expected_translation, golden_source, translation_from_data
 
 AUDIO = "vehicle_collision_s15_C_audio"
 AUDIO_CLASSES = (

@@ -13,6 +13,7 @@ ANALYSIS_COLUMNS = (
     "AudioProvider",
     "AudioModel",
     "AudioQuantization",
+    "FrameRate",
     "SamplingRate",
     "AudioWindow",
     "AudioHop",

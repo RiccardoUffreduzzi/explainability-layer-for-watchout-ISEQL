@@ -8,7 +8,16 @@ from xai.contract.plan import PlanStep, StepType, TOrderBasis
 from xai.contract.reasons import Reason
 from xai.contract.source_of_truth import ReinforcementStatus
 from xai.reporting.failure import ReportFailure
-from xai.reporting.values import NOT_AVAILABLE, ValueReader, cited_refs, clock, number, seconds, threshold
+from xai.reporting.values import (
+    NOT_AVAILABLE,
+    ValueReader,
+    ValueTable,
+    cited_refs,
+    clock,
+    number,
+    seconds,
+    threshold,
+)
 from xai.tests.k4_plan_support import resolve_pointer, step
 from xai.tests.k5_support import LABELS, NAMES, input_of, pair_of
 
@@ -39,11 +48,16 @@ def test_a_threshold_is_infinite_or_a_number_with_the_unit_of_the_engine() -> No
     assert threshold(1, "frames") == "1 frame"
 
 
+def covers(table: ValueTable, ref: str) -> bool:
+    """Whether a reference of the plan has its values (or its entity) in the table."""
+    return any(ref in (v.step_ref, v.pointer) for v in table.values) or table.entity(ref) is not None
+
+
 @pytest.mark.parametrize("name", NAMES)
 def test_every_ref_of_the_steps_has_its_values(name: str) -> None:
     report_input = input_of(name)
 
-    missing = [ref for ref in cited_refs(report_input.steps) if not report_input.table.covers(ref)]
+    missing = [ref for ref in cited_refs(report_input.steps) if not covers(report_input.table, ref)]
 
     assert missing == []
 
@@ -171,8 +185,8 @@ def test_a_slot_that_points_into_a_rule_node_is_a_value_of_the_node() -> None:
 
     value = table.value("c_s1_cc1.value")
     assert value is not None and value.written == "3"
-    assert table.covers("#/rule/constraints/1/payload/value")
-    assert table.covers("#/rule/constraints/1/payload/unit")
+    assert covers(table, "#/rule/constraints/1/payload/value")
+    assert covers(table, "#/rule/constraints/1/payload/unit")
 
 
 def test_the_reinforcement_and_the_detections_of_each_modality() -> None:

@@ -91,7 +91,8 @@ def test_the_old_analyses_table_is_read(ablation_with_analyses: Path, seed_db: P
         conn.close()
 
     assert analysis is not None
-    assert (analysis.sampling_rate, analysis.audio_window, analysis.audio_hop) == (24, None, None)
+    assert (analysis.frame_rate, analysis.sampling_hz, analysis.fps_column) == (24, 1.0, "SamplingRate")
+    assert (analysis.audio_window, analysis.audio_hop) == (None, None)
 
 
 # ----------------------------------------------------------------------------- with the GUI's defaults

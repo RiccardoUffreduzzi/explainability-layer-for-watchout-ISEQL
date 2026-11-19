@@ -19,7 +19,7 @@ The observation lasts at least 3 seconds, as the condition `(M1.et − M1.st) >=
 
 ## Method and provenance
 
-The video was sampled at 1.0 Hz: one frame in every 24 of a 24 fps video. Detections of the same relation at most 2 s apart were merged into one interval. The video model ran with temperature 0.0 and seed 42. Detection mode: visual. Rule parameters: rule defaults. WatchOut's lineage of this detection records M1 as the interval from 0:02 to 0:07. Source of truth: contract be71af80cd50efb531da79384d1360c944f28a8d45cda03b8306464e8c336da6.
+The video was sampled at 1.0 Hz: one frame in every 24 of a 24 fps video. Detections of the same relation at most 2 s apart were merged into one interval. The video model ran with temperature 0.0 and seed 42. Detection mode: visual. Rule parameters: rule defaults. WatchOut's lineage of this detection records M1 as the interval from 0:02 to 0:07. Source of truth: contract 3a7ba6788633811d9473c91f2d2cef9b65a5598a171c0058cf4530c0441c220e.
 
 ## Limits
 

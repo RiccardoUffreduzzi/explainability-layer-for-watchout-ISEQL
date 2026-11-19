@@ -16,12 +16,12 @@
     "branches": [
       "s1"
     ],
-    "contract_hash": "be71af80cd50efb531da79384d1360c944f28a8d45cda03b8306464e8c336da6",
+    "contract_hash": "3a7ba6788633811d9473c91f2d2cef9b65a5598a171c0058cf4530c0441c220e",
     "contract_version": "0.4.0-k1",
     "event_id": "ev_69409d7b3e1a",
     "label": "suspicious_near_vehicle",
     "model_id": "suspicious_near_vehicle/A",
-    "plan_hash": "f4ced41e1c3c88f977ace427d757e02fb269b256537b42acb50c4eef84a94ae2",
+    "plan_hash": "cfafb627eee39ad19ca7c6cc7bd0130e8eb765817ac4bd2e6b0e1679e7f5a7b8",
     "plan_version": "0.1.0-k4",
     "source_of_truth_version": "0.2.0-k2"
   },

@@ -19,7 +19,7 @@ The two arguments of the same interval are different people (`M1.arg1≠M1.arg2`
 
 ## Method and provenance
 
-The video was sampled at 1.0 Hz: one frame in every 24 of a 24 fps video. Detections of the same relation at most 2 s apart were merged into one interval. The video model ran with temperature 0.0 and seed 42. Detection mode: visual. Rule parameters: rule defaults. WatchOut's lineage of this detection records M1 as the interval from 0:00 to 0:05. Source of truth: contract 9118e7309af73ec54a32bdd623eb6257d12686195fe7f20c1f5b3e90a2ed935f.
+The video was sampled at 1.0 Hz: one frame in every 24 of a 24 fps video. Detections of the same relation at most 2 s apart were merged into one interval. The video model ran with temperature 0.0 and seed 42. Detection mode: visual. Rule parameters: rule defaults. WatchOut's lineage of this detection records M1 as the interval from 0:00 to 0:05. Source of truth: contract be46c0befc16663198f76454de9d0f9504bce9eb555f1b904351d2212b4b38fc.
 
 ## Limits
 

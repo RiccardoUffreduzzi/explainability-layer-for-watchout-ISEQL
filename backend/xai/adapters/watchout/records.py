@@ -29,6 +29,31 @@ from xai.k1_harvester.ports import (
 )
 
 
+def _number(value: Any) -> float | None:
+    """A positive number from the database, whole numbers as int; None for NULL or 0."""
+    if value is None or float(value) <= 0:
+        return None
+    number = float(value)
+    return int(number) if number.is_integer() else number
+
+
+def _sampling(frame_rate: Any, sampling_rate: Any) -> dict[str, Any]:
+    """``FrameRate`` (fps) and ``SamplingRate`` (Hz) of a row.
+
+    A row written before WatchOut split the two has no FrameRate: its SamplingRate
+    was the fps and the stride, so one frame per second (1 Hz) was analysed.
+    """
+    if frame_rate is None:
+        fps = _number(sampling_rate)
+        hz = None if fps is None else 1.0
+        return {"frame_rate": fps, "sampling_hz": hz, "fps_column": "SamplingRate"}
+    return {
+        "frame_rate": _number(frame_rate),
+        "sampling_hz": _number(sampling_rate),
+        "fps_column": "FrameRate",
+    }
+
+
 class SqliteRecords:
     """Reads WatchOut's database through a connection from ``open_read_only``."""
 
@@ -52,7 +77,7 @@ class SqliteRecords:
             audio_provider=_text(row["AudioProvider"]),
             audio_model=_text(row["AudioModel"]),
             audio_quantization=_text(row["AudioQuantization"]),
-            sampling_rate=None if row["SamplingRate"] is None else int(row["SamplingRate"]),
+            **_sampling(row["FrameRate"], row["SamplingRate"]),
             audio_window=None if row["AudioWindow"] is None else float(row["AudioWindow"]),
             audio_hop=None if row["AudioHop"] is None else float(row["AudioHop"]),
         )

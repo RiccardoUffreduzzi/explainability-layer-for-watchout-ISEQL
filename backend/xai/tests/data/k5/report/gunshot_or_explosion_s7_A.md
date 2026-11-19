@@ -14,7 +14,7 @@ The rule accepts either of two predicates, `gunshot_visible` or `explosion_visib
 
 ## Method and provenance
 
-The video was sampled at 1.0 Hz: one frame in every 24 of a 24 fps video. Detections of the same relation at most 2 s apart were merged into one interval. The video model ran with temperature 0.0 and seed 42. Detection mode: visual. Rule parameters: rule defaults. WatchOut's lineage of this detection records M1 as the interval from 0:05 to 0:10. Source of truth: contract cb20c646d57952bb9ecf8e02b7f100314d143154ee48685c704841f93bd977a7.
+The video was sampled at 1.0 Hz: one frame in every 24 of a 24 fps video. Detections of the same relation at most 2 s apart were merged into one interval. The video model ran with temperature 0.0 and seed 42. Detection mode: visual. Rule parameters: rule defaults. WatchOut's lineage of this detection records M1 as the interval from 0:05 to 0:10. Source of truth: contract 27b6b23ee46a54aa9d7e81f67ffa747e9e24e8dbef3b921189c06b19d70dad42.
 
 ## Limits
 

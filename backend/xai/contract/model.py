@@ -100,9 +100,13 @@ class SourceSnapshot(ContractModel):
 
 
 class Sampling(ContractModel):
-    """``SamplingRate`` is both the declared fps and the sampling stride."""
+    """``source_fps`` = ``FrameRate``; ``sample_every_n`` = ``frame_step_for(FrameRate, SamplingRate)``.
 
-    source_fps: int | None
+    ``SamplingRate`` is the requested rate in Hz; ``effective_hz`` = source_fps / sample_every_n
+    is the rate actually analysed (they differ when the fps is not a multiple of it).
+    """
+
+    source_fps: float | None
     sample_every_n: int | None
     effective_hz: float | None
 

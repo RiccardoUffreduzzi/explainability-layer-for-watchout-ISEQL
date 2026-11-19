@@ -16,12 +16,12 @@
     "branches": [
       "s1"
     ],
-    "contract_hash": "cb20c646d57952bb9ecf8e02b7f100314d143154ee48685c704841f93bd977a7",
+    "contract_hash": "27b6b23ee46a54aa9d7e81f67ffa747e9e24e8dbef3b921189c06b19d70dad42",
     "contract_version": "0.4.0-k1",
     "event_id": "ev_b04365241841",
     "label": "gunshot_or_explosion",
     "model_id": "gunshot_or_explosion/A",
-    "plan_hash": "0d1050345589b77504a26c46c74137c5cc0bfaf36191176049f832fa01fc4a50",
+    "plan_hash": "44373f3d4c28dbe15d1b4250d6804f06af622ff61ed047d94f6125a34a64415a",
     "plan_version": "0.1.0-k4",
     "source_of_truth_version": "0.2.0-k2"
   },

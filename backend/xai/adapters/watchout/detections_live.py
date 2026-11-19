@@ -53,7 +53,7 @@ class LiveDetections:
         except TypeError as exc:
             if analysis.fps is None:
                 raise DetectionNotPossible(
-                    "Analyses.SamplingRate is missing: WatchOut cannot show the rows of this rule"
+                    "Analyses.FrameRate is missing: WatchOut cannot show the rows of this rule"
                 ) from exc
             raise
         if result.plan.form == "F4":
@@ -78,6 +78,6 @@ class LiveDetections:
         numeric = any(isinstance(v, int | float) and not isinstance(v, bool) for v in params.values.values())
         if params.unit == "seconds" and numeric and analysis.fps is None:
             raise DetectionNotPossible(
-                "the parameters are in seconds and Analyses.SamplingRate is missing or zero: "
+                "the parameters are in seconds and Analyses.FrameRate is missing or zero: "
                 "WatchOut's detect_event cannot convert them either"
             )

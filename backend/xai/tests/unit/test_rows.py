@@ -19,7 +19,6 @@ from xai.k1_harvester.rows import (
     row_branches,
     row_columns,
     row_matches,
-    same_row,
     same_value,
 )
 from xai.k1_harvester.timebase import TimeBase
@@ -51,11 +50,6 @@ ROW = DetectedRow(
 )
 def test_same_value(a: object, b: object, same: bool) -> None:
     assert same_value(a, b) is same
-
-
-def test_same_row_needs_the_same_columns() -> None:
-    assert same_row({"a": 1, "b": None}, {"b": None, "a": 1.0})
-    assert not same_row({"a": 1}, {"a": 1, "b": None})
 
 
 @pytest.mark.parametrize(

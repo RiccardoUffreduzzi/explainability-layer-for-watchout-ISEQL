@@ -64,7 +64,7 @@ class DetectionResult:
     analysis_id: str
     event_type: str
     condition: str
-    sampling_rate: Optional[int]
+    frame_rate: Optional[float]     # Analyses.FrameRate 
     model: dict                     # EventSpec.model_json as read
     plan: CompiledPlan
     params: ResolvedParams

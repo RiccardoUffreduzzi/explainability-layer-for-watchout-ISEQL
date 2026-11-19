@@ -7,12 +7,14 @@ The expected translations are in ``tests/data/k4/translation/<name>.json``.
 """
 
 import json
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from typing import Any
 
 from xai.contract import ContractDraft
+from xai.contract.plan import Binding, ExcludedConstruct, PlanNote, PlanStep, UnmatchedReading
 from xai.contract.source_of_truth import SourceOfTruth
 from xai.k2.source_of_truth import build_source_of_truth
+from xai.k4_planner.translation import BranchSteps, Translation
 from xai.k4_planner.view import SourceOfTruthView
 from xai.tests.support import EXAMPLE_PATHS, EXAMPLES_DIR, from_json_data, load_example
 
@@ -48,3 +50,43 @@ def expected_translation(name: str) -> dict[str, Any]:
     data: dict[str, Any] = json.loads((TRANSLATION_DIR / f"{name}.json").read_text(encoding="utf-8"))
     data.pop("$comment", None)
     return data
+
+
+def translation_to_data(translation: Translation) -> dict[str, Any]:
+    """The translation as JSON data, as the expected files of ``tests/data/k4/translation`` hold it."""
+    return {
+        "branches": [
+            {
+                "branch": b.branch,
+                "steps": [step.model_dump(mode="json") for step in b.steps],
+                "conclusion": b.conclusion,
+                "bindings": [binding.model_dump(mode="json") for binding in b.bindings],
+            }
+            for b in translation.branches
+        ],
+        "excluded": [e.model_dump(mode="json") for e in translation.excluded],
+        "unbound_intervals": list(translation.unbound_intervals),
+        "unmatched_readings": [u.model_dump(mode="json") for u in translation.unmatched_readings],
+        "notes": [n.model_dump(mode="json") for n in translation.notes],
+    }
+
+
+def translation_from_data(data: Mapping[str, Any]) -> Translation:
+    """The inverse of ``translation_to_data``; the records are read as JSON, like the contract."""
+    return Translation(
+        branches=tuple(
+            BranchSteps(
+                branch=b["branch"],
+                steps=tuple(PlanStep.model_validate_json(json.dumps(s)) for s in b["steps"]),
+                conclusion=b["conclusion"],
+                bindings=tuple(Binding.model_validate_json(json.dumps(x)) for x in b["bindings"]),
+            )
+            for b in data["branches"]
+        ),
+        excluded=tuple(ExcludedConstruct.model_validate_json(json.dumps(e)) for e in data["excluded"]),
+        unbound_intervals=tuple(data["unbound_intervals"]),
+        unmatched_readings=tuple(
+            UnmatchedReading.model_validate_json(json.dumps(u)) for u in data["unmatched_readings"]
+        ),
+        notes=tuple(PlanNote.model_validate_json(json.dumps(n)) for n in data["notes"]),
+    )

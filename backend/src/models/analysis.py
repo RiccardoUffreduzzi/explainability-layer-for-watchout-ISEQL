@@ -21,6 +21,17 @@ def frame_step_for(frame_rate: float, sampling_rate: float) -> int:
         raise ValueError("frame_rate must be positive")
     return max(1, int(frame_rate / sampling_rate + 0.5))
 
+
+MERGE_GAP_SECONDS = 2.0
+"""Sightings of the same relation at most this far apart (in video time) join one interval."""
+
+
+def merge_gap_frames_for(frame_rate: float) -> int:
+    """Return the source-frame gap equal to ``MERGE_GAP_SECONDS`` at this frame rate."""
+    if frame_rate <= 0:
+        raise ValueError("frame_rate must be positive")
+    return max(1, int(frame_rate * MERGE_GAP_SECONDS + 0.5))
+
 class Condition(str, Enum):
     A = "A"
     B = "B"

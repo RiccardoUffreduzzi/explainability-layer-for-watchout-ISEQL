@@ -54,7 +54,7 @@ Only the text of the report: the section titles and their sentences, nothing bef
   "plan": {
     "plan_meta": {
       "plan_version": "0.1.0-k4",
-      "contract_hash": "265bbc60d1fd06ddccd57fc4bce15bf61560cb69fb8ff5bfa613ceb64238df6d",
+      "contract_hash": "7ca7bc48d339935177011eec6610cb52ebafcb09d64c8ba1529c9a4ccdcc09e7",
       "source_of_truth_version": "0.2.0-k2",
       "contract_version": "0.4.0-k1",
       "event_id": "ev_14cb6286bf2e",
@@ -63,7 +63,7 @@ Only the text of the report: the section titles and their sentences, nothing bef
       "branches": [
         "s2"
       ],
-      "plan_hash": "7f3fe9579a72d69234f343f8775747c140435d6e7a8d11553d8de1a801951bb6"
+      "plan_hash": "f7922a5f6d4c0116c58256da7a1ff6ff24a90fd6c4147e8ab15d870229c0b132"
     },
     "steps": [
       {

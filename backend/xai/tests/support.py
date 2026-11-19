@@ -91,6 +91,11 @@ def build_fixture_db(path: Path) -> Path:
     The seed is read through ``consolidated_copy``.
     """
     consolidated_copy(SEED_DB, path)
+    from utils.database import setup_database  # WatchOut's own migrations (e.g. FrameRate)
+
+    conn, _ = setup_database(path)
+    conn.execute("PRAGMA journal_mode=DELETE")  # one file, as consolidated_copy leaves it
+    conn.close()
     target = sqlite3.connect(path)
     try:
         data = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))

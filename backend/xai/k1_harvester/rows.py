@@ -77,11 +77,6 @@ def same_value(a: object, b: object) -> bool:
     return False
 
 
-def same_row(a: Mapping[str, RowValue], b: Mapping[str, RowValue]) -> bool:
-    """Same columns with the same values."""
-    return a.keys() == b.keys() and all(same_value(a[k], b[k]) for k in a)
-
-
 def row_matches(requested: Mapping[str, object], row: DetectedRow) -> bool:
     """Whether the requested values identify this row.
 

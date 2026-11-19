@@ -115,10 +115,6 @@ class ValueTable:
     def names(self) -> frozenset[str]:
         return frozenset(v.name for v in self.values)
 
-    def covers(self, ref: str) -> bool:
-        """Whether a reference of the plan has its values (or its entity) in the table."""
-        return any(ref in (v.step_ref, v.pointer) for v in self.values) or self.entity(ref) is not None
-
 
 def cited_refs(steps: Iterable[PlanStep]) -> tuple[str, ...]:
     """Every fact the steps cite, once, in order: refs, then slot pointers, readings and alternatives."""
@@ -174,7 +170,8 @@ def threshold(value: object, unit: str) -> str:
 
 
 def _fps(value: Any) -> str:
-    return f"{number(value)} fps"
+    """``24 fps`` for a whole frame rate as a real number"""
+    return f"{int(value)} fps" if float(value).is_integer() else f"{number(value)} fps"
 
 
 def _hz(value: Any) -> str:

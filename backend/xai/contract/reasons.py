@@ -22,7 +22,7 @@ class Reason(str, Enum):
     """``VisualPerInterval`` has no confidence column."""
 
     FPS_NOT_RECORDED = "fps_not_recorded"
-    """``Analyses.SamplingRate`` is missing or zero."""
+    """``Analyses.FrameRate`` (``SamplingRate`` in legacy rows) is missing or zero."""
 
     ANALYSIS_RECORD_MISSING = "analysis_record_missing"
     """A column of ``Analyses`` is empty."""

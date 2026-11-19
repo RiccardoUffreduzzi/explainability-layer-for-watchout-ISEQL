@@ -1,7 +1,7 @@
 {
   "report_meta": {
     "attempts": 1,
-    "contract_hash": "9118e7309af73ec54a32bdd623eb6257d12686195fe7f20c1f5b3e90a2ed935f",
+    "contract_hash": "be46c0befc16663198f76454de9d0f9504bce9eb555f1b904351d2212b4b38fc",
     "event_id": "ev_d966ffea748d",
     "label": "fight",
     "llm": {
@@ -11,7 +11,7 @@
       "temperature": 0.0
     },
     "model_id": "fight/A",
-    "plan_hash": "423a5257f586c34d12111bcac540bdc3b75d71d597de75d5903b80b8b4a71247",
+    "plan_hash": "ca137c68b3acf45d6d157ce8a4a656705a00f6dff995e1335a34a99116f545d0",
     "prompt_version": "report1@830cf043a1ae",
     "report": 1,
     "report_version": "0.2.0-k5",
@@ -378,13 +378,13 @@
           "step_ids": [
             "s_prov_contract_hash"
           ],
-          "text": "Source of truth: contract 9118e7309af73ec54a32bdd623eb6257d12686195fe7f20c1f5b3e90a2ed935f.",
+          "text": "Source of truth: contract be46c0befc16663198f76454de9d0f9504bce9eb555f1b904351d2212b4b38fc.",
           "values": [
             {
               "form": "plain",
               "name": "contract_hash",
               "ref": "#/contract_meta/contract_hash",
-              "text": "9118e7309af73ec54a32bdd623eb6257d12686195fe7f20c1f5b3e90a2ed935f"
+              "text": "be46c0befc16663198f76454de9d0f9504bce9eb555f1b904351d2212b4b38fc"
             }
           ]
         }

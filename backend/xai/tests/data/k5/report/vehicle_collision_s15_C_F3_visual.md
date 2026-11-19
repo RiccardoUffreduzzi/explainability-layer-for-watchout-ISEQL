@@ -24,7 +24,7 @@ The event was detected by both video and audio, in the same time interval. The a
 
 ## Method and provenance
 
-The video was sampled at 1.0 Hz: one frame in every 24 of a 24 fps video. Detections of the same relation at most 2 s apart were merged into one interval. The video model ran with temperature 0.0 and seed 42. Detection mode: multimodal. Rule parameters: parameters saved in the GUI. WatchOut's lineage of this detection records M1 as the interval from 0:06 to 0:10. Source of truth: contract d91f61e4396d4403efd8f8cf1af6357511bcd541f8d3f0888a942a204d4553ec.
+The video was sampled at 1.0 Hz: one frame in every 24 of a 24 fps video. Detections of the same relation at most 2 s apart were merged into one interval. The video model ran with temperature 0.0 and seed 42. Detection mode: multimodal. Rule parameters: parameters saved in the GUI. WatchOut's lineage of this detection records M1 as the interval from 0:06 to 0:10. Source of truth: contract 60a4a5d9979becccfe52ca52f305aadb9197a7354a89cdcc36a782486f194c09.
 
 ## Limits
 

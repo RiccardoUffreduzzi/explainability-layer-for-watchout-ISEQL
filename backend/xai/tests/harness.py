@@ -10,7 +10,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Literal
 
-from xai.adapters.clock import FixedClock
 from xai.adapters.resource_files import load_glossary
 from xai.adapters.watchout.connection import open_read_only
 from xai.adapters.watchout.reader import SqliteWatchOutReader
@@ -21,6 +20,18 @@ from xai.k1_harvester.service import StageHarvester
 from xai.tests.support import EXAMPLES_DIR, scene
 
 FIXED_TIME = datetime(2026, 10, 6, 20, 0, tzinfo=timezone.utc)
+
+
+class FixedClock:
+    """The ``Clock`` port, always at the same time: two runs on the same data give the same draft."""
+
+    def __init__(self, instant: datetime) -> None:
+        if instant.tzinfo is None:
+            raise ValueError("FixedClock needs a time with an offset")
+        self.instant = instant
+
+    def now(self) -> datetime:
+        return self.instant
 
 
 def open_reader(db: Path, config_db: Path | None = None) -> tuple[sqlite3.Connection, SqliteWatchOutReader]:

@@ -12,7 +12,13 @@ from typing import Callable
 
 from fastapi import HTTPException
 
-from models.analysis import AnalysisStage, RunState, frame_step_for
+from models.analysis import (
+    MERGE_GAP_SECONDS,
+    AnalysisStage,
+    RunState,
+    frame_step_for,
+    merge_gap_frames_for,
+)
 from service.analysis_service import AnalysisService
 from service.post_analysis_hook import notify_analysis_done
 from utils.api_logger import get_logger
@@ -538,12 +544,12 @@ class AnalysisServiceImpl(AnalysisService):
         run.stage = AnalysisStage.VLM
         persist_stage("vlm")
         frame_step = frame_step_for(run.frame_rate, run.sampling_rate)
-        merge_gap_frames = max(1, int(run.frame_rate * 2 + 0.5))
+        merge_gap_frames = merge_gap_frames_for(run.frame_rate)
         _log(f">>> CONDITION {run.condition}: visual perception (VLM)")
         _log(f"     Provider: {run.vlm_provider}, Model: {run.model or '(default)'}, "
              f"Grid: {run.grid_rows}x{run.grid_cols}, Sampling: {run.sampling_rate:g} Hz "
              f"(every {frame_step} frames at {run.frame_rate:g} FPS), "
-             f"Merge gap: {merge_gap_frames} frames (2s)"
+             f"Merge gap: {merge_gap_frames} frames ({MERGE_GAP_SECONDS:g}s)"
              f", Delay: {run.vlm_delay}s")
         _log(f"     Object tracking: enabled | Embedding: "
              f"{run.embed_provider}:{run.embed_model}")

@@ -4,10 +4,12 @@ import pytest
 
 from xai.contract.ids import step_id_of
 from xai.contract.plan import IN_REPORT2, StepType
-from xai.k4_planner.translation import translate, translation_from_data, translation_to_data
+from xai.k4_planner.translation import translate
 from xai.tests.k4_support import (
     GOLDEN_NAMES,
     expected_translation,
+    translation_from_data,
+    translation_to_data,
     view_of,
 )
 

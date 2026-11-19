@@ -391,18 +391,18 @@ def default_params(conn: sqlite3.Connection) -> tuple[dict, dict, dict]:
 
 
 def resolve_params(conn: sqlite3.Connection, condition: str, params: dict, unit: str,
-                   sampling_rate, origin: str = "request", provided_by: dict | None = None,
+                   frame_rate, origin: str = "request", provided_by: dict | None = None,
                    rule_defaults: dict | None = None) -> ResolvedParams:
     """The parameters as the compiler receives them, with every step.
 
-    With ``unit == "seconds"`` every numeric value is multiplied by the sampling
-    rate and rounded, then ``_resolve_deltas`` checks the keys required by the
+    With ``unit == "seconds"`` every numeric value is multiplied by the video
+    frame rate and rounded, then ``_resolve_deltas`` checks the keys required by the
     maps inf to None and casts to int.
     """
     written = dict(params)
     converted = dict(written)
     if unit == "seconds":
-        converted = {k: (round(v * sampling_rate) if _is_number(v) else v)
+        converted = {k: (round(v * frame_rate) if _is_number(v) else v)
                      for k, v in written.items()}
     engine = _resolve_deltas(condition, converted, conn)
     return ResolvedParams(origin=origin, unit=unit, written=written, converted=converted,
@@ -461,6 +461,22 @@ def _witnesses(payload: str) -> tuple[Witness, ...]:
         for w in json.loads(payload))
 
 
+def analysis_frame_rate(conn: sqlite3.Connection, analysis_id: str) -> float | None:
+    """The video frame rate of an analysis; None when it is not recorded.
+
+    Raises ValueError for an unknown ``analysis_id``.
+
+    ``Analyses.FrameRate`` holds the fps.
+    Rows written in a not updated version of the database have no FrameRate: their ``SamplingRate`` was the fps.
+    """
+    columns = {row[1] for row in conn.execute("PRAGMA table_info(Analyses)").fetchall()}
+    expr = "COALESCE(FrameRate, SamplingRate)" if "FrameRate" in columns else "SamplingRate"
+    row = conn.execute(f"SELECT {expr} FROM Analyses WHERE ID = ?", (analysis_id,)).fetchone()
+    if row is None:
+        raise ValueError(f"unknown analysis_id '{analysis_id}'")
+    return row[0]
+
+
 def detect(conn: sqlite3.Connection, *, analysis_id: str, event_type: str, condition: str,
            params: dict | None = None, unit: str = "seconds",
            with_lineage: bool = False) -> DetectionResult:
@@ -473,11 +489,7 @@ def detect(conn: sqlite3.Connection, *, analysis_id: str, event_type: str, condi
 
     if condition not in VALID_CONDITIONS:
         raise ValueError(f"unknown condition '{condition}'; expected A | B | C")
-    analysis = conn.execute("SELECT SamplingRate FROM Analyses WHERE ID = ?",
-                            (analysis_id,)).fetchone()
-    if analysis is None:
-        raise ValueError(f"unknown analysis_id '{analysis_id}'")
-    fps = analysis[0]
+    fps = analysis_frame_rate(conn, analysis_id)
     spec = next((e for e in _events_from_db(conn, condition) if e.id == event_type), None)
     if spec is None:
         raise ValueError(f"event '{event_type}' not available for condition {condition}")
@@ -519,7 +531,7 @@ def detect(conn: sqlite3.Connection, *, analysis_id: str, event_type: str, condi
         for i, row in enumerate(values_rows))
     return DetectionResult(
         analysis_id=analysis_id, event_type=event_type, condition=condition,
-        sampling_rate=fps, model=model, plan=compiled.plan, params=resolved,
+        frame_rate=fps, model=model, plan=compiled.plan, params=resolved,
         sql=compiled.sql, rows=rows, lineage=lineage)
 
 

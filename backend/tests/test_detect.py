@@ -45,8 +45,8 @@ def db_path(tmp_path) -> Path:
     for (condition, event), model_json in RULES.items():
         conn.execute("INSERT INTO EventSpec (id, condition, model_json) VALUES (?, ?, ?)",
                      (event, condition, model_json))
-    conn.execute("INSERT INTO Analyses (ID, VideoPath, VideoFilename, Condition, SamplingRate, Stage, CreatedAt) "
-                 "VALUES (?, 'v.mp4', 'v.mp4', 'C', ?, 'done', '2026-01-01T00:00:00')", (AID, FPS))
+    conn.execute("INSERT INTO Analyses (ID, VideoPath, VideoFilename, Condition, FrameRate, SamplingRate, Stage, "
+                 "CreatedAt) VALUES (?, 'v.mp4', 'v.mp4', 'C', ?, 1.0, 'done', '2026-01-01T00:00:00')", (AID, FPS))
     for rid, (relation, sf, ef, participants) in VISUAL.items():
         conn.execute("INSERT INTO VisualPerInterval (RelationID, AnalysisID, StartFrame, EndFrame, RelationType) "
                      "VALUES (?, ?, ?, ?, ?)", (rid, AID, sf, ef, relation))
@@ -88,7 +88,7 @@ def test_vehicle_collision_c_rows_and_witnesses(conn):
         [("s1", [("M1", "AudioPerInterval", 1, []), ("M2", "AudioPerInterval", 2, [])])],
         [("s2", [("M1", "VisualPerInterval", 4, [(1, 7, "vehicle")])])],
     ]
-    assert res.lineage and res.sampling_rate == FPS and res.plan.form == "F2"
+    assert res.lineage and res.frame_rate == FPS and res.plan.form == "F2"
 
 
 def test_witness_args_follow_the_predicate_positions(conn):
@@ -130,7 +130,7 @@ def test_default_params_are_the_ones_the_gui_prefills(conn):
     assert res.params.engine["delta_visual_vehicle_escape"] == 2 * FPS
 
 
-def test_seconds_are_converted_with_the_sampling_rate(conn):
+def test_seconds_are_converted_with_the_frame_rate(conn):
     written = {"delta_visual_vehicle_escape": 2, "zeta_visual_vehicle_escape": "<=",
                "rho_visual_vehicle_escape": 0, "delta_visual_handoff": "inf",
                "zeta_visual_handoff": "<=", "rho_visual_handoff": 0}
@@ -218,13 +218,11 @@ def test_detect_event_returns_the_detect_rows_and_writes_only_the_parameters(db_
 
 
 def test_reading_methods_return_the_values_the_code_uses():
-    from service.impl.interval_service_impl import IntervalServiceImpl
     from utils.vlm_client import VLMClient
 
     assert VLMClient.generation_defaults() == {"temperature": 0.0, "seed": 42}
     init = inspect.signature(VLMClient.__init__).parameters
     assert (init["temperature"].default, init["seed"].default) == (0.0, 42)
-    assert IntervalServiceImpl.merge_tolerance_samples() == 2
 
 
 def test_audio_constant_confidence():
@@ -233,6 +231,25 @@ def test_audio_constant_confidence():
 
     assert AudioServiceImpl.constant_confidence("huggingface") == 1.0
     assert AudioServiceImpl.constant_confidence("panns") is None
+
+
+def test_the_frame_rate_comes_from_frame_rate_and_legacy_rows_fall_back(db_path):
+    from service.impl.events_service_impl import analysis_frame_rate
+
+    c = sqlite3.connect(db_path)
+    try:
+        assert analysis_frame_rate(c, AID) == FPS
+        c.execute("UPDATE Analyses SET FrameRate = 30.0, SamplingRate = 0.5 WHERE ID = ?", (AID,))
+        assert analysis_frame_rate(c, AID) == 30.0
+        # a row written before the split: no FrameRate, SamplingRate was the fps
+        c.execute("UPDATE Analyses SET FrameRate = NULL, SamplingRate = 25 WHERE ID = ?", (AID,))
+        assert analysis_frame_rate(c, AID) == 25
+        c.execute("UPDATE Analyses SET FrameRate = NULL, SamplingRate = NULL WHERE ID = ?", (AID,))
+        assert analysis_frame_rate(c, AID) is None
+        with pytest.raises(ValueError, match="unknown analysis_id 'missing'"):
+            analysis_frame_rate(c, "missing")
+    finally:
+        c.close()
 
 
 def test_sqlite_has_the_json_functions_the_lineage_query_uses():

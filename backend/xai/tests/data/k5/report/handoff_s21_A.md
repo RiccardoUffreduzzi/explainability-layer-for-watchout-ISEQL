@@ -21,7 +21,7 @@ The first carrying ends before the second one starts: operator `Bef(δ:∞; ζ:<
 
 ## Method and provenance
 
-The video was sampled at 1.0 Hz: one frame in every 24 of a 24 fps video. Detections of the same relation at most 2 s apart were merged into one interval. The video model ran with temperature 0.0 and seed 42. Detection mode: visual. Rule parameters: rule defaults. WatchOut's lineage of this detection records M1 as the interval from 0:01 to 0:04 and M2 as the interval from 0:05 to 0:08. Source of truth: contract 3bd9134d95371422726d6279e45af9a8357846dfdfcf297510ecbefbeb96eb33.
+The video was sampled at 1.0 Hz: one frame in every 24 of a 24 fps video. Detections of the same relation at most 2 s apart were merged into one interval. The video model ran with temperature 0.0 and seed 42. Detection mode: visual. Rule parameters: rule defaults. WatchOut's lineage of this detection records M1 as the interval from 0:01 to 0:04 and M2 as the interval from 0:05 to 0:08. Source of truth: contract 0b3250dd6ebaf622b94210c179c0d4e91a1e95f270967450908742fb022cce54.
 
 ## Limits
 

@@ -1,7 +1,4 @@
 # Configuration of the reports (K5, K6)
-#
-# Trial of phase 3 (14 November): Gemma 4 (gemma-4-26b-a4b-it, gemma-4-31b-it) answers
-# 500 or 504 on the Gemini API; gemini-3.5-flash-lite answers, the same text with the same seed.
 llm:
   provider: gemini
   model: gemini-3.5-flash-lite

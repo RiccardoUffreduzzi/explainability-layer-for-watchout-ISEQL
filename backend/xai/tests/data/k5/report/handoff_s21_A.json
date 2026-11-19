@@ -1,7 +1,7 @@
 {
   "report_meta": {
     "attempts": 1,
-    "contract_hash": "3bd9134d95371422726d6279e45af9a8357846dfdfcf297510ecbefbeb96eb33",
+    "contract_hash": "0b3250dd6ebaf622b94210c179c0d4e91a1e95f270967450908742fb022cce54",
     "event_id": "ev_beffcb6f2a6e",
     "label": "handoff",
     "llm": {
@@ -11,7 +11,7 @@
       "temperature": 0.0
     },
     "model_id": "handoff/A",
-    "plan_hash": "7175bac0e03ff9c35ce1e2de6e169a7ac1a9369916a1e8ca70d6c9c58abca6fa",
+    "plan_hash": "c33d07ad1fb4d72364dc70463999d59fe45e2eae86c94a0963552e89f65f8fcd",
     "prompt_version": "report1@830cf043a1ae",
     "report": 1,
     "report_version": "0.2.0-k5",
@@ -499,13 +499,13 @@
           "step_ids": [
             "s_prov_contract_hash"
           ],
-          "text": "Source of truth: contract 3bd9134d95371422726d6279e45af9a8357846dfdfcf297510ecbefbeb96eb33.",
+          "text": "Source of truth: contract 0b3250dd6ebaf622b94210c179c0d4e91a1e95f270967450908742fb022cce54.",
           "values": [
             {
               "form": "plain",
               "name": "contract_hash",
               "ref": "#/contract_meta/contract_hash",
-              "text": "3bd9134d95371422726d6279e45af9a8357846dfdfcf297510ecbefbeb96eb33"
+              "text": "0b3250dd6ebaf622b94210c179c0d4e91a1e95f270967450908742fb022cce54"
             }
           ]
         }

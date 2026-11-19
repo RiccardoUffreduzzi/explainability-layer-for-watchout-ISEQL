@@ -29,7 +29,10 @@ CLASS_FILES = {
 }
 """The file of each class a code SourceRef names."""
 
-MODULE_FILES = {"compiler.py": SRC / "iseql" / "compiler.py"}
+MODULE_FILES = {
+    "compiler.py": SRC / "iseql" / "compiler.py",
+    "analysis.py": SRC / "models" / "analysis.py",
+}
 
 
 def _method(path: Path, class_name: str, method: str) -> ast.FunctionDef:
@@ -82,7 +85,9 @@ def test_the_constant_confidence_source_names_a_method_of_the_code() -> None:
 def test_the_reading_methods_return_what_k1_expects() -> None:
     facts = WatchOutCodeFacts()
 
-    assert isinstance(facts.merge_tolerance_samples(), int)
+    assert facts.frame_step(24, 1.0) == 24
+    assert facts.frame_step(30, 0.5) == 60
+    assert facts.merge_gap_frames(24) == 48
     assert facts.constant_audio_confidence("huggingface") is not None
     assert facts.constant_audio_confidence("panns") is None
     facts.vlm_defaults()
@@ -103,8 +108,10 @@ def test_the_analysis_creates_the_vlm_client_with_its_defaults() -> None:
         assert len(call.args) < 4  # positional temperature or seed
 
 
-def test_the_visual_pipeline_keeps_one_frame_every_sampling_rate() -> None:
-    # K1 reports sample_every_n = SamplingRate: true while the visual pipeline samples with that stride.
+def test_the_visual_pipeline_keeps_one_frame_every_frame_step() -> None:
+    # K1 reports sample_every_n = frame_step_for(FrameRate, SamplingRate) and
+    # merge_tolerance_s = merge_gap_frames_for(FrameRate) / FrameRate: true while the
+    # analysis passes exactly these two values to the visual pipeline.
     path, class_name, name = _cited(SAMPLING_STRIDE)
     assert class_name is not None
     function = _method(path, class_name, name)
@@ -116,6 +123,13 @@ def test_the_visual_pipeline_keeps_one_frame_every_sampling_rate() -> None:
     )
 
     tree = ast.parse((SERVICE_IMPL / "analysis_service_impl.py").read_text(encoding="utf-8"))
+    assignments = {
+        ast.unparse(node.targets[0]): ast.unparse(node.value)
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Assign) and len(node.targets) == 1
+    }
+    assert assignments.get("frame_step") == "frame_step_for(run.frame_rate, run.sampling_rate)"
+    assert assignments.get("merge_gap_frames") == "merge_gap_frames_for(run.frame_rate)"
     calls = [
         node
         for node in ast.walk(tree)
@@ -127,6 +141,7 @@ def test_the_visual_pipeline_keeps_one_frame_every_sampling_rate() -> None:
     assert calls
     for call in calls:
         keywords = {k.arg: ast.unparse(k.value) for k in call.keywords}
-        assert keywords.get("sampling_rate") == "run.sampling_rate", (
-            "sample_every_n in contract_meta no longer holds"
+        assert keywords.get("frame_step") == "frame_step", "sample_every_n in contract_meta no longer holds"
+        assert keywords.get("merge_gap_frames") == "merge_gap_frames", (
+            "merge_tolerance_s in contract_meta no longer holds"
         )

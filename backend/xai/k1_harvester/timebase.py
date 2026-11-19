@@ -2,7 +2,8 @@
 
 WatchOut computes seconds as ``StartFrame / fps`` (``compiler.py``) and the GUI
 derives frames as ``round(seconds * fps)`` (``detect_event``). ``TimeBase`` applies
-the same two formulas with ``fps = Analyses.SamplingRate`` and writes seconds
+the same two formulas with ``fps = Analyses.FrameRate`` (``SamplingRate`` in rows
+written before the two were split) and writes seconds
 rounded to the millisecond, as ``format_time`` (``events_service_impl.py``) shows them.
 """
 
@@ -26,7 +27,7 @@ class TimedAnchor:
 
 
 class TimeBase:
-    def __init__(self, fps: int | None) -> None:
+    def __init__(self, fps: float | None) -> None:
         self.fps = fps if fps else None
 
     def from_frames(self, start_frame: int, end_frame: int, field: str) -> TimedAnchor:
@@ -75,6 +76,6 @@ class TimeBase:
     def _missing(field: str, attributes: tuple[str, str], unit: str) -> dict[str, Unavailable]:
         reason = Unavailable(
             reason=Reason.FPS_NOT_RECORDED,
-            detail=f"Analyses.SamplingRate is missing or zero: the {unit} cannot be converted",
+            detail=f"Analyses.FrameRate is missing or zero: the {unit} cannot be converted",
         )
         return {f"{field}.{attribute}": reason for attribute in attributes}

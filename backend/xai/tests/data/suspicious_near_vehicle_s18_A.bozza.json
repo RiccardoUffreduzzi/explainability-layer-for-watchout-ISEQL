@@ -10,7 +10,7 @@
       "vlm_backend": "gemini / gemini-3.6-flash",
       "audio_backend": "huggingface / qwen2_audio",
       "sampling": {
-        "source_fps": 24,
+        "source_fps": 24.0,
         "sample_every_n": 24,
         "effective_hz": 1.0
       },
@@ -42,7 +42,7 @@
         },
         "sampling.sample_every_n": {
           "stage": "code",
-          "record_id": "VisualServiceImpl.run_pipeline/frame_count % sampling_rate",
+          "record_id": "VisualServiceImpl.run_pipeline/frame_count % frame_step",
           "mode": "read"
         },
         "sampling.effective_hz": {
@@ -58,7 +58,7 @@
         },
         "merge_tolerance_s": {
           "stage": "code",
-          "record_id": "IntervalServiceImpl.merge_tolerance_samples()",
+          "record_id": "analysis.py/merge_gap_frames_for",
           "mode": "read"
         },
         "determinism": {

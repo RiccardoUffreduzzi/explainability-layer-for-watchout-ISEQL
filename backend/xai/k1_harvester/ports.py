@@ -43,7 +43,12 @@ class AnalysisSnapshot:
     audio_provider: str | None
     audio_model: str | None
     audio_quantization: str | None
-    sampling_rate: int | None
+    frame_rate: float | None
+    """Frames per second of the video (``FrameRate``; ``SamplingRate`` in legacy rows)."""
+    sampling_hz: float | None
+    """Frames analysed per second as requested (``SamplingRate`` in Hz; 1.0 in legacy rows)."""
+    fps_column: str
+    """The column ``frame_rate`` was read from: ``FrameRate``, or ``SamplingRate`` in legacy rows."""
     audio_window: float | None
     audio_hop: float | None
 
@@ -53,8 +58,8 @@ class AnalysisSnapshot:
         return f"Analyses/{self.analysis_id}"
 
     @property
-    def fps(self) -> int | None:
-        return self.sampling_rate if self.sampling_rate else None
+    def fps(self) -> float | None:
+        return self.frame_rate if self.frame_rate else None
 
 
 @dataclass(frozen=True)
@@ -479,8 +484,12 @@ class CodeFacts(Protocol):
 
     def vlm_defaults(self) -> VlmDefaults: ...
 
-    def merge_tolerance_samples(self) -> int:
-        """Largest gap, in sampled frames, that still merges two sightings into one interval."""
+    def frame_step(self, frame_rate: float, sampling_hz: float) -> int:
+        """Video frames between two analysed frames (``frame_step_for``)."""
+        ...
+
+    def merge_gap_frames(self, frame_rate: float) -> int:
+        """Largest gap, in video frames, that still merges two sightings into one interval."""
         ...
 
     def constant_audio_confidence(self, provider: str) -> float | None:

@@ -1707,12 +1707,12 @@
     },
     "Sampling": {
       "additionalProperties": false,
-      "description": "``SamplingRate`` is both the declared fps and the sampling stride.",
+      "description": "``source_fps`` = ``FrameRate``; ``sample_every_n`` = ``frame_step_for(FrameRate, SamplingRate)``.\n\n``SamplingRate`` is the requested rate in Hz; ``effective_hz`` = source_fps / sample_every_n\nis the rate actually analysed (they differ when the fps is not a multiple of it).",
       "properties": {
         "source_fps": {
           "anyOf": [
             {
-              "type": "integer"
+              "type": "number"
             },
             {
               "type": "null"

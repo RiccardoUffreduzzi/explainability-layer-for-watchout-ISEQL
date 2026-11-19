@@ -1,7 +1,7 @@
 {
   "report_meta": {
     "attempts": 1,
-    "contract_hash": "265bbc60d1fd06ddccd57fc4bce15bf61560cb69fb8ff5bfa613ceb64238df6d",
+    "contract_hash": "7ca7bc48d339935177011eec6610cb52ebafcb09d64c8ba1529c9a4ccdcc09e7",
     "event_id": "ev_14cb6286bf2e",
     "label": "vehicle_collision",
     "llm": {
@@ -11,7 +11,7 @@
       "temperature": 0.0
     },
     "model_id": "vehicle_collision/C",
-    "plan_hash": "7f3fe9579a72d69234f343f8775747c140435d6e7a8d11553d8de1a801951bb6",
+    "plan_hash": "f7922a5f6d4c0116c58256da7a1ff6ff24a90fd6c4147e8ab15d870229c0b132",
     "prompt_version": "report1@830cf043a1ae",
     "report": 1,
     "report_version": "0.2.0-k5",
@@ -409,13 +409,13 @@
           "step_ids": [
             "s_prov_contract_hash"
           ],
-          "text": "Source of truth: contract 265bbc60d1fd06ddccd57fc4bce15bf61560cb69fb8ff5bfa613ceb64238df6d.",
+          "text": "Source of truth: contract 7ca7bc48d339935177011eec6610cb52ebafcb09d64c8ba1529c9a4ccdcc09e7.",
           "values": [
             {
               "form": "plain",
               "name": "contract_hash",
               "ref": "#/contract_meta/contract_hash",
-              "text": "265bbc60d1fd06ddccd57fc4bce15bf61560cb69fb8ff5bfa613ceb64238df6d"
+              "text": "7ca7bc48d339935177011eec6610cb52ebafcb09d64c8ba1529c9a4ccdcc09e7"
             }
           ]
         }

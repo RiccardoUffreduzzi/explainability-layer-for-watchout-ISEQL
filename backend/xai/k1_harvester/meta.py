@@ -23,16 +23,15 @@ DETECTION_MODES: dict[Condition, DetectionMode] = {"A": "visual", "B": "audio", 
 
 SAMPLING_STRIDE = SourceRef(
     stage=Stage.CODE,
-    record_id="VisualServiceImpl.run_pipeline/frame_count % sampling_rate",
+    record_id="VisualServiceImpl.run_pipeline/frame_count % frame_step",
     mode="read",
 )
-"""``SamplingRate`` is also the stride of the frame sampling."""
+"""The visual pipeline keeps one frame every ``frame_step_for(FrameRate, SamplingRate)``."""
 
 VLM_DEFAULTS = SourceRef(stage=Stage.CODE, record_id="VLMClient.generation_defaults()", mode="read")
 
-MERGE_TOLERANCE = SourceRef(
-    stage=Stage.CODE, record_id="IntervalServiceImpl.merge_tolerance_samples()", mode="read"
-)
+MERGE_TOLERANCE = SourceRef(stage=Stage.CODE, record_id="analysis.py/merge_gap_frames_for", mode="read")
+"""The analysis passes ``merge_gap_frames_for(FrameRate)`` to the interval merge."""
 
 
 class MetaHarvester:
@@ -96,20 +95,21 @@ class MetaHarvester:
             sources["audio_backend"] = config(audio_columns)
 
         fps = analysis.fps
-        if fps is None:
-            no_fps = Unavailable(
-                reason=Reason.FPS_NOT_RECORDED, detail=f"{record} has no SamplingRate (or 0)"
-            )
+        facts = ctx.readings.facts
+        if fps is None or analysis.sampling_hz is None:
+            column = analysis.fps_column if fps is None else "SamplingRate"
+            no_fps = Unavailable(reason=Reason.FPS_NOT_RECORDED, detail=f"{record} has no {column} (or 0)")
             for name in ("sampling.source_fps", "sampling.sample_every_n", "sampling.effective_hz"):
                 unavailable[name] = no_fps
             sampling = Sampling(source_fps=None, sample_every_n=None, effective_hz=None)
         else:
-            sources["sampling.source_fps"] = config("SamplingRate")
+            step = facts.frame_step(fps, analysis.sampling_hz)
+            sources["sampling.source_fps"] = config(analysis.fps_column)
             sources["sampling.sample_every_n"] = SAMPLING_STRIDE
             sources["sampling.effective_hz"] = DerivedSource(
                 derived_from=["sampling.source_fps", "sampling.sample_every_n"]
             )
-            sampling = Sampling(source_fps=fps, sample_every_n=fps, effective_hz=fps / fps)
+            sampling = Sampling(source_fps=fps, sample_every_n=step, effective_hz=round(fps / step, 6))
 
         if analysis.audio_window is None or analysis.audio_hop is None:
             audio_window = None
@@ -118,11 +118,11 @@ class MetaHarvester:
             audio_window = AudioWindow(window_s=analysis.audio_window, hop_s=analysis.audio_hop)
             sources["audio_window"] = config("AudioWindow,AudioHop")
 
-        merge_tolerance_s = ctx.timebase.seconds_of(ctx.readings.facts.merge_tolerance_samples(), fps or 0)
+        merge_tolerance_s = None if fps is None else ctx.timebase.seconds_of(facts.merge_gap_frames(fps), 1)
         if merge_tolerance_s is None:
             unavailable["merge_tolerance_s"] = Unavailable(
                 reason=Reason.FPS_NOT_RECORDED,
-                detail="the merge tolerance is a number of samples: seconds need SamplingRate",
+                detail="the merge tolerance is a number of video frames: seconds need FrameRate",
             )
         else:
             sources["merge_tolerance_s"] = MERGE_TOLERANCE
