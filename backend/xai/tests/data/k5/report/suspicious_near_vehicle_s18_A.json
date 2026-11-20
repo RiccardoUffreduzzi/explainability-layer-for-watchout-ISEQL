@@ -1,8 +1,9 @@
 {
   "report_meta": {
     "attempts": 1,
-    "contract_hash": "3a7ba6788633811d9473c91f2d2cef9b65a5598a171c0058cf4530c0441c220e",
+    "contract_hash": "0f84ba238e678f41adcd312c1c0c68547373e5e68d7c9d846ba8f742dba2a779",
     "event_id": "ev_69409d7b3e1a",
+    "key_frame_images": true,
     "label": "suspicious_near_vehicle",
     "llm": {
       "model": "scripted",
@@ -11,11 +12,11 @@
       "temperature": 0.0
     },
     "model_id": "suspicious_near_vehicle/A",
-    "plan_hash": "cfafb627eee39ad19ca7c6cc7bd0130e8eb765817ac4bd2e6b0e1679e7f5a7b8",
-    "prompt_version": "report1@830cf043a1ae",
+    "plan_hash": "58fccbb19bcc022910ce291d5e8b455570db914603e5dc852ceab4b04b51e324",
+    "prompt_version": "report1@ef0dcde0e1f9",
     "report": 1,
-    "report_version": "0.2.0-k5",
-    "sentences_version": "report1@ac52072d368b",
+    "report_version": "0.3.0-k5",
+    "sentences_version": "report1@2eea29104dd1",
     "verification": "not_run"
   },
   "sections": [
@@ -117,6 +118,15 @@
       "written_by": "llm"
     },
     {
+      "figure": {
+        "caption": "Key frame at 0:04.5 (frame 108).",
+        "file": "ev_69409d7b3e1a.jpg",
+        "frame_index": 108,
+        "keyframe_id": "kf_108",
+        "ref": "#/event/key_frame",
+        "sha256": "8573fc374162f8a4908220b2d72eeffe1a71bdb027e041c2699cdd51398fa88f",
+        "status": "shown"
+      },
       "sentences": [
         {
           "block": 0,
@@ -190,6 +200,30 @@
               "name": "g_predicate_suspicious_near_vehicle.definition",
               "ref": "#/glossary/2/definition",
               "text": "A person is lingering suspiciously around a parked vehicle without entering it: peering into windows with hands cupped around the eyes, crouching near or examining the tires/body, trying door or trunk handles, or pacing/circling the vehicle while repeatedly looking around. Report only when the person is NOT entering or driving the vehicle."
+            }
+          ]
+        },
+        {
+          "block": 1,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "WatchOut shows this detection with its key frame, frame {kf_108.frame}, at {kf_108.at}. [s_key_frame]",
+          "step_ids": [
+            "s_key_frame"
+          ],
+          "text": "WatchOut shows this detection with its key frame, frame 108, at 0:04.5.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "kf_108.frame",
+              "ref": "#/event/key_frame/frame_index",
+              "text": "108"
+            },
+            {
+              "form": "plain",
+              "name": "kf_108.at",
+              "ref": "#/event/key_frame/t_s",
+              "text": "0:04.5"
             }
           ]
         }
@@ -381,13 +415,13 @@
           "step_ids": [
             "s_prov_contract_hash"
           ],
-          "text": "Source of truth: contract 3a7ba6788633811d9473c91f2d2cef9b65a5598a171c0058cf4530c0441c220e.",
+          "text": "Source of truth: contract 0f84ba238e678f41adcd312c1c0c68547373e5e68d7c9d846ba8f742dba2a779.",
           "values": [
             {
               "form": "plain",
               "name": "contract_hash",
               "ref": "#/contract_meta/contract_hash",
-              "text": "3a7ba6788633811d9473c91f2d2cef9b65a5598a171c0058cf4530c0441c220e"
+              "text": "0f84ba238e678f41adcd312c1c0c68547373e5e68d7c9d846ba8f742dba2a779"
             }
           ]
         }
@@ -491,13 +525,13 @@
           "step_ids": [
             "s_lim_data_not_available"
           ],
-          "text": "Not available here: audio rule (EventSpec has no suspicious_near_vehicle/B); Re-ID similarity (Chroma stores the embeddings, not the match similarity); interval confidence (VisualPerInterval has no confidence column); key frames (this WatchOut version does not store key frames).",
+          "text": "Not available here: audio rule (EventSpec has no suspicious_near_vehicle/B); Re-ID similarity (Chroma stores the embeddings, not the match similarity); interval confidence (VisualPerInterval has no confidence column).",
           "values": [
             {
               "form": "plain",
               "name": "missing_fields",
               "ref": "#/harvest_report/missing_fields",
-              "text": "audio rule (EventSpec has no suspicious_near_vehicle/B); Re-ID similarity (Chroma stores the embeddings, not the match similarity); interval confidence (VisualPerInterval has no confidence column); key frames (this WatchOut version does not store key frames)"
+              "text": "audio rule (EventSpec has no suspicious_near_vehicle/B); Re-ID similarity (Chroma stores the embeddings, not the match similarity); interval confidence (VisualPerInterval has no confidence column)"
             }
           ]
         }

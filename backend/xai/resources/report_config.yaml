@@ -4,7 +4,10 @@ llm:
   model: gemini-3.5-flash-lite
   temperature: 0.0
   seed: 42
-  timeout_s: 60
+  timeout_s: 120
   max_tokens: 8192
 max_attempts: 3
 time_format: "m:ss"
+# the key frame of the detection in Report 1
+key_frame_images: true
+image_width: 360

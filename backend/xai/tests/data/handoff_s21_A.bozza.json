@@ -1,7 +1,7 @@
 {
   "$comment": "Caso golden, prodotto da K1 sul database di test (tests/support.py, build_fixture_db) come lo produce il batch di fine analisi: parametri di default della regola. Intervalli, partecipanti e riga sono reali (DB di ablation, scena 21); la regola è quella del seed. Il DB di ablation non ha la riga Analyses: SamplingRate=24, AudioWindow/AudioHop e provider sono ipotizzati. In produzione, senza la riga Analyses, K1 si ferma con ANALYSIS_NOT_FOUND. I testi della bozza sono in inglese.",
   "contract_meta": {
-    "contract_version": "0.4.0-k1",
+    "contract_version": "0.6.0-k1",
     "analysis_id": "gemini_3_6_flash_qwen2_audio_s21",
     "source_snapshot": {
       "extracted_at": "2026-10-06T20:00:00Z"
@@ -142,6 +142,25 @@
         }
       }
     ],
+    "key_frame": {
+      "keyframe_id": "kf_108",
+      "frame_index": 108,
+      "t_s": 4.5,
+      "selection": "gui_preview_midpoint",
+      "frame_image_ref": {
+        "video_path": "/videos/gemini_3_6_flash_qwen2_audio_s21.mp4",
+        "source_ref": {
+          "stage": "config",
+          "record_id": "Analyses/gemini_3_6_flash_qwen2_audio_s21/VideoPath",
+          "mode": "read"
+        }
+      },
+      "source_ref": {
+        "stage": "keyframes",
+        "record_id": "results-table.svelte#previewFrame",
+        "mode": "read"
+      }
+    },
     "source_ref": {
       "stage": "iseql",
       "record_id": "detection/handoff/A@gemini_3_6_flash_qwen2_audio_s21/{\"M1.st\":1.0,\"M1_object\":4,\"M1_person\":3,\"M2.et\":8.0,\"M2_person\":5}",
@@ -572,7 +591,6 @@
       }
     }
   ],
-  "actions": null,
   "glossary": [
     {
       "term_id": "g_comparison_identity_eq",
@@ -659,12 +677,6 @@
       }
     }
   ],
-  "unavailable": {
-    "actions": {
-      "reason": "keyframes_not_persisted",
-      "detail": "this WatchOut version does not store key frames"
-    }
-  },
   "harvest_report": {
     "request": {
       "analysis_id": "gemini_3_6_flash_qwen2_audio_s21",
@@ -708,10 +720,6 @@
       {
         "path": "intervals[*].confidence",
         "reason": "visual_confidence_not_recorded"
-      },
-      {
-        "path": "actions",
-        "reason": "keyframes_not_persisted"
       }
     ],
     "notes": [

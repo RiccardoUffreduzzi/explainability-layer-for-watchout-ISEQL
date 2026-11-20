@@ -1,17 +1,17 @@
 {
   "plan": {
     "plan_meta": {
-      "plan_version": "0.1.0-k4",
-      "contract_hash": "60a4a5d9979becccfe52ca52f305aadb9197a7354a89cdcc36a782486f194c09",
-      "source_of_truth_version": "0.2.0-k2",
-      "contract_version": "0.4.0-k1",
+      "plan_version": "0.4.0-k4",
+      "contract_hash": "e07ee5290270f841d1bad1bf6c712349e45c4f2d5e2dac5217bf0e620a61ea94",
+      "source_of_truth_version": "0.4.0-k2",
+      "contract_version": "0.6.0-k1",
       "event_id": "ev_f61f6c2d9945",
       "model_id": "vehicle_collision/C",
       "label": "vehicle_collision",
       "branches": [
         "right"
       ],
-      "plan_hash": "7a09e2357643bcce14fd6aa9fb9118ac032bb59fb4b24867c575426b82370905"
+      "plan_hash": "50c54cd95b779cc9cae9f409cea0ce9258e1457ef7b1096a76d7ab97c676e886"
     },
     "steps": [
       {
@@ -51,6 +51,20 @@
         "t_order_basis": "interval",
         "in_report2": true,
         "term": "g_event_model_vehicle_collision"
+      },
+      {
+        "step_id": "s_key_frame",
+        "type": "context",
+        "refs": [
+          "kf_216"
+        ],
+        "role": "context",
+        "depends_on": [
+          "s_right_proj"
+        ],
+        "t_order": null,
+        "t_order_basis": "none",
+        "in_report2": true
       },
       {
         "step_id": "s_reinforcement",
@@ -150,6 +164,8 @@
     "ev_f61f6c2d9945.end_frame": "240",
     "g_event_model_vehicle_collision.term": "vehicle_collision",
     "g_event_model_vehicle_collision.definition": "π_{M1.st, M1.et, M2.st, M2.et} (\n  σ_{(pred=\"horn\") ∨ (pred=\"skidding\")}(M1)\n  SP(δ:∞; ζ:<=, ρ:0)\n  σ_{(pred=\"impact\") ∨ (pred=\"glass_breaking\")}(M2)\n)\n∪\nπ_{M1.arg1, M1.st, M1.et} (\n  σ_{pred=\"vehicle_collision\" ∧ arg1=\"vehicle\"}(M1)\n)",
+    "kf_216.at": "0:09",
+    "kf_216.frame": "216",
     "s_reinforcement.fixed_text": "The event was detected by both video and audio, in the same time interval.",
     "modality_detections.0.modality": "visual",
     "modality_detections.0.at": "0:05",

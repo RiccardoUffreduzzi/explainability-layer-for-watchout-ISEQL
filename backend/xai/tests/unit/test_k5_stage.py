@@ -140,7 +140,8 @@ def test_a_text_that_cannot_be_rendered_leaves_its_trace_until_a_report_is_writt
         writer(ScriptedModel([hand_text(HANDOFF)])), k4_path(draft_path), k2_path(draft_path), target
     )
 
-    assert all(p.exists() for p in files.all()) and not files.failed_trace.exists()
+    assert all(p.exists() for p in (files.trace, files.markdown, files.json))
+    assert not files.failed_trace.exists() and not files.image.exists()
 
 
 def test_without_plan_there_is_no_report(tmp_path: Path) -> None:

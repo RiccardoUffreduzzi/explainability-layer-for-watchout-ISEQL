@@ -12,6 +12,20 @@ from xai.k1_harvester.checks.report import missing_fields
 from xai.tests.support import EXAMPLES_DIR, load_example
 
 
+def test_a_key_frame_id_that_names_another_frame_is_found(example: dict[str, Any]) -> None:
+    data = copy.deepcopy(example)
+    data["event"]["key_frame"]["keyframe_id"] = "kf_1"
+
+    assert _closure(data) == ["event.key_frame.keyframe_id"]
+
+
+def test_a_null_key_frame_needs_its_reason(example: dict[str, Any]) -> None:
+    data = copy.deepcopy(example)
+    data["event"]["key_frame"] = None
+
+    assert _completeness(data) == ["event.key_frame"]
+
+
 def _closure(data: dict[str, Any]) -> list[str]:
     violations = check_referential_closure(load_draft(json.dumps(data, ensure_ascii=False)))
     assert {v.check for v in violations} <= {CheckName.REFERENTIAL_CLOSURE}
@@ -48,9 +62,12 @@ def test_a_reason_for_a_field_with_a_value_is_found(example: dict[str, Any]) -> 
 
 def test_a_reason_for_a_missing_field_is_found(example: dict[str, Any]) -> None:
     data = copy.deepcopy(example)
-    data["unavailable"]["no_such_field"] = {"reason": "fps_not_recorded", "detail": "x"}
+    data["event"].setdefault("unavailable", {})["no_such_field"] = {
+        "reason": "fps_not_recorded",
+        "detail": "x",
+    }
 
-    assert _completeness(data) == ["unavailable.no_such_field"]
+    assert _completeness(data) == ["event.unavailable.no_such_field"]
 
 
 def test_a_reason_does_not_cover_another_list_item(example: dict[str, Any]) -> None:
@@ -188,5 +205,5 @@ def test_missing_fields_list_every_reason_once(example: dict[str, Any]) -> None:
     paths = [(m.path, m.reason) for m in listed]
 
     assert len(paths) == len(set(paths))
-    assert ("actions", Reason.KEYFRAMES_NOT_PERSISTED) in paths
+    assert all(path != "actions" for path, _ in paths)  # the draft has no actions
     assert [m.model_dump(mode="json") for m in listed] == example["harvest_report"]["missing_fields"]

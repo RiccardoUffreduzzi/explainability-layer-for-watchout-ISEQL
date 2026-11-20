@@ -156,6 +156,14 @@ def test_an_id_left_in_the_words_is_refused(rules: TextRules) -> None:
     ]
 
 
+def test_the_id_of_the_key_frame_left_in_the_words_is_refused(rules: TextRules) -> None:
+    text = "## What was observed\n\nWatchOut shows kf_108 at {kf_108.at}. [s_key_frame]"
+
+    assert problems(text, rules) == [
+        "the ID 'kf_108' is written in the words: cite a value as {name}, an entity as [words](ID)"
+    ]
+
+
 def test_the_detection_is_timed_by_the_event_not_by_an_interval(rules: TextRules) -> None:
     text = "## Event and rule\n\nA handoff from {iv_v59.start} to {iv_v60.end}. [s_s1_proj]"
 
@@ -264,6 +272,9 @@ def test_the_first_text_of_a_real_llm_has_only_the_problems_a_new_attempt_fixes(
             for name in ("iv_v59.start", "iv_v59.end")
         ),
         "{missing_fields.value} is not a name of the values table: did you mean {missing_fields}?",
+        # recorded before the key frame had a step of its own (UC-K4-15)
+        "the step [s_key_frame] is not rendered: write a sentence about it in the section "
+        "'What was observed', with [s_key_frame] after it",
         "the step [s_s1_proj] has a term, and its sentence does not say what it means: write its phrase "
         "'an object passing from one person to another', each placeholder replaced by the words for its slot",
     ]

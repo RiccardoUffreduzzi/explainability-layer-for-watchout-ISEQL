@@ -1,4 +1,4 @@
-"""The ``event`` section: the detection, its arguments and the detections per modality.
+"""The ``event`` section: the detection, its arguments, the detections per modality, the key frame.
 
 ``resolve_origin`` reads where the located row comes from in its lineage; ``EventLocator``
 calls it, because the rule and evidence sections need the row's branches too.
@@ -27,6 +27,7 @@ from xai.k1_harvester.context import (
     OriginMatchRow,
     RowOrigin,
 )
+from xai.k1_harvester.keyframe import harvest_key_frame
 from xai.k1_harvester.ports import DetectedRow, DetectionRecord, EngineError, ResultColumn
 from xai.k1_harvester.result import HarvestFailure
 from xai.k1_harvester.rows import class_id, extent_anchor, row_branches, row_columns
@@ -123,6 +124,10 @@ class ModalityHarvester:
             else:
                 rules[modality] = RuleRef(rule_ref=f"{ctx.rule.event_type}/{condition}")
 
+        key_frame, no_key_frame = harvest_key_frame(ctx.row.gui_values, ctx.analysis, ctx.timebase.fps)
+        if no_key_frame is not None:
+            unavailable["key_frame"] = no_key_frame
+
         origin_basis = None
         if ctx.condition == "C":
             origin_basis = OriginBasis(
@@ -144,6 +149,7 @@ class ModalityHarvester:
             arguments=self._arguments(ctx),
             modality_rules=ModalityRules(visual=rules["visual"], audio=rules["audio"]),
             modality_detections=self._detections(ctx),
+            key_frame=key_frame,
             source_ref=row_source(ctx.detection, ctx.row),
             unavailable=unavailable or None,
         )

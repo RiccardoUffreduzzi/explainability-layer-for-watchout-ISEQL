@@ -10,6 +10,8 @@ The rule that was executed: {g_event_model_fight.definition} [s_s1_proj]
 From {iv_v6.start} to {iv_v6.end} (frames {iv_v6.start_frame}–{iv_v6.end_frame}), the video model saw the [man in a grey hooded sweatshirt and khaki pants](ent_1) and the [man in a dark jacket and blue jeans](ent_2) fight, selected by {c_s1_sel1.text}. [s_s1_sel1]
 For the video model, {g_predicate_physical_altercation.term} means: {g_predicate_physical_altercation.definition} [s_s1_sel1]
 
+WatchOut shows this detection with its key frame, frame {kf_60.frame}, at {kf_60.at}. [s_key_frame]
+
 ## Why it was flagged
 
 The two arguments of the same interval are different people ({c_s1_cc1.text}, defined as {g_comparison_identity_ne.definition}): the [man in a grey hooded sweatshirt](ent_1) and the [man in a dark jacket](ent_2). [s_s1_cc1]

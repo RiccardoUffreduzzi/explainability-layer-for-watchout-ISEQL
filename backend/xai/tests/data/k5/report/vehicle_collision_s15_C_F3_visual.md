@@ -18,13 +18,19 @@ The system detected an event with rule `vehicle_collision/C`, from 0:06 to 0:10 
 
 From 0:06 to 0:10 (frames 144–240), the video model saw collision damage on the dark sedan, selected by `σ_{pred="vehicle_collision" ∧ arg1="vehicle"}(M1)`. For the video model, `vehicle_collision` means: "A vehicle has visible collision damage: broken windshield, dented hood or doors, deployed airbags, smoke from the hood, or another object embedded in the vehicle."
 
+WatchOut shows this detection with its key frame, frame 216, at 0:09.
+
+![Key frame 216](ev_f61f6c2d9945.jpg)
+
+*Key frame at 0:09 (frame 216).*
+
 ## Confidences and reinforcement
 
 The event was detected by both video and audio, in the same time interval. The association of the two modalities is recorded as: detected by both video and audio, at overlapping times. The audio detection goes from 0:00 to 0:07.5, and the video detection of this row from 0:06 to 0:10.
 
 ## Method and provenance
 
-The video was sampled at 1.0 Hz: one frame in every 24 of a 24 fps video. Detections of the same relation at most 2 s apart were merged into one interval. The video model ran with temperature 0.0 and seed 42. Detection mode: multimodal. Rule parameters: parameters saved in the GUI. WatchOut's lineage of this detection records M1 as the interval from 0:06 to 0:10. Source of truth: contract 60a4a5d9979becccfe52ca52f305aadb9197a7354a89cdcc36a782486f194c09.
+The video was sampled at 1.0 Hz: one frame in every 24 of a 24 fps video. Detections of the same relation at most 2 s apart were merged into one interval. The video model ran with temperature 0.0 and seed 42. Detection mode: multimodal. Rule parameters: parameters saved in the GUI. WatchOut's lineage of this detection records M1 as the interval from 0:06 to 0:10. Source of truth: contract e07ee5290270f841d1bad1bf6c712349e45c4f2d5e2dac5217bf0e620a61ea94.
 
 ## Limits
 
@@ -33,4 +39,4 @@ These limits concern the whole detection.
 - The system does not record a confidence value for visual detections.
 - The system does not record what in the images led to each visual detection.
 - Times are approximate: they depend on the sampling rate of the video analysis.
-- Some information is not saved by the system and is reported as not available. Not available here: Re-ID similarity (Chroma stores the embeddings, not the match similarity); interval confidence (VisualPerInterval has no confidence column); key frames (this WatchOut version does not store key frames).
+- Some information is not saved by the system and is reported as not available. Not available here: Re-ID similarity (Chroma stores the embeddings, not the match similarity); interval confidence (VisualPerInterval has no confidence column).

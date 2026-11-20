@@ -45,6 +45,9 @@ class SystemSentences:
     limits: Mapping[str, str]
     """``whole_detection`` and ``constructs`` (``<constructs>``): which steps the limits that follow
     concern; ``missing_fields``: the data the system does not save."""
+    figure: Mapping[str, str]
+    """The caption of the key frame: ``shown`` (``<time>``, ``<frame>``), ``shown_without_time``
+    (``<frame>``) and ``not_available`` (``<frame>``, ``<reason>``)."""
 
 
 @dataclass(frozen=True)
@@ -66,3 +69,7 @@ class ReportConfig:
     llm: LlmConfig | None
     max_attempts: int
     time_format: TimeFormat
+    key_frame_images: bool = True
+    """True: Report 1 shows the key frame of the detection, extracted from the video."""
+    image_width: int = 360
+    """Width in pixels of the image of the key frame, as the GUI shows it."""

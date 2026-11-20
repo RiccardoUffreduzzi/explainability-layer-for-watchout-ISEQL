@@ -1,8 +1,9 @@
 {
   "report_meta": {
     "attempts": 1,
-    "contract_hash": "7eb91c8335868bebc0b4733920685c01a63f96c771d983418d52003523bef161",
+    "contract_hash": "d0b671a741d9b34e15e85aa738714df9b3c81b4901b5a0e14467649a22eb31e5",
     "event_id": "ev_cb96ebb2235a",
+    "key_frame_images": true,
     "label": "vehicle_collision",
     "llm": {
       "model": "scripted",
@@ -11,11 +12,11 @@
       "temperature": 0.0
     },
     "model_id": "vehicle_collision/C",
-    "plan_hash": "031fe5c8b2e316234b4caa361357dd3e304c57007300a101d10cda44686ea629",
-    "prompt_version": "report1@830cf043a1ae",
+    "plan_hash": "9d585d1b2ff72423e35f415355816a5a0bb0335dfd01d449ed934d097995c7d0",
+    "prompt_version": "report1@ef0dcde0e1f9",
     "report": 1,
-    "report_version": "0.2.0-k5",
-    "sentences_version": "report1@ac52072d368b",
+    "report_version": "0.3.0-k5",
+    "sentences_version": "report1@2eea29104dd1",
     "verification": "not_run"
   },
   "sections": [
@@ -115,6 +116,15 @@
       "written_by": "llm"
     },
     {
+      "figure": {
+        "caption": "Key frame at 0:03.75 (frame 90).",
+        "file": "ev_cb96ebb2235a.jpg",
+        "frame_index": 90,
+        "keyframe_id": "kf_90",
+        "ref": "#/event/key_frame",
+        "sha256": "8573fc374162f8a4908220b2d72eeffe1a71bdb027e041c2699cdd51398fa88f",
+        "status": "shown"
+      },
       "sentences": [
         {
           "block": 0,
@@ -257,6 +267,30 @@
               "name": "g_audio_class_glass_breaking.definition",
               "ref": "#/glossary/0/definition",
               "text": "WatchOut assigns this class when the audio model answers with one of: glass, glass_breaking, shatter, shattering."
+            }
+          ]
+        },
+        {
+          "block": 1,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "WatchOut shows this detection with its key frame, frame {kf_90.frame}, at {kf_90.at}. [s_key_frame]",
+          "step_ids": [
+            "s_key_frame"
+          ],
+          "text": "WatchOut shows this detection with its key frame, frame 90, at 0:03.75.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "kf_90.frame",
+              "ref": "#/event/key_frame/frame_index",
+              "text": "90"
+            },
+            {
+              "form": "plain",
+              "name": "kf_90.at",
+              "ref": "#/event/key_frame/t_s",
+              "text": "0:03.75"
             }
           ]
         }
@@ -532,13 +566,13 @@
           "step_ids": [
             "s_prov_contract_hash"
           ],
-          "text": "Source of truth: contract 7eb91c8335868bebc0b4733920685c01a63f96c771d983418d52003523bef161.",
+          "text": "Source of truth: contract d0b671a741d9b34e15e85aa738714df9b3c81b4901b5a0e14467649a22eb31e5.",
           "values": [
             {
               "form": "plain",
               "name": "contract_hash",
               "ref": "#/contract_meta/contract_hash",
-              "text": "7eb91c8335868bebc0b4733920685c01a63f96c771d983418d52003523bef161"
+              "text": "d0b671a741d9b34e15e85aa738714df9b3c81b4901b5a0e14467649a22eb31e5"
             }
           ]
         }
@@ -552,11 +586,10 @@
           "block": 0,
           "entities": [],
           "list_item": false,
-          "llm_text": "These limits concern the whole detection. [s_lim_temporal_resolution][s_lim_audio_without_participants][s_lim_data_not_available]",
+          "llm_text": "These limits concern the whole detection. [s_lim_temporal_resolution][s_lim_audio_without_participants]",
           "step_ids": [
             "s_lim_temporal_resolution",
-            "s_lim_audio_without_participants",
-            "s_lim_data_not_available"
+            "s_lim_audio_without_participants"
           ],
           "text": "These limits concern the whole detection.",
           "values": []
@@ -594,42 +627,6 @@
               "name": "s_lim_audio_without_participants.fixed_text",
               "ref": "#/knowledge_limits/1/sentence",
               "text": "An audio detection does not say who or what produced the sound."
-            }
-          ]
-        },
-        {
-          "block": 3,
-          "entities": [],
-          "list_item": true,
-          "llm_text": "{s_lim_data_not_available.fixed_text} [s_lim_data_not_available]",
-          "step_ids": [
-            "s_lim_data_not_available"
-          ],
-          "text": "Some information is not saved by the system and is reported as not available.",
-          "values": [
-            {
-              "form": "plain",
-              "name": "s_lim_data_not_available.fixed_text",
-              "ref": "#/knowledge_limits/2/sentence",
-              "text": "Some information is not saved by the system and is reported as not available."
-            }
-          ]
-        },
-        {
-          "block": 3,
-          "entities": [],
-          "list_item": true,
-          "llm_text": "Not available here: {missing_fields}. [s_lim_data_not_available]",
-          "step_ids": [
-            "s_lim_data_not_available"
-          ],
-          "text": "Not available here: key frames (this WatchOut version does not store key frames).",
-          "values": [
-            {
-              "form": "plain",
-              "name": "missing_fields",
-              "ref": "#/harvest_report/missing_fields",
-              "text": "key frames (this WatchOut version does not store key frames)"
             }
           ]
         }

@@ -2,20 +2,21 @@
 
 The file keeps, for every sentence, the text the LLM (or the system) wrote,
 the text the reader sees, the steps the sentence renders and the values and
-entities it cites.
+entities it cites. A section may also show the key frame of the detection (``Figure``):
+the system extracts it and writes its caption; the LLM never sees it.
 """
 
 import json
 from typing import Annotated, Final, Literal, get_args
 
-from pydantic import Field, NonNegativeInt, PositiveInt
+from pydantic import Field, NonNegativeInt, PositiveInt, StringConstraints, model_validator
 
-from xai.contract.model import EntityId, EventId
+from xai.contract.model import EntityId, EventId, KeyframeId
 from xai.contract.plan import PlanHash, StepId
 from xai.contract.primitives import ContractModel, NonEmptyStr, absent_if_none
 from xai.contract.source_of_truth import ContractHash
 
-ReportVersion = Literal["0.2.0-k5"]
+ReportVersion = Literal["0.3.0-k5"]
 REPORT_VERSION: Final[str] = get_args(ReportVersion)[0]
 """Version of the report format; the JSON schema is bound to it (``$id`` and ``const``)."""
 
@@ -27,6 +28,8 @@ ValueForm = Literal["plain", "code", "quote", "block"]
 
 Author = Literal["llm", "system"]
 """Who wrote a section: the LLM, or the system with its fixed sentences."""
+
+Sha256 = Annotated[str, StringConstraints(pattern=r"^[0-9a-f]{64}$")]
 
 
 class LlmSettings(ContractModel):
@@ -55,6 +58,8 @@ class ReportMeta(ContractModel):
     llm: LlmSettings
     attempts: PositiveInt
     """How many calls it took to get a text that could be rendered."""
+    key_frame_images: bool
+    """True when the configuration asked for the image of the key frame (``key_frame_images``)."""
     verification: Literal["not_run"]
 
 
@@ -91,10 +96,38 @@ class Sentence(ContractModel):
     """True when the block is an item of a list."""
 
 
+class Figure(ContractModel):
+    """The key frame of the detection.
+
+    The system extracts the image from the video and writes the caption; the LLM does not
+    see the image and does not describe it.
+    """
+
+    keyframe_id: KeyframeId
+    frame_index: NonNegativeInt
+    ref: NonEmptyStr
+    """Where the key frame is in the source of truth: ``#/event/key_frame``."""
+    status: Literal["shown", "not_available"]
+    caption: NonEmptyStr
+    """The sentence of the system under the image, or why there is no image."""
+    file: NonEmptyStr | None = absent_if_none()
+    """The JPEG beside the report, ``<ev_id>.jpg``, when ``status`` is ``shown``."""
+    sha256: Sha256 | None = absent_if_none()
+    """SHA-256 of the bytes of ``file``."""
+
+    @model_validator(mode="after")
+    def _file_only_when_shown(self) -> "Figure":
+        shown = self.status == "shown"
+        if shown != (self.file is not None) or shown != (self.sha256 is not None):
+            raise ValueError("a figure has file and sha256 exactly when its status is 'shown'")
+        return self
+
+
 class Section(ContractModel):
     title: NonEmptyStr
     written_by: Author
     sentences: Annotated[list[Sentence], Field(min_length=1)]
+    figure: Figure | None = absent_if_none()
 
 
 class Report(ContractModel):

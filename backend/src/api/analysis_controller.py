@@ -18,11 +18,29 @@ from models.analysis import (
     Condition,
 )
 from utils.config import VALID_CONDITIONS, Config
+from utils.frames import (
+    FrameError,
+    FrameNotEncoded,
+    FrameOutOfRange,
+    FrameUnreadable,
+    VideoNotFound,
+    VideoUnreadable,
+    extract_frame_jpeg,
+)
 from utils.api_logger import get_logger
 from utils.sse import drain_queue_into_sse
 from utils.vlm_client import VLMClient
 
 log = get_logger(__name__)
+
+_FRAME_ERROR_STATUS: dict[type[FrameError], int] = {
+    VideoNotFound: 404,
+    VideoUnreadable: 422,
+    FrameOutOfRange: 416,
+    FrameUnreadable: 422,
+    FrameNotEncoded: 500,
+}
+"""HTTP status of each reason ``extract_frame_jpeg`` gives for not returning a frame."""
 
 
 def _parse_json_field(raw: str | None) -> dict | None:
@@ -256,40 +274,15 @@ class AnalysisThumbnailController:
 
     async def on_get(self, analysis_id: str, frame: int = Query(..., ge=0)) -> Response:
         run = self._service.get_run(analysis_id)
-        path = Path(run.video_path)
-        if not path.is_file():
-            raise HTTPException(status_code=404, detail="video file not found for this analysis")
-
-        cap = cv2.VideoCapture(str(path))
         try:
-            if not cap.isOpened():
-                raise HTTPException(status_code=422, detail="video file could not be opened")
-
-            frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-            if frame_count > 0 and frame >= frame_count:
-                raise HTTPException(status_code=416, detail="frame is outside the video range")
-
-            cap.set(cv2.CAP_PROP_POS_FRAMES, frame)
-            ok, image = cap.read()
-            if not ok or image is None:
-                raise HTTPException(status_code=422, detail="could not extract requested video frame")
-
-            height, width = image.shape[:2]
-            if width <= 0 or height <= 0:
-                raise HTTPException(status_code=422, detail="extracted video frame has invalid dimensions")
-            thumbnail_width = 360
-            thumbnail_height = max(1, round(height * thumbnail_width / width))
-            thumbnail = cv2.resize(image, (thumbnail_width, thumbnail_height), interpolation=cv2.INTER_AREA)
-            encoded, jpeg = cv2.imencode(".jpg", thumbnail)
-            if not encoded:
-                raise HTTPException(status_code=500, detail="could not encode thumbnail")
-            return Response(
-                content=jpeg.tobytes(),
-                media_type="image/jpeg",
-                headers={"Cache-Control": "private, max-age=3600"},
-            )
-        finally:
-            cap.release()
+            jpeg = extract_frame_jpeg(run.video_path, frame)
+        except FrameError as exc:
+            raise HTTPException(status_code=_FRAME_ERROR_STATUS[type(exc)], detail=str(exc))
+        return Response(
+            content=jpeg,
+            media_type="image/jpeg",
+            headers={"Cache-Control": "private, max-age=3600"},
+        )
 
 
 class AnalysisStopController:

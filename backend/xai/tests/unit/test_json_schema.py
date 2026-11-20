@@ -36,7 +36,10 @@ def test_schema_rejects_a_reason_outside_the_catalog(
     validator: jsonschema.Draft202012Validator, example: dict[str, Any]
 ) -> None:
     data = copy.deepcopy(example)
-    data["unavailable"]["actions"]["reason"] = "not_implemented_yet"
+    data["event"].setdefault("unavailable", {})["key_frame"] = {
+        "reason": "not_implemented_yet",
+        "detail": "x",
+    }
 
     assert not validator.is_valid(data)
 

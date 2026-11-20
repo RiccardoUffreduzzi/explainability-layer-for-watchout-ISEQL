@@ -22,6 +22,7 @@ from xai.contract.plan import (
     plan_to_data,
 )
 from xai.contract.plan_schema import SCHEMA_ID, SCHEMA_PATH, main, plan_schema, schema_text
+from xai.contract.source_of_truth import SOURCE_OF_TRUTH_VERSION
 
 Plan = dict[str, Any]
 
@@ -32,7 +33,7 @@ def _minimal_plan() -> Plan:
         "plan_meta": {
             "plan_version": PLAN_VERSION,
             "contract_hash": "0" * 64,
-            "source_of_truth_version": "0.2.0-k2",
+            "source_of_truth_version": SOURCE_OF_TRUTH_VERSION,
             "contract_version": CONTRACT_VERSION,
             "event_id": "ev_d966ffea748d",
             "model_id": "fight",
@@ -149,10 +150,11 @@ CASES: dict[str, tuple[Mutation, bool]] = {
     "unchanged": (lambda p: None, True),
     "unknown key": (lambda p: _step(p).update(unknown=1), False),
     "optional field written as null": (lambda p: _step(p).update(term=None), False),
-    "another plan version": (lambda p: p["plan_meta"].update(plan_version="0.2.0-k4"), False),
+    "another plan version": (lambda p: p["plan_meta"].update(plan_version="0.1.0-k4"), False),
     "step ID without prefix": (lambda p: _step(p).update(step_id="sel1"), False),
     "reference to a pointer": (lambda p: _step(p)["refs"].append("#/rule/constraints/1/payload/value"), True),
     "reference to a key frame": (lambda p: _step(p)["refs"].append("kf_12"), True),
+    "reference to an action": (lambda p: _step(p)["refs"].append("ac_1"), False),  # the draft has no actions
     "reference that is no ID": (lambda p: _step(p)["refs"].append("person"), False),
     "slot filled by a step": (lambda p: _step(p)["slots"].update(r="s_s1_sel1"), True),
     "slot left empty": (lambda p: _step(p)["slots"].update(arg2=None), True),

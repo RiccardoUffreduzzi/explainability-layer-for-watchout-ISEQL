@@ -1,17 +1,17 @@
 {
   "plan": {
     "plan_meta": {
-      "plan_version": "0.1.0-k4",
-      "contract_hash": "3a7ba6788633811d9473c91f2d2cef9b65a5598a171c0058cf4530c0441c220e",
-      "source_of_truth_version": "0.2.0-k2",
-      "contract_version": "0.4.0-k1",
+      "plan_version": "0.4.0-k4",
+      "contract_hash": "0f84ba238e678f41adcd312c1c0c68547373e5e68d7c9d846ba8f742dba2a779",
+      "source_of_truth_version": "0.4.0-k2",
+      "contract_version": "0.6.0-k1",
       "event_id": "ev_69409d7b3e1a",
       "model_id": "suspicious_near_vehicle/A",
       "label": "suspicious_near_vehicle",
       "branches": [
         "s1"
       ],
-      "plan_hash": "cfafb627eee39ad19ca7c6cc7bd0130e8eb765817ac4bd2e6b0e1679e7f5a7b8"
+      "plan_hash": "58fccbb19bcc022910ce291d5e8b455570db914603e5dc852ceab4b04b51e324"
     },
     "steps": [
       {
@@ -76,6 +76,20 @@
         "t_order_basis": "interval",
         "in_report2": true,
         "term": "g_event_model_suspicious_near_vehicle"
+      },
+      {
+        "step_id": "s_key_frame",
+        "type": "context",
+        "refs": [
+          "kf_108"
+        ],
+        "role": "context",
+        "depends_on": [
+          "s_s1_proj"
+        ],
+        "t_order": null,
+        "t_order_basis": "none",
+        "in_report2": true
       }
     ],
     "bindings": [
@@ -128,7 +142,9 @@
     "ev_69409d7b3e1a.start_frame": "48",
     "ev_69409d7b3e1a.end_frame": "168",
     "g_event_model_suspicious_near_vehicle.term": "suspicious_near_vehicle",
-    "g_event_model_suspicious_near_vehicle.definition": "π_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{(M1.et − M1.st) >= 3} (\n    σ_{pred=\"suspicious_near_vehicle\" ∧ arg1=\"person\" ∧ arg2=\"vehicle\"}(M1)\n  ))"
+    "g_event_model_suspicious_near_vehicle.definition": "π_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{(M1.et − M1.st) >= 3} (\n    σ_{pred=\"suspicious_near_vehicle\" ∧ arg1=\"person\" ∧ arg2=\"vehicle\"}(M1)\n  ))",
+    "kf_108.at": "0:04.5",
+    "kf_108.frame": "108"
   },
   "entities": {
     "ent_6": {

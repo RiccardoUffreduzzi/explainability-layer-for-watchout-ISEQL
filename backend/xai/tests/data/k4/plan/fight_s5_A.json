@@ -16,14 +16,14 @@
     "branches": [
       "s1"
     ],
-    "contract_hash": "be46c0befc16663198f76454de9d0f9504bce9eb555f1b904351d2212b4b38fc",
-    "contract_version": "0.4.0-k1",
+    "contract_hash": "3fe58b3a51fe94424f9ec204c25e761fcea279e963be84dd9dd77e4a3b610101",
+    "contract_version": "0.6.0-k1",
     "event_id": "ev_d966ffea748d",
     "label": "fight",
     "model_id": "fight/A",
-    "plan_hash": "ca137c68b3acf45d6d157ce8a4a656705a00f6dff995e1335a34a99116f545d0",
-    "plan_version": "0.1.0-k4",
-    "source_of_truth_version": "0.2.0-k2"
+    "plan_hash": "8a302e38e590979bb16f64cca6f606399a3f643918240788cb4de95ee0808163",
+    "plan_version": "0.4.0-k4",
+    "source_of_truth_version": "0.4.0-k2"
   },
   "plan_report": {
     "excluded_constructs": [],
@@ -194,6 +194,20 @@
       "t_order": 0.0,
       "t_order_basis": "interval",
       "type": "limit"
+    },
+    {
+      "depends_on": [
+        "s_s1_proj"
+      ],
+      "in_report2": true,
+      "refs": [
+        "kf_60"
+      ],
+      "role": "context",
+      "step_id": "s_key_frame",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "context"
     },
     {
       "depends_on": [],

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:watchout-xai:explanation-plan:0.1.0-k4",
+  "$id": "urn:watchout-xai:explanation-plan:0.4.0-k4",
   "$defs": {
     "Binding": {
       "additionalProperties": false,
@@ -101,7 +101,6 @@
         "reid_dependence",
         "reid_evidence_unavailable",
         "audio_without_participants",
-        "keyframe_selection_undocumented",
         "glossary_entry_missing",
         "data_not_available"
       ],
@@ -112,7 +111,7 @@
       "additionalProperties": false,
       "properties": {
         "plan_version": {
-          "const": "0.1.0-k4",
+          "const": "0.4.0-k4",
           "type": "string"
         },
         "contract_hash": {
@@ -120,11 +119,11 @@
           "type": "string"
         },
         "source_of_truth_version": {
-          "const": "0.2.0-k2",
+          "const": "0.4.0-k2",
           "type": "string"
         },
         "contract_version": {
-          "const": "0.4.0-k1",
+          "const": "0.6.0-k1",
           "type": "string"
         },
         "event_id": {
@@ -350,7 +349,7 @@
     },
     "Ref": {
       "description": "A fact of the source of truth: an ID of the contract or a JSON pointer (#/...).",
-      "pattern": "^(?:iv_[va][0-9]+|ent_[0-9]+|c_[A-Za-z0-9_]+|g_[A-Za-z0-9_]+|ev_[0-9a-f]{12}|kf_[A-Za-z0-9_]+|ac_[A-Za-z0-9_]+|#/.*)$",
+      "pattern": "^(?:iv_[va][0-9]+|ent_[0-9]+|c_[A-Za-z0-9_]+|g_[A-Za-z0-9_]+|ev_[0-9a-f]{12}|kf_[0-9]+|#/.*)$",
       "type": "string"
     },
     "SlotValue": {
@@ -399,10 +398,9 @@
       "type": "string"
     },
     "TOrderBasis": {
-      "description": "Where ``t_order`` comes from (K4-A3): an interval today, a key frame with I7.",
+      "description": "Where ``t_order`` comes from: the start of an interval, or nothing.",
       "enum": [
         "interval",
-        "keyframe",
         "none"
       ],
       "title": "TOrderBasis",

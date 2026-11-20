@@ -17,6 +17,7 @@ ANALYSIS_COLUMNS = (
     "SamplingRate",
     "AudioWindow",
     "AudioHop",
+    "VideoPath",
 )
 
 

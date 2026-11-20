@@ -1,8 +1,9 @@
 {
   "report_meta": {
     "attempts": 1,
-    "contract_hash": "60a4a5d9979becccfe52ca52f305aadb9197a7354a89cdcc36a782486f194c09",
+    "contract_hash": "e07ee5290270f841d1bad1bf6c712349e45c4f2d5e2dac5217bf0e620a61ea94",
     "event_id": "ev_f61f6c2d9945",
+    "key_frame_images": true,
     "label": "vehicle_collision",
     "llm": {
       "model": "scripted",
@@ -11,11 +12,11 @@
       "temperature": 0.0
     },
     "model_id": "vehicle_collision/C",
-    "plan_hash": "7a09e2357643bcce14fd6aa9fb9118ac032bb59fb4b24867c575426b82370905",
-    "prompt_version": "report1@830cf043a1ae",
+    "plan_hash": "50c54cd95b779cc9cae9f409cea0ce9258e1457ef7b1096a76d7ab97c676e886",
+    "prompt_version": "report1@ef0dcde0e1f9",
     "report": 1,
-    "report_version": "0.2.0-k5",
-    "sentences_version": "report1@ac52072d368b",
+    "report_version": "0.3.0-k5",
+    "sentences_version": "report1@2eea29104dd1",
     "verification": "not_run"
   },
   "sections": [
@@ -113,6 +114,15 @@
       "written_by": "llm"
     },
     {
+      "figure": {
+        "caption": "Key frame at 0:09 (frame 216).",
+        "file": "ev_f61f6c2d9945.jpg",
+        "frame_index": 216,
+        "keyframe_id": "kf_216",
+        "ref": "#/event/key_frame",
+        "sha256": "8573fc374162f8a4908220b2d72eeffe1a71bdb027e041c2699cdd51398fa88f",
+        "status": "shown"
+      },
       "sentences": [
         {
           "block": 0,
@@ -182,6 +192,30 @@
               "name": "g_predicate_vehicle_collision.definition",
               "ref": "#/glossary/6/definition",
               "text": "A vehicle has visible collision damage: broken windshield, dented hood or doors, deployed airbags, smoke from the hood, or another object embedded in the vehicle."
+            }
+          ]
+        },
+        {
+          "block": 1,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "WatchOut shows this detection with its key frame, frame {kf_216.frame}, at {kf_216.at}. [s_key_frame]",
+          "step_ids": [
+            "s_key_frame"
+          ],
+          "text": "WatchOut shows this detection with its key frame, frame 216, at 0:09.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "kf_216.frame",
+              "ref": "#/event/key_frame/frame_index",
+              "text": "216"
+            },
+            {
+              "form": "plain",
+              "name": "kf_216.at",
+              "ref": "#/event/key_frame/t_s",
+              "text": "0:09"
             }
           ]
         }
@@ -409,13 +443,13 @@
           "step_ids": [
             "s_prov_contract_hash"
           ],
-          "text": "Source of truth: contract 60a4a5d9979becccfe52ca52f305aadb9197a7354a89cdcc36a782486f194c09.",
+          "text": "Source of truth: contract e07ee5290270f841d1bad1bf6c712349e45c4f2d5e2dac5217bf0e620a61ea94.",
           "values": [
             {
               "form": "plain",
               "name": "contract_hash",
               "ref": "#/contract_meta/contract_hash",
-              "text": "60a4a5d9979becccfe52ca52f305aadb9197a7354a89cdcc36a782486f194c09"
+              "text": "e07ee5290270f841d1bad1bf6c712349e45c4f2d5e2dac5217bf0e620a61ea94"
             }
           ]
         }
@@ -519,13 +553,13 @@
           "step_ids": [
             "s_lim_data_not_available"
           ],
-          "text": "Not available here: Re-ID similarity (Chroma stores the embeddings, not the match similarity); interval confidence (VisualPerInterval has no confidence column); key frames (this WatchOut version does not store key frames).",
+          "text": "Not available here: Re-ID similarity (Chroma stores the embeddings, not the match similarity); interval confidence (VisualPerInterval has no confidence column).",
           "values": [
             {
               "form": "plain",
               "name": "missing_fields",
               "ref": "#/harvest_report/missing_fields",
-              "text": "Re-ID similarity (Chroma stores the embeddings, not the match similarity); interval confidence (VisualPerInterval has no confidence column); key frames (this WatchOut version does not store key frames)"
+              "text": "Re-ID similarity (Chroma stores the embeddings, not the match similarity); interval confidence (VisualPerInterval has no confidence column)"
             }
           ]
         }

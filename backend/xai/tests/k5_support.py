@@ -11,13 +11,14 @@ from pathlib import Path
 from typing import Any
 
 from xai.adapters.report_resources import load_prompt, load_sentences, load_value_labels
+from xai.contract.model import KeyFrame
 from xai.contract.plan import ExplanationPlan
 from xai.contract.report import LlmSettings
 from xai.contract.source_of_truth import SourceOfTruth
 from xai.k5_report1.profile import REPORT1
 from xai.reporting.catalogue import ValueLabels
 from xai.reporting.llm_input import ReportInput, build_input
-from xai.reporting.ports import LanguageModel, LlmUnavailable
+from xai.reporting.ports import FrameImages, FrameUnavailable, LanguageModel, LlmUnavailable
 from xai.reporting.writer import ReportWriter
 from xai.tests.k4_plan_support import source_and_plan
 from xai.tests.k4_support import GOLDEN_NAMES, Change
@@ -115,10 +116,31 @@ class EchoModel:
         return sentence
 
 
-def writer(llm: LanguageModel, max_attempts: int = 3) -> ReportWriter:
+def writer(llm: LanguageModel, max_attempts: int = 3, frames: FrameImages | None = None) -> ReportWriter:
     return ReportWriter(
-        REPORT1, load_prompt("report1"), load_sentences("report1"), llm, LABELS, max_attempts=max_attempts
+        REPORT1,
+        load_prompt("report1"),
+        load_sentences("report1"),
+        llm,
+        LABELS,
+        max_attempts=max_attempts,
+        frames=frames,
     )
+
+
+class StillFrames:
+    """``FrameImages`` with fixed bytes, or ``FrameUnavailable`` with ``missing`` as its reason."""
+
+    def __init__(self, jpeg: bytes = b"\xff\xd8 a frame \xff\xd9", missing: str | None = None) -> None:
+        self.jpeg = jpeg
+        self.missing = missing
+        self.asked: list[KeyFrame] = []
+
+    def image(self, key_frame: KeyFrame) -> bytes:
+        self.asked.append(key_frame)
+        if self.missing is not None:
+            raise FrameUnavailable(self.missing)
+        return self.jpeg
 
 
 def read(path: Path) -> str:

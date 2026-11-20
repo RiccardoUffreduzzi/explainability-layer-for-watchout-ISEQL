@@ -59,7 +59,8 @@ def test_every_ref_of_the_steps_has_its_values(name: str) -> None:
 
     missing = [ref for ref in cited_refs(report_input.steps) if not covers(report_input.table, ref)]
 
-    assert missing == []
+    # the key frame has no value: the system shows it, the LLM does not cite it
+    assert [ref for ref in missing if not ref.startswith("kf_")] == []
 
 
 @pytest.mark.parametrize("name", NAMES)
@@ -115,6 +116,45 @@ def test_the_values_of_the_handoff_plan() -> None:
         texts["s_lim_reid_dependence.fixed_text"]
         == step(input_of("handoff_s21_A").plan, "s_lim_reid_dependence").fixed_text
     )
+
+
+def test_the_key_frame_has_its_time_and_its_frame() -> None:
+    table = input_of("handoff_s21_A").table
+
+    at, frame = table.value("kf_108.at"), table.value("kf_108.frame")
+    assert at is not None and frame is not None
+    assert (at.written, at.pointer, at.form) == ("0:04.5", "#/event/key_frame/t_s", "plain")
+    assert (frame.written, frame.pointer) == ("108", "#/event/key_frame/frame_index")
+    assert {v.name for v in table.values if v.step_ref == "kf_108"} == {"kf_108.at", "kf_108.frame"}
+
+
+def test_a_key_frame_without_time_says_why() -> None:
+    def no_time(data: dict[str, Any]) -> None:
+        data["event"]["key_frame"]["t_s"] = None
+        data["event"]["key_frame"]["unavailable"] = {"t_s": {"reason": "fps_not_recorded", "detail": "x"}}
+
+    at = input_of("handoff_s21_A", no_time).table.value("kf_108.at")
+
+    assert at is not None and at.text is None and at.written == NOT_AVAILABLE
+    assert at.for_llm() == {"value": None, "reason": LABELS.reasons["fps_not_recorded"]}
+
+
+def test_a_key_frame_that_is_not_the_one_of_the_event_is_refused() -> None:
+    _, document = pair_of("handoff_s21_A")
+    other = PlanStep(
+        step_id="s_key_frame",
+        type=StepType.CONTEXT,
+        refs=["kf_7"],
+        depends_on=[],
+        t_order=None,
+        t_order_basis=TOrderBasis.NONE,
+        in_report2=True,
+    )
+
+    with pytest.raises(ReportFailure) as caught:
+        ValueReader(document, LABELS).table([other])
+
+    assert caught.value.code == "UNSUPPORTED_REF"
 
 
 def test_the_event_is_cited_by_its_rule_and_its_times_not_by_its_label() -> None:
@@ -206,21 +246,3 @@ def test_missing_details_that_differ_fall_back_to_the_words_of_the_reason() -> N
     text = input_of("handoff_s21_A", two_details).table.value("missing_fields").written  # type: ignore[union-attr]
 
     assert f"Re-ID similarity ({LABELS.reasons['reid_similarity_not_persisted']})" in text
-
-
-def test_a_ref_no_report_reads_yet_is_refused() -> None:
-    _, document = pair_of("handoff_s21_A")
-    keyframe = PlanStep(
-        step_id="s_kf",
-        type=StepType.CONTEXT,
-        refs=["kf_1"],
-        depends_on=[],
-        t_order=None,
-        t_order_basis=TOrderBasis.NONE,
-        in_report2=True,
-    )
-
-    with pytest.raises(ReportFailure) as caught:
-        ValueReader(document, LABELS).table([keyframe])
-
-    assert caught.value.code == "UNSUPPORTED_REF"

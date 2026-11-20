@@ -1,11 +1,11 @@
 """``ExplanationPlanner``: from one source of truth to one plan.
 
 The translation of the rule (``translate``) gives the steps of the rule and the bindings. This
-module adds the limits, the reinforcement and the provenance, puts all the steps in reading
-order and seals the plan with its hash. It also reads and validates the file of K2 that a plan
-starts from (UC-K4-02).
+module adds the limits, the key frame, the reinforcement and the provenance, puts all the steps in
+reading order and seals the plan with its hash. It also reads and validates the file of K2 that a plan
+starts from.
 
-There is no structural check at run time (K4-D6): K1 and K2 guarantee the input and the
+There is no structural check at run time: K1 and K2 guarantee the input and the
 properties of the plan are checked in the tests.
 """
 
@@ -27,6 +27,7 @@ from xai.contract.plan import (
     plan_to_data,
 )
 from xai.contract.source_of_truth import SourceOfTruth, load_source_of_truth, verify_contract_hash
+from xai.k4_planner.key_frame import KeyFrameRule
 from xai.k4_planner.limits import LimitLinker
 from xai.k4_planner.ordering import ReadingOrder
 from xai.k4_planner.provenance import ProvenanceRule
@@ -110,9 +111,10 @@ class ExplanationPlanner:
         bindings = [binding for branch in branches for binding in branch.bindings]
 
         limits = LimitLinker(view).link(branches)
+        key_frame = KeyFrameRule(view).step(conclusions)
         reinforcement = ReinforcementRule(view).step(conclusions, t_orders)
         provenance = ProvenanceRule(view).steps(bindings, reinforcement=reinforcement is not None)
-        steps = ReadingOrder(view).order(branches, limits, reinforcement, provenance)
+        steps = ReadingOrder(view).order(branches, limits, reinforcement, provenance, key_frame)
 
         meta = document.contract_meta
         unsealed = ExplanationPlan(

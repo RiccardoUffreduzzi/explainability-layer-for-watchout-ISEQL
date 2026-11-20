@@ -9,7 +9,7 @@ from xai.k1_harvester.checks.paths import Path, pattern, records
 from xai.k1_harvester.context import HarvestContext
 
 SECTIONS = ("contract_meta", "event", "rule", "entities", "intervals", "glossary")
-"""Order of ``missing_fields``: the sections, then the top-level fields (``actions``)."""
+"""Order of ``missing_fields``: the sections of the draft."""
 
 NOTE_ORDER = list(NoteCode)
 
@@ -41,9 +41,6 @@ def missing_fields(data: dict[str, Any]) -> list[MissingField]:
                 prefix = _record_path(path, data)
                 key = (f"{prefix}.{dotted}" if prefix else dotted, unavailable["reason"])
                 found.setdefault(key, MissingField(path=key[0], reason=Reason(key[1])))
-    for dotted, unavailable in (data.get("unavailable") or {}).items():
-        key = (dotted, unavailable["reason"])
-        found.setdefault(key, MissingField(path=dotted, reason=Reason(key[1])))
     return list(found.values())
 
 

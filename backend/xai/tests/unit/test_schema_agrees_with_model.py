@@ -126,7 +126,11 @@ CASES: dict[str, tuple[Mutation, bool]] = {
     "timestamp as a number": (lambda d: _snapshot(d).update(extracted_at=1791000000), False),
     # Closed catalogs, IDs and shapes.
     "reason outside the catalog": (
-        lambda d: d["unavailable"]["actions"].update(reason="not_implemented_yet"),
+        lambda d: (
+            d["event"]
+            .setdefault("unavailable", {})
+            .update(key_frame={"reason": "not_implemented_yet", "detail": "x"})
+        ),
         False,
     ),
     "constraint ID without prefix": (
@@ -134,7 +138,11 @@ CASES: dict[str, tuple[Mutation, bool]] = {
         False,
     ),
     "empty key in an unavailable map": (
-        lambda d: d["unavailable"].update({"": {"reason": "fps_not_recorded", "detail": "x"}}),
+        lambda d: (
+            d["event"]
+            .setdefault("unavailable", {})
+            .update({"": {"reason": "fps_not_recorded", "detail": "x"}})
+        ),
         False,
     ),
     "payload of another kind": (lambda d: _node(d, "projection").update(kind="selection"), False),

@@ -1,7 +1,7 @@
 {
   "$comment": "Caso golden, prodotto da K1 sul database di test (tests/support.py, build_fixture_db) come lo produce il batch di fine analisi: parametri di default della regola. Intervalli audio e righe delle detection sono reali (DB di ablation, scena 15, regole del seed); SamplingRate=24, AudioWindow 5.0 s / AudioHop 2.5 s e provider sono ipotizzati perché il DB di ablation non ha la riga Analyses. I testi della bozza sono in inglese.",
   "contract_meta": {
-    "contract_version": "0.4.0-k1",
+    "contract_version": "0.6.0-k1",
     "analysis_id": "gemini_3_6_flash_qwen2_audio_s15",
     "source_snapshot": {
       "extracted_at": "2026-10-06T20:00:00Z"
@@ -184,6 +184,25 @@
         }
       }
     ],
+    "key_frame": {
+      "keyframe_id": "kf_90",
+      "frame_index": 90,
+      "t_s": 3.75,
+      "selection": "gui_preview_midpoint",
+      "frame_image_ref": {
+        "video_path": "/videos/gemini_3_6_flash_qwen2_audio_s15.mp4",
+        "source_ref": {
+          "stage": "config",
+          "record_id": "Analyses/gemini_3_6_flash_qwen2_audio_s15/VideoPath",
+          "mode": "read"
+        }
+      },
+      "source_ref": {
+        "stage": "keyframes",
+        "record_id": "results-table.svelte#previewFrame",
+        "mode": "read"
+      }
+    },
     "source_ref": {
       "stage": "iseql",
       "record_id": "detection/vehicle_collision/C@gemini_3_6_flash_qwen2_audio_s15/{\"M1.st\":0.0,\"M1_vehicle\":null,\"M2.et\":7.5}",
@@ -503,7 +522,6 @@
       }
     }
   ],
-  "actions": null,
   "glossary": [
     {
       "term_id": "g_audio_class_glass_breaking",
@@ -642,12 +660,6 @@
       }
     }
   ],
-  "unavailable": {
-    "actions": {
-      "reason": "keyframes_not_persisted",
-      "detail": "this WatchOut version does not store key frames"
-    }
-  },
   "harvest_report": {
     "request": {
       "analysis_id": "gemini_3_6_flash_qwen2_audio_s15",
@@ -677,12 +689,7 @@
         "violations": []
       }
     ],
-    "missing_fields": [
-      {
-        "path": "actions",
-        "reason": "keyframes_not_persisted"
-      }
-    ],
+    "missing_fields": [],
     "notes": [
       {
         "code": "selection_basis",

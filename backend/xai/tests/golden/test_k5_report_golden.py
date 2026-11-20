@@ -5,7 +5,8 @@ For each golden plan ``<name>``:
 - ``tests/data/k5/input/<name>.json``: the input of the LLM (plan, values, entities, glossary);
 - ``tests/data/k5/prompt/<name>.txt``: the whole prompt of Report 1;
 - ``tests/data/k5/report/<name>.md`` and ``.json``: the report rendered from the text written by
-  hand in ``tests/data/k5/text/<name>.txt``, as if the LLM had answered it.
+  hand in ``tests/data/k5/text/<name>.txt``, as if the LLM had answered it, with the key frame
+  (``StillFrames``: fixed bytes in place of the frame of the video).
 
 Regenerate them with ``XAI_UPDATE_GOLDEN=1 pytest tests/golden`` and review the diff.
 """
@@ -22,6 +23,7 @@ from xai.tests.k5_support import (
     PROMPT_DIR,
     REPORT_DIR,
     ScriptedModel,
+    StillFrames,
     hand_text,
     input_of,
     pair_of,
@@ -52,7 +54,7 @@ def test_the_prompt_is_the_expected_one(name: str) -> None:
 
 @pytest.mark.parametrize("name", NAMES)
 def test_the_hand_written_text_gives_the_expected_report(name: str) -> None:
-    written = writer(ScriptedModel([hand_text(name)])).write(*pair_of(name))
+    written = writer(ScriptedModel([hand_text(name)]), frames=StillFrames()).write(*pair_of(name))
 
     _check(REPORT_DIR / f"{name}.md", written.markdown)
     _check(REPORT_DIR / f"{name}.json", dump_report(written.report))

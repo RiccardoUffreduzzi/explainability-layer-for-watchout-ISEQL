@@ -4,7 +4,7 @@ This module reads a plan and a source of truth. It checks that
 they go together (the plan's hash, the same ``contract_hash``, the same detection), then gives
 the LLM the k4 plan (for Report 2 only the steps with ``in_report2``) without the steps of the
 sections the system writes, the values those steps cite, and the phrases of the glossary
-entries they cite
+entries they cite. Of the key frame the LLM gets the time and the frame
 """
 
 import json

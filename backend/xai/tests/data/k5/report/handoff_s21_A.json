@@ -1,8 +1,9 @@
 {
   "report_meta": {
     "attempts": 1,
-    "contract_hash": "0b3250dd6ebaf622b94210c179c0d4e91a1e95f270967450908742fb022cce54",
+    "contract_hash": "adc57decea370104d511441c3fedc8ad203b32af4777e961cc99b72292ee6eb4",
     "event_id": "ev_beffcb6f2a6e",
+    "key_frame_images": true,
     "label": "handoff",
     "llm": {
       "model": "scripted",
@@ -11,11 +12,11 @@
       "temperature": 0.0
     },
     "model_id": "handoff/A",
-    "plan_hash": "c33d07ad1fb4d72364dc70463999d59fe45e2eae86c94a0963552e89f65f8fcd",
-    "prompt_version": "report1@830cf043a1ae",
+    "plan_hash": "72f6bbf1f9e0209e8df6b2516a10e7dd13306f106ad785d00e8bfe01574139cc",
+    "prompt_version": "report1@ef0dcde0e1f9",
     "report": 1,
-    "report_version": "0.2.0-k5",
-    "sentences_version": "report1@ac52072d368b",
+    "report_version": "0.3.0-k5",
+    "sentences_version": "report1@2eea29104dd1",
     "verification": "not_run"
   },
   "sections": [
@@ -121,6 +122,15 @@
       "written_by": "llm"
     },
     {
+      "figure": {
+        "caption": "Key frame at 0:04.5 (frame 108).",
+        "file": "ev_beffcb6f2a6e.jpg",
+        "frame_index": 108,
+        "keyframe_id": "kf_108",
+        "ref": "#/event/key_frame",
+        "sha256": "8573fc374162f8a4908220b2d72eeffe1a71bdb027e041c2699cdd51398fa88f",
+        "status": "shown"
+      },
       "sentences": [
         {
           "block": 0,
@@ -240,6 +250,30 @@
               "name": "g_predicate_carrying.definition",
               "ref": "#/glossary/4/definition",
               "text": "The person is holding, carrying, or transporting any object of class 'object' (package, suitcase, bag, backpack). Report for ANY person touching or holding a transportable item, even briefly."
+            }
+          ]
+        },
+        {
+          "block": 1,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "WatchOut shows this detection with its key frame, frame {kf_108.frame}, at {kf_108.at}. [s_key_frame]",
+          "step_ids": [
+            "s_key_frame"
+          ],
+          "text": "WatchOut shows this detection with its key frame, frame 108, at 0:04.5.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "kf_108.frame",
+              "ref": "#/event/key_frame/frame_index",
+              "text": "108"
+            },
+            {
+              "form": "plain",
+              "name": "kf_108.at",
+              "ref": "#/event/key_frame/t_s",
+              "text": "0:04.5"
             }
           ]
         }
@@ -499,13 +533,13 @@
           "step_ids": [
             "s_prov_contract_hash"
           ],
-          "text": "Source of truth: contract 0b3250dd6ebaf622b94210c179c0d4e91a1e95f270967450908742fb022cce54.",
+          "text": "Source of truth: contract adc57decea370104d511441c3fedc8ad203b32af4777e961cc99b72292ee6eb4.",
           "values": [
             {
               "form": "plain",
               "name": "contract_hash",
               "ref": "#/contract_meta/contract_hash",
-              "text": "0b3250dd6ebaf622b94210c179c0d4e91a1e95f270967450908742fb022cce54"
+              "text": "adc57decea370104d511441c3fedc8ad203b32af4777e961cc99b72292ee6eb4"
             }
           ]
         }
@@ -670,13 +704,13 @@
           "step_ids": [
             "s_lim_data_not_available"
           ],
-          "text": "Not available here: audio rule (EventSpec has no handoff/B); Re-ID similarity (Chroma stores the embeddings, not the match similarity); interval confidence (VisualPerInterval has no confidence column); key frames (this WatchOut version does not store key frames).",
+          "text": "Not available here: audio rule (EventSpec has no handoff/B); Re-ID similarity (Chroma stores the embeddings, not the match similarity); interval confidence (VisualPerInterval has no confidence column).",
           "values": [
             {
               "form": "plain",
               "name": "missing_fields",
               "ref": "#/harvest_report/missing_fields",
-              "text": "audio rule (EventSpec has no handoff/B); Re-ID similarity (Chroma stores the embeddings, not the match similarity); interval confidence (VisualPerInterval has no confidence column); key frames (this WatchOut version does not store key frames)"
+              "text": "audio rule (EventSpec has no handoff/B); Re-ID similarity (Chroma stores the embeddings, not the match similarity); interval confidence (VisualPerInterval has no confidence column)"
             }
           ]
         }

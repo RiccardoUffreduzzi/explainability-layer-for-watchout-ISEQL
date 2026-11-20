@@ -27,6 +27,8 @@ class ReportProfile:
     sections: tuple[SectionSpec, ...]
     cites_rule_definition: bool = False
     """True: the text must cite the definition of the rule (``{g_event_model_….definition}``)."""
+    figure_section: str | None = None
+    """The title of the section that shows the key frame of the detection; None: no image."""
 
     def admits(self, step: PlanStep) -> bool:
         return step.in_report2 or not self.only_in_report2

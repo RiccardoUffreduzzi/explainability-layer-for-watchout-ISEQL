@@ -2,9 +2,9 @@
 
 It is the only module of K5 that knows where the files are. For the draft at
 ``<analysis_id>/<event type>/<ev_id>.json`` it reads K4's plan and K2's source of truth and
-writes Report 1 in ``<analysis_id>/k5/<event type>/<ev_id>.json`` (with ``.md`` and
-``.trace.json``). If no report can be written it raises ``ReportFailure`` and writes only
-``<ev_id>.failed.trace.json``, when the LLM was called.
+writes Report 1 in ``<analysis_id>/k5/<event type>/<ev_id>.json`` (with ``.md``,
+``.trace.json`` and the key frame ``.jpg``). If no report can be written it raises
+``ReportFailure`` and writes only ``<ev_id>.failed.trace.json``, when the LLM was called.
 """
 
 import logging

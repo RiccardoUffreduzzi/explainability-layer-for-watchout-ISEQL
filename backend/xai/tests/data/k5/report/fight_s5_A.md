@@ -13,13 +13,19 @@ The system detected an event with rule `fight/A`, from 0:00 to 0:05 (frames 0–
 
 From 0:00 to 0:05 (frames 0–120), the video model saw the man in a grey hooded sweatshirt and khaki pants and the man in a dark jacket and blue jeans fight, selected by `σ_{pred="physical_altercation" ∧ arg1="person" ∧ arg2="person"}(M1)`. For the video model, `physical_altercation` means: "Two or more people are involved in aggressive behavior: fighting, pushing, hitting, punching, making aggressive gestures, or throwing objects at each other. Include IDs of all people involved."
 
+WatchOut shows this detection with its key frame, frame 60, at 0:02.5.
+
+![Key frame 60](ev_d966ffea748d.jpg)
+
+*Key frame at 0:02.5 (frame 60).*
+
 ## Why it was flagged
 
 The two arguments of the same interval are different people (`M1.arg1≠M1.arg2`, defined as `left ≠ right`): the man in a grey hooded sweatshirt and the man in a dark jacket.
 
 ## Method and provenance
 
-The video was sampled at 1.0 Hz: one frame in every 24 of a 24 fps video. Detections of the same relation at most 2 s apart were merged into one interval. The video model ran with temperature 0.0 and seed 42. Detection mode: visual. Rule parameters: rule defaults. WatchOut's lineage of this detection records M1 as the interval from 0:00 to 0:05. Source of truth: contract be46c0befc16663198f76454de9d0f9504bce9eb555f1b904351d2212b4b38fc.
+The video was sampled at 1.0 Hz: one frame in every 24 of a 24 fps video. Detections of the same relation at most 2 s apart were merged into one interval. The video model ran with temperature 0.0 and seed 42. Detection mode: visual. Rule parameters: rule defaults. WatchOut's lineage of this detection records M1 as the interval from 0:00 to 0:05. Source of truth: contract 3fe58b3a51fe94424f9ec204c25e761fcea279e963be84dd9dd77e4a3b610101.
 
 ## Limits
 
@@ -33,4 +39,4 @@ These limits concern the whole detection.
 - The system does not record a confidence value for visual detections.
 - The system does not record what in the images led to each visual detection.
 - Times are approximate: they depend on the sampling rate of the video analysis.
-- Some information is not saved by the system and is reported as not available. Not available here: Re-ID similarity (Chroma stores the embeddings, not the match similarity); interval confidence (VisualPerInterval has no confidence column); key frames (this WatchOut version does not store key frames).
+- Some information is not saved by the system and is reported as not available. Not available here: Re-ID similarity (Chroma stores the embeddings, not the match similarity); interval confidence (VisualPerInterval has no confidence column).

@@ -1,7 +1,7 @@
 {
   "$comment": "Caso golden: disgiunzione con classi diverse per alternativa; la colonna si chiama M1_person ma l'entità 4 è un veicolo, e l'argomento prende la classe dell'entità. Prodotta da K1 sul database di test (tests/support.py, build_fixture_db) con i parametri di default della regola. Intervalli, partecipanti e riga sono reali (DB di ablation, scena 7); la regola è quella del seed. Il DB di ablation non ha la riga Analyses: SamplingRate=24, AudioWindow/AudioHop e provider sono ipotizzati. I testi della bozza sono in inglese.",
   "contract_meta": {
-    "contract_version": "0.4.0-k1",
+    "contract_version": "0.6.0-k1",
     "analysis_id": "gemini_3_6_flash_qwen2_audio_s7",
     "source_snapshot": {
       "extracted_at": "2026-10-06T20:00:00Z"
@@ -147,6 +147,25 @@
         }
       }
     ],
+    "key_frame": {
+      "keyframe_id": "kf_180",
+      "frame_index": 180,
+      "t_s": 7.5,
+      "selection": "gui_preview_midpoint",
+      "frame_image_ref": {
+        "video_path": "/videos/gemini_3_6_flash_qwen2_audio_s7.mp4",
+        "source_ref": {
+          "stage": "config",
+          "record_id": "Analyses/gemini_3_6_flash_qwen2_audio_s7/VideoPath",
+          "mode": "read"
+        }
+      },
+      "source_ref": {
+        "stage": "keyframes",
+        "record_id": "results-table.svelte#previewFrame",
+        "mode": "read"
+      }
+    },
     "source_ref": {
       "stage": "iseql",
       "record_id": "detection/gunshot_or_explosion/A@gemini_3_6_flash_qwen2_audio_s7/{\"M1.et\":10.0,\"M1.st\":5.0,\"M1_person\":4}",
@@ -316,7 +335,6 @@
       }
     }
   ],
-  "actions": null,
   "glossary": [
     {
       "term_id": "g_event_model_gunshot_or_explosion",
@@ -376,12 +394,6 @@
       }
     }
   ],
-  "unavailable": {
-    "actions": {
-      "reason": "keyframes_not_persisted",
-      "detail": "this WatchOut version does not store key frames"
-    }
-  },
   "harvest_report": {
     "request": {
       "analysis_id": "gemini_3_6_flash_qwen2_audio_s7",
@@ -419,10 +431,6 @@
       {
         "path": "intervals[*].confidence",
         "reason": "visual_confidence_not_recorded"
-      },
-      {
-        "path": "actions",
-        "reason": "keyframes_not_persisted"
       }
     ],
     "notes": [

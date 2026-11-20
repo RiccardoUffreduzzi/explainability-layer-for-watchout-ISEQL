@@ -5,6 +5,8 @@ the LLM may cite, each with a name made of
 the reference and the field (``iv_v59.start``, ``c_s1_op1.δ``), the text the renderer writes
 for it and the JSON pointer it is read from.
 The entities are a table of their own: the LLM names them with VLM description.
+The key frame (``kf_``) has two values, its time (``kf_108.at``) and its frame
+(``kf_108.frame``): the LLM cites them, while its image is shown by the system (``figures``).
 """
 
 import re
@@ -17,6 +19,7 @@ from xai.contract.ids import (
     ENTITY_ID_PATTERN,
     EVENT_ID_PATTERN,
     INTERVAL_ID_PATTERN,
+    KEYFRAME_ID_PATTERN,
     STEP_ID_PATTERN,
     TERM_ID_PATTERN,
 )
@@ -36,6 +39,7 @@ _ENTITY = re.compile(ENTITY_ID_PATTERN)
 _CONSTRAINT = re.compile(CONSTRAINT_ID_PATTERN)
 _TERM = re.compile(TERM_ID_PATTERN)
 _STEP = re.compile(STEP_ID_PATTERN)
+KEY_FRAME = re.compile(KEYFRAME_ID_PATTERN)
 _LIMIT_POINTER = re.compile(r"^#/knowledge_limits/\d+$")
 _CONSTRAINT_POINTER = re.compile(r"^#/rule/constraints/(\d+)/payload/(.+)$")
 
@@ -244,6 +248,8 @@ class ValueReader:
             return self._constraint(ref)
         if _TERM.fullmatch(ref):
             return self._term(ref)
+        if KEY_FRAME.fullmatch(ref):
+            return self._key_frame(ref)
         if ref.startswith("#/"):
             return self._pointer(ref)
         raise ReportFailure("UNSUPPORTED_REF", f"the plan cites {ref!r}, which no report reads yet")
@@ -264,6 +270,19 @@ class ValueReader:
             self.labels.fields.get("event.model_id"),
         )
         return [model_id, *self._anchor(ref, ref, ("event", "interval"))]
+
+    def _key_frame(self, ref: str) -> list[Value]:
+        """The time and the frame of the key frame of the event"""
+        key_frame = self.document.event.key_frame
+        if key_frame is None or ref != key_frame.keyframe_id:
+            raise ReportFailure(
+                "UNSUPPORTED_REF", f"the plan cites {ref}, which is not the key frame of the event"
+            )
+        path = ("event", "key_frame")
+        return [
+            self._leaf(f"{ref}.at", ref, (*path, "t_s"), "plain", self._clock),
+            self._leaf(f"{ref}.frame", ref, (*path, "frame_index"), "plain", number),
+        ]
 
     def _interval(self, ref: str) -> list[Value]:
         index = self._index(self._intervals, ref)

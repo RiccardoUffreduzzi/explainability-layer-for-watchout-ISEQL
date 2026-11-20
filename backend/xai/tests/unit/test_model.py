@@ -90,17 +90,24 @@ def test_required_nullable_field_cannot_be_left_out(example: dict[str, Any]) -> 
 
 def test_reason_outside_the_catalog_is_rejected(example: dict[str, Any]) -> None:
     data = copy.deepcopy(example)
-    data["unavailable"]["actions"]["reason"] = "not_implemented_yet"
+    data["event"].setdefault("unavailable", {})["key_frame"] = {
+        "reason": "not_implemented_yet",
+        "detail": "x",
+    }
 
     with pytest.raises(ValidationError, match="reason"):
         from_json_data(ContractDraft, data)
 
 
-def test_actions_must_stay_null_until_key_frames(example: dict[str, Any]) -> None:
+@pytest.mark.parametrize(
+    "field", [("actions", None), ("unavailable", {"actions": {"reason": "fps_not_recorded", "detail": "x"}})]
+)
+def test_the_draft_has_no_actions(example: dict[str, Any], field: tuple[str, Any]) -> None:
+    """WatchOut does not divide a detection into actions: the draft has no field for them."""
     data = copy.deepcopy(example)
-    data["actions"] = []
+    data[field[0]] = field[1]
 
-    with pytest.raises(ValidationError, match="actions"):
+    with pytest.raises(ValidationError, match=field[0]):
         from_json_data(ContractDraft, data)
 
 
@@ -253,7 +260,7 @@ def test_contract_version_is_the_current_one(example: dict[str, Any], version: s
     data = copy.deepcopy(example)
     data["contract_meta"]["contract_version"] = version
 
-    assert CONTRACT_VERSION == "0.4.0-k1"
+    assert CONTRACT_VERSION == "0.6.0-k1"
     assert from_json_data(ContractDraft, example).contract_meta.contract_version == CONTRACT_VERSION
     with pytest.raises(ValidationError, match="contract_version"):
         from_json_data(ContractDraft, data)

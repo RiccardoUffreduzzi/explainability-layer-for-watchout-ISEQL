@@ -16,14 +16,14 @@
     "branches": [
       "s1"
     ],
-    "contract_hash": "27b6b23ee46a54aa9d7e81f67ffa747e9e24e8dbef3b921189c06b19d70dad42",
-    "contract_version": "0.4.0-k1",
+    "contract_hash": "7720bcfa9b766d4259747c3ce94235dbbbba30e304b5f7edcc7a2ed8c0fbb0c4",
+    "contract_version": "0.6.0-k1",
     "event_id": "ev_b04365241841",
     "label": "gunshot_or_explosion",
     "model_id": "gunshot_or_explosion/A",
-    "plan_hash": "44373f3d4c28dbe15d1b4250d6804f06af622ff61ed047d94f6125a34a64415a",
-    "plan_version": "0.1.0-k4",
-    "source_of_truth_version": "0.2.0-k2"
+    "plan_hash": "17b9920b615f0fb958e3a2e619b8327902f43f41f859f9676d27c45582d064ef",
+    "plan_version": "0.4.0-k4",
+    "source_of_truth_version": "0.4.0-k2"
   },
   "plan_report": {
     "excluded_constructs": [],
@@ -138,6 +138,20 @@
       "t_order": 5.0,
       "t_order_basis": "interval",
       "type": "limit"
+    },
+    {
+      "depends_on": [
+        "s_s1_proj"
+      ],
+      "in_report2": true,
+      "refs": [
+        "kf_180"
+      ],
+      "role": "context",
+      "step_id": "s_key_frame",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "context"
     },
     {
       "depends_on": [],

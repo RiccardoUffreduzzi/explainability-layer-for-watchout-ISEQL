@@ -2,7 +2,8 @@
 
 Sections, in order: the event and its rule, what was observed, why it was flagged, confidences
 and reinforcement between modalities, method and provenance, limits. The system writes the last
-two: they hold only facts with a fixed sentence.
+two: they hold only facts with a fixed sentence. What was observed ends with the key frame of the
+detection: the LLM says when it is, and the system shows its image below, with a caption.
 """
 
 from xai.contract.plan import StepType
@@ -27,4 +28,5 @@ REPORT1 = ReportProfile(
         SectionSpec("Limits", step_types=(StepType.LIMIT,), by_system=True),
     ),
     cites_rule_definition=True,
+    figure_section="What was observed",
 )

@@ -20,6 +20,7 @@ ENTITY_ID_PATTERN = r"^ent_[0-9]+$"
 CONSTRAINT_ID_PATTERN = r"^c_[A-Za-z0-9_]+$"
 TERM_ID_PATTERN = r"^g_[A-Za-z0-9_]+$"
 STEP_ID_PATTERN = r"^s_[A-Za-z0-9_]+$"
+KEYFRAME_ID_PATTERN = r"^kf_[0-9]+$"
 
 _COMPARISON_OPERATORS = {
     "=": "eq",
@@ -70,6 +71,11 @@ def audio_interval_id(audio_interval_id: int) -> str:
 def entity_id(class_id: int) -> str:
     # ent_<ClassID>, from VisualParticipant or from the row.
     return f"ent_{_non_negative(class_id, 'class_id')}"
+
+
+def keyframe_id(frame_index: int) -> str:
+    # kf_<frame>: the frame of the video the key frame shows.
+    return f"kf_{_non_negative(frame_index, 'frame_index')}"
 
 
 def projection_id(branch: str) -> str:

@@ -9,11 +9,8 @@ from enum import Enum
 class Reason(str, Enum):
     """Why a field of the draft is null (``Unavailable.reason``)."""
 
-    KEYFRAMES_NOT_PERSISTED = "keyframes_not_persisted"
-    """The WatchOut version in use does not store key frames."""
-
-    VLM_OUTPUT_NOT_PERSISTED = "vlm_output_not_persisted"
-    """The key-frame version does not store the VLM output for that frame."""
+    KEYFRAME_NOT_SHOWN = "keyframe_not_shown"
+    """The GUI shows no preview frame for the row: the row as the GUI receives it has no start or end."""
 
     REID_SIMILARITY_NOT_PERSISTED = "reid_similarity_not_persisted"
     """Re-ID similarity and gallery match are not stored."""

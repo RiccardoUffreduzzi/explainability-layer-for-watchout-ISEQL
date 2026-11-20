@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:watchout-xai:contract-draft:0.4.0-k1",
+  "$id": "urn:watchout-xai:contract-draft:0.6.0-k1",
   "$defs": {
     "Anchor": {
       "additionalProperties": false,
@@ -311,7 +311,7 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "0.4.0-k1",
+          "const": "0.6.0-k1",
           "type": "string"
         },
         "analysis_id": {
@@ -600,6 +600,16 @@
           },
           "type": "array"
         },
+        "key_frame": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KeyFrame"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "source_ref": {
           "$ref": "#/$defs/SourceRef"
         },
@@ -616,9 +626,29 @@
         "arguments",
         "modality_rules",
         "modality_detections",
+        "key_frame",
         "source_ref"
       ],
       "title": "EventRecord",
+      "type": "object"
+    },
+    "FrameImageRef": {
+      "additionalProperties": false,
+      "description": "The video the key frame is taken from; the image is frame ``frame_index`` of it.",
+      "properties": {
+        "video_path": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "source_ref": {
+          "$ref": "#/$defs/SourceRef"
+        }
+      },
+      "required": [
+        "video_path",
+        "source_ref"
+      ],
+      "title": "FrameImageRef",
       "type": "object"
     },
     "GlossaryEntry": {
@@ -893,6 +923,64 @@
       ],
       "title": "IntervalRecord",
       "type": "object"
+    },
+    "KeyFrame": {
+      "additionalProperties": false,
+      "description": "The frame WatchOut's results table shows for the detection row.\n\nThe frame is the middle of the row, chosen by the GUI (``results-table.svelte``): K1\nrepeats its formula on the row as ``detect_event`` passes it to the GUI.",
+      "properties": {
+        "keyframe_id": {
+          "$ref": "#/$defs/KeyframeId"
+        },
+        "frame_index": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "t_s": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "selection": {
+          "const": "gui_preview_midpoint",
+          "type": "string"
+        },
+        "frame_image_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrameImageRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_ref": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "unavailable": {
+          "$ref": "#/$defs/UnavailableMap"
+        }
+      },
+      "required": [
+        "keyframe_id",
+        "frame_index",
+        "t_s",
+        "selection",
+        "frame_image_ref",
+        "source_ref"
+      ],
+      "title": "KeyFrame",
+      "type": "object"
+    },
+    "KeyframeId": {
+      "description": "ID of the key frame: kf_ + the frame of the video it shows.",
+      "pattern": "^kf_[0-9]+$",
+      "type": "string"
     },
     "MissingField": {
       "additionalProperties": false,
@@ -1353,8 +1441,7 @@
     "Reason": {
       "description": "Why a field of the draft is null (``Unavailable.reason``).",
       "enum": [
-        "keyframes_not_persisted",
-        "vlm_output_not_persisted",
+        "keyframe_not_shown",
         "reid_similarity_not_persisted",
         "visual_confidence_not_recorded",
         "fps_not_recorded",
@@ -2198,17 +2285,11 @@
       },
       "type": "array"
     },
-    "actions": {
-      "type": "null"
-    },
     "glossary": {
       "items": {
         "$ref": "#/$defs/GlossaryEntry"
       },
       "type": "array"
-    },
-    "unavailable": {
-      "$ref": "#/$defs/UnavailableMap"
     },
     "harvest_report": {
       "$ref": "#/$defs/HarvestReport"
@@ -2220,7 +2301,6 @@
     "rule",
     "entities",
     "intervals",
-    "actions",
     "glossary",
     "harvest_report"
   ],

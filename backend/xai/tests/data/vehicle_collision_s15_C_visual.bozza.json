@@ -1,7 +1,7 @@
 {
   "$comment": "Caso golden: stessa regola di vehicle_collision_s15_C_audio, riga di origine visiva (veicolo 12); le colonne di C hanno etichette fuorvianti (c_labels_by_kind). Prodotta da K1 sul database di test (tests/support.py, build_fixture_db) con i parametri di default della regola. Intervalli, partecipanti e riga sono reali (DB di ablation, scena 15); la regola è quella del seed. Il DB di ablation non ha la riga Analyses: SamplingRate=24, AudioWindow/AudioHop e provider sono ipotizzati. I testi della bozza sono in inglese.",
   "contract_meta": {
-    "contract_version": "0.4.0-k1",
+    "contract_version": "0.6.0-k1",
     "analysis_id": "gemini_3_6_flash_qwen2_audio_s15",
     "source_snapshot": {
       "extracted_at": "2026-10-06T20:00:00Z"
@@ -191,6 +191,25 @@
         }
       }
     ],
+    "key_frame": {
+      "keyframe_id": "kf_192",
+      "frame_index": 192,
+      "t_s": 8.0,
+      "selection": "gui_preview_midpoint",
+      "frame_image_ref": {
+        "video_path": "/videos/gemini_3_6_flash_qwen2_audio_s15.mp4",
+        "source_ref": {
+          "stage": "config",
+          "record_id": "Analyses/gemini_3_6_flash_qwen2_audio_s15/VideoPath",
+          "mode": "read"
+        }
+      },
+      "source_ref": {
+        "stage": "keyframes",
+        "record_id": "results-table.svelte#previewFrame",
+        "mode": "read"
+      }
+    },
     "source_ref": {
       "stage": "iseql",
       "record_id": "detection/vehicle_collision/C@gemini_3_6_flash_qwen2_audio_s15/{\"M1.st\":6.0,\"M1_vehicle\":12.0,\"M2.et\":10.0}",
@@ -522,7 +541,6 @@
       }
     }
   ],
-  "actions": null,
   "glossary": [
     {
       "term_id": "g_audio_class_glass_breaking",
@@ -661,12 +679,6 @@
       }
     }
   ],
-  "unavailable": {
-    "actions": {
-      "reason": "keyframes_not_persisted",
-      "detail": "this WatchOut version does not store key frames"
-    }
-  },
   "harvest_report": {
     "request": {
       "analysis_id": "gemini_3_6_flash_qwen2_audio_s15",
@@ -704,10 +716,6 @@
       {
         "path": "intervals[*].confidence",
         "reason": "visual_confidence_not_recorded"
-      },
-      {
-        "path": "actions",
-        "reason": "keyframes_not_persisted"
       }
     ],
     "notes": [

@@ -10,6 +10,8 @@ The rule that was executed: {g_event_model_vehicle_collision.definition} [s_righ
 From {iv_v48.start} to {iv_v48.end} (frames {iv_v48.start_frame}–{iv_v48.end_frame}), the video model saw collision damage on the [dark sedan](ent_12), selected by {c_right_sel1.text}. [s_right_sel1]
 For the video model, {g_predicate_vehicle_collision.term} means: {g_predicate_vehicle_collision.definition} [s_right_sel1]
 
+WatchOut shows this detection with its key frame, frame {kf_216.frame}, at {kf_216.at}. [s_key_frame]
+
 ## Confidences and reinforcement
 
 {s_reinforcement.fixed_text} [s_reinforcement]

@@ -63,11 +63,6 @@ def _audio_origin(draft: ContractDraft) -> bool:
     return draft.event.modality_origin == "audio"
 
 
-def _has_actions(draft: ContractDraft) -> bool:
-    # K1 always writes ``actions = null`` today, so this holds only with the key frame version.
-    return draft.actions is not None
-
-
 def _undefined_terms(draft: ContractDraft) -> Refs | None:
     terms = tuple(entry.term_id for entry in draft.glossary if entry.definition is None)
     return terms or None
@@ -84,7 +79,6 @@ _RULES: tuple[tuple[LimitCode, Rule], ...] = (
     (LimitCode.REID_DEPENDENCE, _identity_nodes),
     (LimitCode.REID_EVIDENCE_UNAVAILABLE, _reid_evidence_missing),
     (LimitCode.AUDIO_WITHOUT_PARTICIPANTS, _whole_detection(_audio_origin)),
-    (LimitCode.KEYFRAME_SELECTION_UNDOCUMENTED, _whole_detection(_has_actions)),
     (LimitCode.GLOSSARY_ENTRY_MISSING, _undefined_terms),
     (LimitCode.DATA_NOT_AVAILABLE, _whole_detection(_has_missing_fields)),
 )

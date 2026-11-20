@@ -1,17 +1,17 @@
 {
   "plan": {
     "plan_meta": {
-      "plan_version": "0.1.0-k4",
-      "contract_hash": "7ca7bc48d339935177011eec6610cb52ebafcb09d64c8ba1529c9a4ccdcc09e7",
-      "source_of_truth_version": "0.2.0-k2",
-      "contract_version": "0.4.0-k1",
+      "plan_version": "0.4.0-k4",
+      "contract_hash": "603fe8ccb66ed03c5ae49390413c38fc4f0ad0233a78b537d7a4cc2b8c0fad7f",
+      "source_of_truth_version": "0.4.0-k2",
+      "contract_version": "0.6.0-k1",
       "event_id": "ev_14cb6286bf2e",
       "model_id": "vehicle_collision/C",
       "label": "vehicle_collision",
       "branches": [
         "s2"
       ],
-      "plan_hash": "f7922a5f6d4c0116c58256da7a1ff6ff24a90fd6c4147e8ab15d870229c0b132"
+      "plan_hash": "4da3ca657720a45702e99e9a98750d3632944d23470d53702ac963af636e088f"
     },
     "steps": [
       {
@@ -51,6 +51,20 @@
         "t_order_basis": "interval",
         "in_report2": true,
         "term": "g_event_model_vehicle_collision"
+      },
+      {
+        "step_id": "s_key_frame",
+        "type": "context",
+        "refs": [
+          "kf_192"
+        ],
+        "role": "context",
+        "depends_on": [
+          "s_s2_proj"
+        ],
+        "t_order": null,
+        "t_order_basis": "none",
+        "in_report2": true
       },
       {
         "step_id": "s_reinforcement",
@@ -150,6 +164,8 @@
     "ev_14cb6286bf2e.end_frame": "240",
     "g_event_model_vehicle_collision.term": "vehicle_collision",
     "g_event_model_vehicle_collision.definition": "π_{M1.st, M2.et} (\n  σ_{(pred=\"horn\") ∨ (pred=\"skidding\")}(M1)\n  SP(δ:∞; ζ:<=, ρ:0)\n  σ_{(pred=\"impact\") ∨ (pred=\"glass_breaking\")}(M2)\n)\n∪\nπ_{M1.arg1, M1.st, M1.et} (\n  σ_{pred=\"vehicle_collision\" ∧ arg1=\"vehicle\"}(M1)\n)",
+    "kf_192.at": "0:08",
+    "kf_192.frame": "192",
     "s_reinforcement.fixed_text": "The event was detected by both video and audio, in the same time interval.",
     "modality_detections.0.modality": "visual",
     "modality_detections.0.at": "0:05",

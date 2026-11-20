@@ -1,8 +1,9 @@
 {
   "report_meta": {
     "attempts": 1,
-    "contract_hash": "be46c0befc16663198f76454de9d0f9504bce9eb555f1b904351d2212b4b38fc",
+    "contract_hash": "3fe58b3a51fe94424f9ec204c25e761fcea279e963be84dd9dd77e4a3b610101",
     "event_id": "ev_d966ffea748d",
+    "key_frame_images": true,
     "label": "fight",
     "llm": {
       "model": "scripted",
@@ -11,11 +12,11 @@
       "temperature": 0.0
     },
     "model_id": "fight/A",
-    "plan_hash": "ca137c68b3acf45d6d157ce8a4a656705a00f6dff995e1335a34a99116f545d0",
-    "prompt_version": "report1@830cf043a1ae",
+    "plan_hash": "8a302e38e590979bb16f64cca6f606399a3f643918240788cb4de95ee0808163",
+    "prompt_version": "report1@ef0dcde0e1f9",
     "report": 1,
-    "report_version": "0.2.0-k5",
-    "sentences_version": "report1@ac52072d368b",
+    "report_version": "0.3.0-k5",
+    "sentences_version": "report1@2eea29104dd1",
     "verification": "not_run"
   },
   "sections": [
@@ -117,6 +118,15 @@
       "written_by": "llm"
     },
     {
+      "figure": {
+        "caption": "Key frame at 0:02.5 (frame 60).",
+        "file": "ev_d966ffea748d.jpg",
+        "frame_index": 60,
+        "keyframe_id": "kf_60",
+        "ref": "#/event/key_frame",
+        "sha256": "8573fc374162f8a4908220b2d72eeffe1a71bdb027e041c2699cdd51398fa88f",
+        "status": "shown"
+      },
       "sentences": [
         {
           "block": 0,
@@ -190,6 +200,30 @@
               "name": "g_predicate_physical_altercation.definition",
               "ref": "#/glossary/2/definition",
               "text": "Two or more people are involved in aggressive behavior: fighting, pushing, hitting, punching, making aggressive gestures, or throwing objects at each other. Include IDs of all people involved."
+            }
+          ]
+        },
+        {
+          "block": 1,
+          "entities": [],
+          "list_item": false,
+          "llm_text": "WatchOut shows this detection with its key frame, frame {kf_60.frame}, at {kf_60.at}. [s_key_frame]",
+          "step_ids": [
+            "s_key_frame"
+          ],
+          "text": "WatchOut shows this detection with its key frame, frame 60, at 0:02.5.",
+          "values": [
+            {
+              "form": "plain",
+              "name": "kf_60.frame",
+              "ref": "#/event/key_frame/frame_index",
+              "text": "60"
+            },
+            {
+              "form": "plain",
+              "name": "kf_60.at",
+              "ref": "#/event/key_frame/t_s",
+              "text": "0:02.5"
             }
           ]
         }
@@ -378,13 +412,13 @@
           "step_ids": [
             "s_prov_contract_hash"
           ],
-          "text": "Source of truth: contract be46c0befc16663198f76454de9d0f9504bce9eb555f1b904351d2212b4b38fc.",
+          "text": "Source of truth: contract 3fe58b3a51fe94424f9ec204c25e761fcea279e963be84dd9dd77e4a3b610101.",
           "values": [
             {
               "form": "plain",
               "name": "contract_hash",
               "ref": "#/contract_meta/contract_hash",
-              "text": "be46c0befc16663198f76454de9d0f9504bce9eb555f1b904351d2212b4b38fc"
+              "text": "3fe58b3a51fe94424f9ec204c25e761fcea279e963be84dd9dd77e4a3b610101"
             }
           ]
         }
@@ -543,13 +577,13 @@
           "step_ids": [
             "s_lim_data_not_available"
           ],
-          "text": "Not available here: Re-ID similarity (Chroma stores the embeddings, not the match similarity); interval confidence (VisualPerInterval has no confidence column); key frames (this WatchOut version does not store key frames).",
+          "text": "Not available here: Re-ID similarity (Chroma stores the embeddings, not the match similarity); interval confidence (VisualPerInterval has no confidence column).",
           "values": [
             {
               "form": "plain",
               "name": "missing_fields",
               "ref": "#/harvest_report/missing_fields",
-              "text": "Re-ID similarity (Chroma stores the embeddings, not the match similarity); interval confidence (VisualPerInterval has no confidence column); key frames (this WatchOut version does not store key frames)"
+              "text": "Re-ID similarity (Chroma stores the embeddings, not the match similarity); interval confidence (VisualPerInterval has no confidence column)"
             }
           ]
         }

@@ -7,7 +7,7 @@
 # - reasons: the reasons of the contract -> why a value is missing.
 # - missing_fields: the paths of harvest_report.missing_fields -> the data they name.
 # - codes: the codes of the plan's bindings (basis and status) -> what they mean.
-version: 0.1.0
+version: 0.3.0
 
 fields:
   event.model_id: identifier of the WatchOut rule that made the detection
@@ -41,8 +41,7 @@ values:
     not_multimodal: the detection does not combine video and audio
 
 reasons:
-  keyframes_not_persisted: this WatchOut version does not store key frames
-  vlm_output_not_persisted: the system does not store the video model's output for that frame
+  keyframe_not_shown: WatchOut shows no frame for this detection in its results
   reid_similarity_not_persisted: the system does not store the Re-ID similarity and gallery match
   visual_confidence_not_recorded: the system does not record a confidence for visual intervals
   fps_not_recorded: the frame rate of the analysis is not recorded
@@ -82,7 +81,9 @@ missing_fields:
   glossary[kind=operator].definition: definition of a temporal operator
   glossary[kind=comparison].definition: definition of a comparison
   glossary[kind=event_model].definition: rule of the event
-  actions: key frames
+  event.key_frame: key frame of the detection
+  event.key_frame.t_s: time of the key frame
+  event.key_frame.frame_image_ref: video of the key frame
 
 codes:
   engine_lineage: WatchOut's lineage query, which records the intervals that produced the detection row

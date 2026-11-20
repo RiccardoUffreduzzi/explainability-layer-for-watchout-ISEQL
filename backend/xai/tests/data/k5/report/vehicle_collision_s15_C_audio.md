@@ -18,6 +18,12 @@ The system detected an event with rule `vehicle_collision/C`, from 0:00 to 0:07.
 
 From 0:00 to 0:05 (frames 0–120), the audio model heard a horn: the class of the interval is `horn`, one of the two classes `σ_{(pred="horn") ∨ (pred="skidding")}(M1)` accepts. For the system, `horn` means: "WatchOut assigns this class when the audio model answers with one of: horn, honk, honking." From 0:02.5 to 0:07.5 (frames 60–180), it heard glass breaking: the class of the interval is `glass_breaking`, one of the two classes `σ_{(pred="impact") ∨ (pred="glass_breaking")}(M2)` accepts. For the system, `glass_breaking` means: "WatchOut assigns this class when the audio model answers with one of: glass, glass_breaking, shatter, shattering."
 
+WatchOut shows this detection with its key frame, frame 90, at 0:03.75.
+
+![Key frame 90](ev_cb96ebb2235a.jpg)
+
+*Key frame at 0:03.75 (frame 90).*
+
 ## Why it was flagged
 
 The glass breaking starts while the horn is ongoing: operator `SP(δ:∞; ζ:<=, ρ:0)`, defined as `r.Ts ζ s.Ts < r.Te, s.Ts − r.Ts ≤ δ`. With δ = ∞, the second sound can start at any time while the first one is ongoing.
@@ -28,7 +34,7 @@ The event was detected by both video and audio, in the same time interval. The a
 
 ## Method and provenance
 
-The video was sampled at 1.0 Hz: one frame in every 24 of a 24 fps video. Detections of the same relation at most 2 s apart were merged into one interval. The video model ran with temperature 0.0 and seed 42. Detection mode: multimodal. Rule parameters: rule defaults. WatchOut's lineage of this detection records M1 as the interval from 0:00 to 0:05 and M2 as the interval from 0:02.5 to 0:07.5. Source of truth: contract 7eb91c8335868bebc0b4733920685c01a63f96c771d983418d52003523bef161.
+The video was sampled at 1.0 Hz: one frame in every 24 of a 24 fps video. Detections of the same relation at most 2 s apart were merged into one interval. The video model ran with temperature 0.0 and seed 42. Detection mode: multimodal. Rule parameters: rule defaults. WatchOut's lineage of this detection records M1 as the interval from 0:00 to 0:05 and M2 as the interval from 0:02.5 to 0:07.5. Source of truth: contract d0b671a741d9b34e15e85aa738714df9b3c81b4901b5a0e14467649a22eb31e5.
 
 ## Limits
 
@@ -36,4 +42,3 @@ These limits concern the whole detection.
 
 - Times are approximate: they depend on the sampling rate of the video analysis.
 - An audio detection does not say who or what produced the sound.
-- Some information is not saved by the system and is reported as not available. Not available here: key frames (this WatchOut version does not store key frames).

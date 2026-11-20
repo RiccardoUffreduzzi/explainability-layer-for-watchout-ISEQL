@@ -23,6 +23,7 @@ from xai.contract.ids import (
     ENTITY_ID_PATTERN,
     EVENT_ID_PATTERN,
     INTERVAL_ID_PATTERN,
+    KEYFRAME_ID_PATTERN,
     TERM_ID_PATTERN,
     RowValue,
 )
@@ -38,7 +39,7 @@ from xai.contract.primitives import (
 )
 from xai.contract.reasons import CheckName, NoteCode, Reason
 
-ContractVersion = Literal["0.4.0-k1"]
+ContractVersion = Literal["0.6.0-k1"]
 CONTRACT_VERSION: Final[str] = get_args(ContractVersion)[0]
 """Version of the draft format; the JSON schema is bound to it (``$id`` and ``const``)."""
 
@@ -72,6 +73,14 @@ ConstraintId = TypeAliasType(
         str,
         StringConstraints(pattern=CONSTRAINT_ID_PATTERN),
         Field(description="ID of a rule node: c_<branch>_proj|sel<n>|op<n>|cc<n>, or c_set<n>."),
+    ],
+)
+KeyframeId = TypeAliasType(
+    "KeyframeId",
+    Annotated[
+        str,
+        StringConstraints(pattern=KEYFRAME_ID_PATTERN),
+        Field(description="ID of the key frame: kf_ + the frame of the video it shows."),
     ],
 )
 TermId = TypeAliasType(
@@ -191,6 +200,31 @@ class OriginBasis(ContractModel):
     method: NonEmptyStr
 
 
+class FrameImageRef(ContractModel):
+    """The video the key frame is taken from; the image is frame ``frame_index`` of it."""
+
+    video_path: NonEmptyStr
+    """``Analyses.VideoPath``, as WatchOut wrote it."""
+    source_ref: SourceRef
+
+
+class KeyFrame(ContractModel):
+    """The frame WatchOut's results table shows for the detection row.
+
+    The frame is the middle of the row, chosen by the GUI (``results-table.svelte``): K1
+    repeats its formula on the row as ``detect_event`` passes it to the GUI.
+    """
+
+    keyframe_id: KeyframeId
+    frame_index: NonNegativeInt
+    t_s: float | None
+    """``frame_index / FrameRate``, rounded to the millisecond."""
+    selection: Literal["gui_preview_midpoint"]
+    frame_image_ref: FrameImageRef | None
+    source_ref: SourceRef
+    unavailable: UnavailableMap | None = absent_if_none()
+
+
 class EventRecord(ContractModel):
     event_id: EventId
     model_id: NonEmptyStr
@@ -201,6 +235,7 @@ class EventRecord(ContractModel):
     arguments: list[Argument]
     modality_rules: ModalityRules
     modality_detections: list[ModalityDetection]
+    key_frame: KeyFrame | None
     source_ref: SourceRef
     unavailable: UnavailableMap | None = absent_if_none()
 
@@ -550,9 +585,5 @@ class ContractDraft(ContractModel):
     rule: RuleRecord
     entities: list[Entity]
     intervals: list[IntervalRecord]
-    actions: None
-    """Null with ``keyframes_not_persisted`` until the key-frame version of WatchOut."""
     glossary: list[GlossaryEntry]
-    unavailable: UnavailableMap | None = absent_if_none()
-    """Reasons for the null top-level fields, e.g. ``actions``."""
     harvest_report: HarvestReport

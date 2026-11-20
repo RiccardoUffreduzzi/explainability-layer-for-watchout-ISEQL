@@ -12,6 +12,26 @@ from xai.reporting.llm_input import build_input, read_plan, read_source
 from xai.reporting.profile import ReportProfile, SectionSpec
 from xai.tests.k5_support import LABELS, NAMES, input_of, pair_of
 
+
+@pytest.mark.parametrize("name", NAMES)
+def test_of_the_key_frame_the_llm_sees_only_its_step_its_time_and_its_frame(name: str) -> None:
+    """The step ``s_key_frame`` cites the key frame; the LLM gets its time and its frame, nothing else."""
+    report_input = input_of(name)
+    key_frame = report_input.document.event.key_frame
+    assert key_frame is not None
+    kf = key_frame.keyframe_id
+    data = report_input.to_data()
+
+    (step,) = [step for step in data["plan"]["steps"] if kf in step["refs"]]
+    assert (step["step_id"], step["type"], step["refs"]) == ("s_key_frame", "context", [kf])
+    assert {name for name in data["values"] if name.startswith("kf_")} == {f"{kf}.at", f"{kf}.frame"}
+    assert data["values"][f"{kf}.frame"] == str(key_frame.frame_index)
+    text = report_input.to_json()
+    assert "key_frame" not in text.replace("s_key_frame", "")
+    assert ".jpg" not in text
+    assert "video_path" not in text
+
+
 REPORT2_LIKE = ReportProfile(
     number=2, name="report2", only_in_report2=True, sections=(SectionSpec("Text", tuple(StepType)),)
 )

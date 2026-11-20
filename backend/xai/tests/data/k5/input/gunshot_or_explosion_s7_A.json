@@ -1,17 +1,17 @@
 {
   "plan": {
     "plan_meta": {
-      "plan_version": "0.1.0-k4",
-      "contract_hash": "27b6b23ee46a54aa9d7e81f67ffa747e9e24e8dbef3b921189c06b19d70dad42",
-      "source_of_truth_version": "0.2.0-k2",
-      "contract_version": "0.4.0-k1",
+      "plan_version": "0.4.0-k4",
+      "contract_hash": "7720bcfa9b766d4259747c3ce94235dbbbba30e304b5f7edcc7a2ed8c0fbb0c4",
+      "source_of_truth_version": "0.4.0-k2",
+      "contract_version": "0.6.0-k1",
       "event_id": "ev_b04365241841",
       "model_id": "gunshot_or_explosion/A",
       "label": "gunshot_or_explosion",
       "branches": [
         "s1"
       ],
-      "plan_hash": "44373f3d4c28dbe15d1b4250d6804f06af622ff61ed047d94f6125a34a64415a"
+      "plan_hash": "17b9920b615f0fb958e3a2e619b8327902f43f41f859f9676d27c45582d064ef"
     },
     "steps": [
       {
@@ -55,6 +55,20 @@
         "t_order_basis": "interval",
         "in_report2": true,
         "term": "g_event_model_gunshot_or_explosion"
+      },
+      {
+        "step_id": "s_key_frame",
+        "type": "context",
+        "refs": [
+          "kf_180"
+        ],
+        "role": "context",
+        "depends_on": [
+          "s_s1_proj"
+        ],
+        "t_order": null,
+        "t_order_basis": "none",
+        "in_report2": true
       }
     ],
     "bindings": [
@@ -103,7 +117,9 @@
     "ev_b04365241841.start_frame": "120",
     "ev_b04365241841.end_frame": "240",
     "g_event_model_gunshot_or_explosion.term": "gunshot_or_explosion",
-    "g_event_model_gunshot_or_explosion.definition": "π_{M1.arg1, M1.st, M1.et} (\n  σ_{(pred=\"gunshot_visible\" ∧ arg1=\"person\") ∨ (pred=\"explosion_visible\" ∧ (arg1=\"vehicle\" ∨ arg1=\"object\"))}(M1)\n)"
+    "g_event_model_gunshot_or_explosion.definition": "π_{M1.arg1, M1.st, M1.et} (\n  σ_{(pred=\"gunshot_visible\" ∧ arg1=\"person\") ∨ (pred=\"explosion_visible\" ∧ (arg1=\"vehicle\" ∨ arg1=\"object\"))}(M1)\n)",
+    "kf_180.at": "0:07.5",
+    "kf_180.frame": "180"
   },
   "entities": {
     "ent_4": {

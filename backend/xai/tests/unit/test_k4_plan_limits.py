@@ -51,7 +51,11 @@ def test_only_the_missing_data_limit_points_at_data_without_an_id() -> None:
     assert dict(LIMIT_DATA) == {LimitCode.DATA_NOT_AVAILABLE: (("harvest_report", "missing_fields"),)}
 
 
-@pytest.mark.parametrize("name", GOLDEN_NAMES)
+NOTHING_MISSING = "vehicle_collision_s15_C_audio"
+"""The audio row: every field has its value, so there is no ``data_not_available``."""
+
+
+@pytest.mark.parametrize("name", [n for n in GOLDEN_NAMES if n != NOTHING_MISSING])
 def test_the_missing_data_limit_points_at_the_missing_fields(name: str) -> None:
     view = view_of(name)
     data = source_of_truth_to_data(view.document)
@@ -66,7 +70,16 @@ def test_the_missing_data_limit_points_at_the_missing_fields(name: str) -> None:
             assert "#/harvest_report/missing_fields" not in other.refs
 
 
-def test_the_handoff_step_cites_its_four_missing_fields() -> None:
+def test_without_missing_fields_there_is_no_missing_data_limit() -> None:
+    view = view_of(NOTHING_MISSING)
+
+    steps = LimitLinker(view).link(translation_of(NOTHING_MISSING).branches)
+
+    assert view.document.harvest_report.missing_fields == []
+    assert not [s for s in steps if s.limit_code is LimitCode.DATA_NOT_AVAILABLE]
+
+
+def test_the_handoff_step_cites_its_three_missing_fields() -> None:
     plan = plan_of("handoff_s21_A")
     data = source_of_truth_to_data(view_of("handoff_s21_A").document)
 
@@ -77,7 +90,6 @@ def test_the_handoff_step_cites_its_four_missing_fields() -> None:
         ("event.modality_rules.audio", "modality_rule_absent"),
         ("entities[*].reid_evidence", "reid_similarity_not_persisted"),
         ("intervals[*].confidence", "visual_confidence_not_recorded"),
-        ("actions", "keyframes_not_persisted"),
     ]
     assert limit.depends_on == ["s_s1_proj"]  # the pointer adds no anchor
 

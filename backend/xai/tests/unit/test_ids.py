@@ -54,6 +54,7 @@ def test_record_ids() -> None:
     assert ids.visual_interval_id(59) == "iv_v59"
     assert ids.audio_interval_id(21) == "iv_a21"
     assert ids.entity_id(3) == "ent_3"
+    assert ids.keyframe_id(108) == "kf_108"
     assert ids.projection_id("s1") == "c_s1_proj"
     assert ids.selection_id("s1", 2) == "c_s1_sel2"
     assert ids.operator_id("s1", 1) == "c_s1_op1"
@@ -73,6 +74,7 @@ def test_record_ids() -> None:
     [
         lambda: ids.visual_interval_id(-1),
         lambda: ids.entity_id(True),
+        lambda: ids.keyframe_id(-1),
         lambda: ids.selection_id("s1", 0),
         lambda: ids.projection_id("s 1"),
         lambda: ids.term_id("predicate", "carrying!"),
@@ -97,3 +99,4 @@ def test_example_ids_follow_the_patterns(example: dict[str, Any]) -> None:
         assert re.fullmatch(ids.CONSTRAINT_ID_PATTERN, node["constraint_id"])
     for entry in example["glossary"]:
         assert re.fullmatch(ids.TERM_ID_PATTERN, entry["term_id"])
+    assert re.fullmatch(ids.KEYFRAME_ID_PATTERN, example["event"]["key_frame"]["keyframe_id"])

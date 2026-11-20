@@ -14,7 +14,7 @@ At the end of this prompt there is a JSON object with:
 
 - conclusion: the detection the report explains, in two sentences. The first says what was detected with the phrase of its term from the glossary, never with the term or its code, with the event's own times ({ev_….start} to {ev_….end}, or {ev_….at}; not those of an interval), the projection {c_….text} and the arguments of the detection row. The second gives only the definition of the rule, after a colon: {g_event_model_….definition}.
 - observation: what a model saw or heard in an interval, selected by a selection of the rule.
-- context: something seen that sets the scene of an observation.
+- context: the key frame of the detection ("s_key_frame"), the frame WatchOut shows for this detection in its results. Say it in one sentence, after the observations, with its number and its time: WatchOut shows this detection with frame {kf_….frame}, at {kf_….at}. Add nothing else: you have not seen the frame, so never say what it shows, who is in it or what happens in it.
 - condition: a condition of the rule on one observation, such as a duration or two different arguments.
 - temporal: a temporal operator between two observations, with the readings of its thresholds.
 - identity: a condition on the same or on different entities across observations.
@@ -39,7 +39,7 @@ Write these sections, in this order. After each title are the steps the section 
 6. Cite formal terms by name, never in your own words: a selection, an operator, a condition or the projection as {c_….text}, a parameter of an operator as {c_….δ}, a definition as {g_….definition}, a term as {g_….term}. Give the definition of the rule ({g_event_model_….definition}) at the end of a sentence of its own, after a colon. When a step has a "term", also say in plain words what it means, in the sentence of that step: use the term's phrase from the glossary, and the readings of the step if it has any, with each placeholder replaced by the words for its slot (rule 10 says how you may change their grammar). A slot that is a step stands for what that step observed: name it in a few words taken only from that step (what was seen or heard there, and by whom), not with its selection.
 7. A sentence of the system ("fixed_text") is cited by its name in braces, once: {s_….fixed_text}. Never write out its words or rewrite them: the system puts the sentence in its place. Do not say again in your words what it says.
 8. When a variable has more than one interval (status "ambiguous"), name every interval: each one is a witness of the same detection row.
-9. Outside braces, entity marks and markers, never write an ID (ent_, iv_, ev_, c_, g_, s_) or a word with an underscore: say in words what it means.
+9. Outside braces, entity marks and markers, never write an ID (ent_, iv_, ev_, kf_, c_, g_, s_) or a word with an underscore: say in words what it means.
 10. Write in correct English, in full sentences, for a technical reader. You choose the grammar and the order of the words of each sentence, as long as it says what its steps say, with the same focus, and nothing more. The phrases and the readings of the glossary give a meaning, not a grammar: change the form of a verb, an article or the order of the words, turn a clause into a noun, and join the phrases with words of your own, so that the sentence reads well. Use Markdown only for the section titles ("## Title"). Write each sentence on its own line, and separate paragraphs with a blank line.
 
 # Output

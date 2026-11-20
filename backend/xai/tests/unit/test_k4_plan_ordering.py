@@ -1,11 +1,12 @@
-"""Reading order: dependencies, time, type, rule position; limits, reinforcement, provenance."""
+"""Reading order: dependencies, time, type, rule position; limits, key frame, reinforcement, provenance."""
 
 import dataclasses
 import random
+from typing import Any
 
 import pytest
 
-from xai.contract.plan import PlanStep
+from xai.contract.plan import PlanStep, StepType
 from xai.k4_planner.limits import LimitLinker
 from xai.k4_planner.ordering import ReadingOrder
 from xai.k4_planner.translation import BranchSteps
@@ -15,10 +16,11 @@ from xai.tests.k4_plan_support import (
     both_branches,
     plan_of,
     reading_ids,
+    step_ids,
     translation_of,
     undefine_terms,
 )
-from xai.tests.k4_support import view_of
+from xai.tests.k4_support import GOLDEN_NAMES, view_of
 
 HANDOFF = [
     "s_s1_sel1",
@@ -33,6 +35,7 @@ HANDOFF = [
     "s_lim_perceptual_attribution_unavailable",
     "s_lim_temporal_resolution",
     "s_lim_data_not_available",
+    "s_key_frame",
 ]
 FIGHT = [
     "s_s1_sel1",
@@ -44,6 +47,7 @@ FIGHT = [
     "s_lim_perceptual_attribution_unavailable",
     "s_lim_temporal_resolution",
     "s_lim_data_not_available",
+    "s_key_frame",
 ]
 AUDIO_WITH_GLOSSARY_LIMIT = [
     "s_s1_sel1",
@@ -53,7 +57,7 @@ AUDIO_WITH_GLOSSARY_LIMIT = [
     "s_s1_proj",
     "s_lim_temporal_resolution",
     "s_lim_audio_without_participants",
-    "s_lim_data_not_available",
+    "s_key_frame",
     "s_reinforcement",
 ]
 
@@ -74,6 +78,39 @@ def test_the_audio_row_reads_like_the_expected_table() -> None:
 
 def test_the_audio_row_as_k2_writes_it_today_has_no_glossary_limit() -> None:
     assert reading_ids(plan_of(AUDIO)) == [i for i in AUDIO_WITH_GLOSSARY_LIMIT if "glossary" not in i]
+
+
+def _without_key_frame(data: dict[str, Any]) -> None:
+    data["event"]["key_frame"] = None
+    data["event"].setdefault("unavailable", {})["key_frame"] = {"reason": "keyframe_not_shown", "detail": "x"}
+
+
+@pytest.mark.parametrize("name", GOLDEN_NAMES)
+def test_the_key_frame_adds_only_its_own_step(name: str) -> None:
+    """The key frame is a step of its own; the other steps, their refs and their order stay the
+    same (K4-A3, UC-K4-15)."""
+    with_key_frame, without = plan_of(name), plan_of(name, _without_key_frame)
+    others = [s for s in with_key_frame.steps if s.step_id != "s_key_frame"]
+
+    assert others == list(without.steps)
+    assert "s_key_frame" in step_ids(with_key_frame)
+    assert "s_key_frame" not in step_ids(without)
+    assert not any(ref.startswith("kf_") for s in others for ref in s.refs)
+
+
+@pytest.mark.parametrize("name", GOLDEN_NAMES)
+def test_the_key_frame_comes_after_the_conclusions_and_their_limits(name: str) -> None:
+    order = step_ids(plan_of(name))
+    position = order.index("s_key_frame")
+    rule_types = (StepType.CONCLUSION, StepType.LIMIT)
+    plan = plan_of(name)
+
+    assert all(order.index(s.step_id) < position for s in plan.steps if s.type in rule_types)
+    assert all(
+        order.index(s.step_id) > position
+        for s in plan.steps
+        if s.type in (StepType.REINFORCEMENT, StepType.PROVENANCE)
+    )
 
 
 def test_the_provenance_steps_close_the_plan() -> None:
@@ -105,7 +142,8 @@ def test_the_order_does_not_depend_on_the_order_of_the_translated_steps(seed: in
     shuffled = list(branch.steps)
     random.Random(seed).shuffle(shuffled)
 
-    assert _order("handoff_s21_A", [_with_steps(branch, shuffled)]) == HANDOFF
+    # _order gives the rule steps and their limits: no key frame step
+    assert _order("handoff_s21_A", [_with_steps(branch, shuffled)]) == HANDOFF[:-1]
 
 
 def test_among_ready_steps_the_earlier_one_in_time_comes_first() -> None:
@@ -191,4 +229,5 @@ def test_limits_after_the_same_step_follow_the_order_of_k2() -> None:
         "s_lim_perceptual_attribution_unavailable",
         "s_lim_temporal_resolution",
         "s_lim_data_not_available",
+        "s_key_frame",
     ]

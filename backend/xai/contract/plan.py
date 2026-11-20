@@ -25,6 +25,7 @@ from xai.contract.ids import (
     ENTITY_ID_PATTERN,
     EVENT_ID_PATTERN,
     INTERVAL_ID_PATTERN,
+    KEYFRAME_ID_PATTERN,
     STEP_ID_PATTERN,
     TERM_ID_PATTERN,
 )
@@ -32,12 +33,10 @@ from xai.contract.model import ConstraintId, ContractVersion, EventId, IntervalI
 from xai.contract.primitives import ContractModel, NonEmptyStr, absent_if_none
 from xai.contract.source_of_truth import ContractHash, LimitCode, SourceOfTruthVersion
 
-PlanVersion = Literal["0.1.0-k4"]
+PlanVersion = Literal["0.4.0-k4"]
 PLAN_VERSION: Final[str] = get_args(PlanVersion)[0]
 """Version of the plan format; the JSON schema is bound to it (``$id`` and ``const``)."""
 
-KEYFRAME_ID_PATTERN = r"^kf_[A-Za-z0-9_]+$"
-ACTION_ID_PATTERN = r"^ac_[A-Za-z0-9_]+$"
 JSON_POINTER_PATTERN = r"^#/.*$"
 """A JSON pointer into the source of truth, for the parts that have no ID (e.g. a threshold)."""
 
@@ -53,13 +52,12 @@ REF_PATTERN = _alternatives(
     TERM_ID_PATTERN,
     EVENT_ID_PATTERN,
     KEYFRAME_ID_PATTERN,
-    ACTION_ID_PATTERN,
     JSON_POINTER_PATTERN,
 )
 """A fact of the source of truth: an ID of the contract or a JSON pointer.
 
-IDs of intervals, entities, rule nodes, glossary entries and the event; ``kf_`` and ``ac_``
-are already admitted, their constructors come with I7 (UC-K4-15).
+IDs of intervals, entities, rule nodes, glossary entries, the event and its key frame
+(``kf_``). There are no actions (``ac_``): WatchOut does not produce them.
 """
 
 StepId = TypeAliasType(
@@ -111,10 +109,9 @@ class StepRole(str, Enum):
 
 
 class TOrderBasis(str, Enum):
-    """Where ``t_order`` comes from (K4-A3): an interval today, a key frame with I7."""
+    """Where ``t_order`` comes from: the start of an interval, or nothing."""
 
     INTERVAL = "interval"
-    KEYFRAME = "keyframe"
     NONE = "none"
 
 

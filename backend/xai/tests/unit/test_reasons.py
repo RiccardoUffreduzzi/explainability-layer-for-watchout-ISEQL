@@ -5,8 +5,7 @@ from xai.contract.reasons import CheckName, InputError, NoteCode, Reason
 
 def test_reason_catalog() -> None:
     assert {r.value for r in Reason} == {
-        "keyframes_not_persisted",
-        "vlm_output_not_persisted",
+        "keyframe_not_shown",
         "reid_similarity_not_persisted",
         "visual_confidence_not_recorded",
         "fps_not_recorded",

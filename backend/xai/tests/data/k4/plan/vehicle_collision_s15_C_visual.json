@@ -16,14 +16,14 @@
     "branches": [
       "s2"
     ],
-    "contract_hash": "7ca7bc48d339935177011eec6610cb52ebafcb09d64c8ba1529c9a4ccdcc09e7",
-    "contract_version": "0.4.0-k1",
+    "contract_hash": "603fe8ccb66ed03c5ae49390413c38fc4f0ad0233a78b537d7a4cc2b8c0fad7f",
+    "contract_version": "0.6.0-k1",
     "event_id": "ev_14cb6286bf2e",
     "label": "vehicle_collision",
     "model_id": "vehicle_collision/C",
-    "plan_hash": "f7922a5f6d4c0116c58256da7a1ff6ff24a90fd6c4147e8ab15d870229c0b132",
-    "plan_version": "0.1.0-k4",
-    "source_of_truth_version": "0.2.0-k2"
+    "plan_hash": "4da3ca657720a45702e99e9a98750d3632944d23470d53702ac963af636e088f",
+    "plan_version": "0.4.0-k4",
+    "source_of_truth_version": "0.4.0-k2"
   },
   "plan_report": {
     "excluded_constructs": [
@@ -155,6 +155,20 @@
       "t_order": 6.0,
       "t_order_basis": "interval",
       "type": "limit"
+    },
+    {
+      "depends_on": [
+        "s_s2_proj"
+      ],
+      "in_report2": true,
+      "refs": [
+        "kf_192"
+      ],
+      "role": "context",
+      "step_id": "s_key_frame",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "context"
     },
     {
       "depends_on": [

@@ -5,12 +5,14 @@ and the rule in a block of its own.
 """
 
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 from xai.contract.report import (
     REPORT_VERSION,
     CitedEntity,
     CitedValue,
+    Figure,
     LlmSettings,
     Report,
     ReportMeta,
@@ -34,10 +36,19 @@ class Header:
     sentences_version: str
     llm: LlmSettings
     attempts: int
+    key_frame_images: bool = False
 
 
-def render(parsed: ParsedText, report_input: ReportInput, number: ReportNumber, header: Header) -> Report:
+def render(
+    parsed: ParsedText,
+    report_input: ReportInput,
+    number: ReportNumber,
+    header: Header,
+    figures: Mapping[str, Figure] | None = None,
+) -> Report:
+    """The report of the parsed text; ``figures`` maps a section title to the figure it shows."""
     meta = report_input.plan.plan_meta
+    figures = figures or {}
     return Report(
         report_meta=ReportMeta(
             report_version=REPORT_VERSION,  # type: ignore[arg-type]
@@ -51,6 +62,7 @@ def render(parsed: ParsedText, report_input: ReportInput, number: ReportNumber, 
             sentences_version=header.sentences_version,
             llm=header.llm,
             attempts=header.attempts,
+            key_frame_images=header.key_frame_images,
             verification="not_run",
         ),
         sections=[
@@ -58,6 +70,7 @@ def render(parsed: ParsedText, report_input: ReportInput, number: ReportNumber, 
                 title=section.title,
                 written_by=section.written_by,
                 sentences=[_sentence(s, report_input) for s in section.sentences],
+                figure=figures.get(section.title),
             )
             for section in parsed.sections
         ],
@@ -141,7 +154,17 @@ def markdown(report: Report) -> str:
                 for chunk in chunks:
                     lines += ["", chunk]
                 previous_item = False
+        if section.figure is not None:
+            lines += _figure_markdown(section.figure)
     return "\n".join(lines) + "\n"
+
+
+def _figure_markdown(figure: Figure) -> list[str]:
+    """The image of the key frame, beside the report with its caption"""
+    lines = [""]
+    if figure.file is not None:
+        lines += [f"![Key frame {figure.frame_index}]({figure.file})", ""]
+    return [*lines, f"*{figure.caption}*"]
 
 
 def _blocks(sentences: list[Sentence]) -> list[list[Sentence]]:

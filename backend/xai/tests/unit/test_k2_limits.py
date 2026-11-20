@@ -14,6 +14,13 @@ def _limits(name: str) -> list[str]:
     return [limit.code.value for limit in _detected(name)]
 
 
+def _limits_without_key_frame(name: str) -> list[str]:
+    data = load_example(EXAMPLES_DIR / name)
+    data["event"]["key_frame"] = None
+    data["event"].setdefault("unavailable", {})["key_frame"] = {"reason": "keyframe_not_shown", "detail": "x"}
+    return [limit.code.value for limit in detect_limits(from_json_data(ContractDraft, data))]
+
+
 def _refs(name: str) -> dict[str, list[str]]:
     return {limit.code.value: list(limit.refs) for limit in _detected(name)}
 
@@ -58,8 +65,12 @@ def test_undefined_glossary_terms_are_a_limit() -> None:
     assert "glossary_entry_missing" not in _limits("fight_s5_A.bozza.json")
 
 
-def test_no_key_frame_limit_while_actions_is_null() -> None:
-    assert "keyframe_selection_undocumented" not in _limits("handoff_s21_A.bozza.json")
+def test_the_key_frame_brings_no_limit() -> None:
+    """The key frame is the GUI's preview, with a known criterion (A2-bis): no limit for it."""
+    catalogue = {code.value for code in LimitCode}
+
+    assert not {code for code in catalogue if "keyframe" in code}
+    assert _limits("handoff_s21_A.bozza.json") == _limits_without_key_frame("handoff_s21_A.bozza.json")
 
 
 def test_the_limits_come_in_catalogue_order_without_repeats() -> None:

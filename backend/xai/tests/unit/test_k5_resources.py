@@ -23,7 +23,7 @@ GEMINI = LlmConfig(
     model="gemini-3.5-flash-lite",
     temperature=0.0,
     seed=42,
-    timeout_s=60.0,
+    timeout_s=120.0,
     max_tokens=8192,
 )
 
@@ -33,7 +33,7 @@ def test_the_configuration_names_the_model_and_never_a_key() -> None:
 
     assert config.llm is not None
     assert (config.llm.provider, config.llm.temperature, config.llm.seed) == ("gemini", 0.0, 42)
-    assert (config.max_attempts, config.time_format, config.llm.timeout_s) == (3, "m:ss", 60.0)
+    assert (config.max_attempts, config.time_format, config.llm.timeout_s) == (3, "m:ss", 120.0)
     text = REPORT_CONFIG_PATH.read_text(encoding="utf-8")
     assert re.search(r"^\s*[a-z_]*key\s*:", text, re.MULTILINE | re.IGNORECASE) is None
 
@@ -45,10 +45,30 @@ def test_a_configuration_without_llm(tmp_path: Path) -> None:
     config = load_report_config(path)
 
     assert (config.llm, config.max_attempts) == (None, 2)
+    assert (config.key_frame_images, config.image_width) == (True, 360)
+
+
+def test_report_1_shows_the_key_frame_at_the_width_of_the_gui() -> None:
+    config = load_report_config()
+
+    assert (config.key_frame_images, config.image_width) == (True, 360)
+
+
+def test_the_key_frame_images_can_be_turned_off(tmp_path: Path) -> None:
+    path = tmp_path / "config.yaml"
+    path.write_text("llm: null\nmax_attempts: 2\nkey_frame_images: false\n", encoding="utf-8")
+
+    assert load_report_config(path).key_frame_images is False
 
 
 @pytest.mark.parametrize(
-    "text", ["llm: null\nmax_attempts: 0\n", "llm: null\nmax_attempts: 3\ntime_format: s\n"]
+    "text",
+    [
+        "llm: null\nmax_attempts: 0\n",
+        "llm: null\nmax_attempts: 3\ntime_format: s\n",
+        "llm: null\nmax_attempts: 3\nkey_frame_images: maybe\n",
+        "llm: null\nmax_attempts: 3\nimage_width: 0\n",
+    ],
 )
 def test_a_wrong_configuration_is_refused(tmp_path: Path, text: str) -> None:
     path = tmp_path / "config.yaml"

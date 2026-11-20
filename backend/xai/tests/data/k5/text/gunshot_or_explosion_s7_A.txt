@@ -10,3 +10,5 @@ The rule that was executed: {g_event_model_gunshot_or_explosion.definition} [s_s
 The rule accepts either of two predicates, {g_predicate_gunshot_visible.term} or {g_predicate_explosion_visible.term}, as {c_s1_sel1.text} says. [s_s1_sel1]
 From {iv_v11.start} to {iv_v11.end} (frames {iv_v11.start_frame}–{iv_v11.end_frame}), the video model saw an explosion at the [silver SUV](ent_4): the predicate of the interval is {iv_v11.predicate}. [s_s1_sel1]
 For the video model, {g_predicate_explosion_visible.term} means: {g_predicate_explosion_visible.definition} [s_s1_sel1]
+
+WatchOut shows this detection with its key frame, frame {kf_180.frame}, at {kf_180.at}. [s_key_frame]

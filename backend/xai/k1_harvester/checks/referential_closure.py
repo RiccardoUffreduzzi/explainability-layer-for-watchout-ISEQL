@@ -2,13 +2,13 @@
 
 Rule nodes form one tree (one root, parents that exist and contain them), node
 variables belong to their branch, entities and intervals are unique and resolve,
-and every term of the draft has a glossary entry.
+every term of the draft has a glossary entry, and the key frame's ID names its frame.
 """
 
 from collections import Counter
 from collections.abc import Iterable
 
-from xai.contract.ids import comparison_term, projection_id
+from xai.contract.ids import comparison_term, keyframe_id, projection_id
 from xai.contract.model import (
     AttributeComparisonNode,
     ContractDraft,
@@ -84,6 +84,12 @@ def check_referential_closure(draft: ContractDraft) -> list[Violation]:
         for arg in interval.args:
             if arg not in entity_ids:
                 fail(f"intervals[{i}].args", f"{arg} is not an entity of the draft")
+    key_frame = draft.event.key_frame
+    if key_frame is not None and key_frame.keyframe_id != keyframe_id(key_frame.frame_index):
+        fail(
+            "event.key_frame.keyframe_id",
+            f"{key_frame.keyframe_id} does not name frame {key_frame.frame_index}",
+        )
     if draft.event.origin_basis is not None:
         for name in draft.event.origin_basis.branch.split(", "):
             if name not in projections:

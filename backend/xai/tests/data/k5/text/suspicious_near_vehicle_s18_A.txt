@@ -10,6 +10,8 @@ The rule that was executed: {g_event_model_suspicious_near_vehicle.definition} [
 From {iv_v54.start} to {iv_v54.end} (frames {iv_v54.start_frame}–{iv_v54.end_frame}), the video model saw the [person in a dark hooded jacket](ent_6) lingering suspiciously around the [silver sedan](ent_1), selected by {c_s1_sel1.text}. [s_s1_sel1]
 For the video model, {g_predicate_suspicious_near_vehicle.term} means: {g_predicate_suspicious_near_vehicle.definition} [s_s1_sel1]
 
+WatchOut shows this detection with its key frame, frame {kf_108.frame}, at {kf_108.at}. [s_key_frame]
+
 ## Why it was flagged
 
 The observation lasts at least {c_s1_cc1.value} {c_s1_cc1.unit}, as the condition {c_s1_cc1.text} requires (defined as {g_comparison_duration_ge.definition}). [s_s1_cc1]

@@ -3,11 +3,6 @@
 from xai.contract.primitives import Unavailable
 from xai.contract.reasons import Reason
 
-KEYFRAMES = Unavailable(
-    reason=Reason.KEYFRAMES_NOT_PERSISTED, detail="this WatchOut version does not store key frames"
-)
-"""``actions`` until the key-frame version of WatchOut."""
-
 VISUAL_CONFIDENCE = Unavailable(
     reason=Reason.VISUAL_CONFIDENCE_NOT_RECORDED, detail="VisualPerInterval has no confidence column"
 )

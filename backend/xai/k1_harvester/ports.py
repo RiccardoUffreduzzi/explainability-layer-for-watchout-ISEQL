@@ -51,6 +51,8 @@ class AnalysisSnapshot:
     """The column ``frame_rate`` was read from: ``FrameRate``, or ``SamplingRate`` in legacy rows."""
     audio_window: float | None
     audio_hop: float | None
+    video_path: str | None
+    """The analysed video (``VideoPath``), the file the GUI's previews are taken from."""
 
     @property
     def record(self) -> str:

@@ -27,14 +27,14 @@
     "branches": [
       "s1"
     ],
-    "contract_hash": "0b3250dd6ebaf622b94210c179c0d4e91a1e95f270967450908742fb022cce54",
-    "contract_version": "0.4.0-k1",
+    "contract_hash": "adc57decea370104d511441c3fedc8ad203b32af4777e961cc99b72292ee6eb4",
+    "contract_version": "0.6.0-k1",
     "event_id": "ev_beffcb6f2a6e",
     "label": "handoff",
     "model_id": "handoff/A",
-    "plan_hash": "c33d07ad1fb4d72364dc70463999d59fe45e2eae86c94a0963552e89f65f8fcd",
-    "plan_version": "0.1.0-k4",
-    "source_of_truth_version": "0.2.0-k2"
+    "plan_hash": "72f6bbf1f9e0209e8df6b2516a10e7dd13306f106ad785d00e8bfe01574139cc",
+    "plan_version": "0.4.0-k4",
+    "source_of_truth_version": "0.4.0-k2"
   },
   "plan_report": {
     "excluded_constructs": [],
@@ -287,6 +287,20 @@
       "t_order": 5.0,
       "t_order_basis": "interval",
       "type": "limit"
+    },
+    {
+      "depends_on": [
+        "s_s1_proj"
+      ],
+      "in_report2": true,
+      "refs": [
+        "kf_108"
+      ],
+      "role": "context",
+      "step_id": "s_key_frame",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "context"
     },
     {
       "depends_on": [],

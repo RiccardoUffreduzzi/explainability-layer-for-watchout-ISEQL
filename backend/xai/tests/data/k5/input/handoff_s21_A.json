@@ -1,17 +1,17 @@
 {
   "plan": {
     "plan_meta": {
-      "plan_version": "0.1.0-k4",
-      "contract_hash": "0b3250dd6ebaf622b94210c179c0d4e91a1e95f270967450908742fb022cce54",
-      "source_of_truth_version": "0.2.0-k2",
-      "contract_version": "0.4.0-k1",
+      "plan_version": "0.4.0-k4",
+      "contract_hash": "adc57decea370104d511441c3fedc8ad203b32af4777e961cc99b72292ee6eb4",
+      "source_of_truth_version": "0.4.0-k2",
+      "contract_version": "0.6.0-k1",
       "event_id": "ev_beffcb6f2a6e",
       "model_id": "handoff/A",
       "label": "handoff",
       "branches": [
         "s1"
       ],
-      "plan_hash": "c33d07ad1fb4d72364dc70463999d59fe45e2eae86c94a0963552e89f65f8fcd"
+      "plan_hash": "72f6bbf1f9e0209e8df6b2516a10e7dd13306f106ad785d00e8bfe01574139cc"
     },
     "steps": [
       {
@@ -155,6 +155,20 @@
         "t_order_basis": "interval",
         "in_report2": true,
         "term": "g_event_model_handoff"
+      },
+      {
+        "step_id": "s_key_frame",
+        "type": "context",
+        "refs": [
+          "kf_108"
+        ],
+        "role": "context",
+        "depends_on": [
+          "s_s1_proj"
+        ],
+        "t_order": null,
+        "t_order_basis": "none",
+        "in_report2": true
       }
     ],
     "bindings": [
@@ -236,7 +250,9 @@
     "ev_beffcb6f2a6e.start_frame": "24",
     "ev_beffcb6f2a6e.end_frame": "192",
     "g_event_model_handoff.term": "handoff",
-    "g_event_model_handoff.definition": "π_{M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et} (\n  σ_{M1.arg1≠M2.arg1 ∧ M1.arg2=M2.arg2} (\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M1)\n    Bef(δ:∞; ζ:<=, ρ:0)\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M2)\n  ))"
+    "g_event_model_handoff.definition": "π_{M1.arg1, M2.arg1, M1.arg2, M1.st, M2.et} (\n  σ_{M1.arg1≠M2.arg1 ∧ M1.arg2=M2.arg2} (\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M1)\n    Bef(δ:∞; ζ:<=, ρ:0)\n    σ_{pred=\"carrying\" ∧ arg1=\"person\" ∧ arg2=\"object\"}(M2)\n  ))",
+    "kf_108.at": "0:04.5",
+    "kf_108.frame": "108"
   },
   "entities": {
     "ent_3": {

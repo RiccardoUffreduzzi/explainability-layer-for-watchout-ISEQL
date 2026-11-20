@@ -44,7 +44,7 @@ def load_report_config(path: Path = REPORT_CONFIG_PATH) -> ReportConfig:
             model=str(_required(llm_map, "model", f"{path.name}:llm")),
             temperature=float(llm_map.get("temperature", 0.0)),
             seed=None if seed is None else int(seed),
-            timeout_s=float(llm_map.get("timeout_s", 60.0)),
+            timeout_s=float(llm_map.get("timeout_s", 120.0)),
             max_tokens=int(llm_map.get("max_tokens", 8192)),
         )
     attempts = int(_required(data, "max_attempts", path.name))
@@ -53,7 +53,15 @@ def load_report_config(path: Path = REPORT_CONFIG_PATH) -> ReportConfig:
     time_format = str(data.get("time_format", "m:ss"))
     if time_format != "m:ss":
         raise ValueError(f"{path.name}: time_format must be one of {TIME_FORMATS}")
-    return ReportConfig(llm=llm, max_attempts=attempts, time_format="m:ss")
+    images = data.get("key_frame_images", True)
+    if not isinstance(images, bool):
+        raise ValueError(f"{path.name}: key_frame_images must be true or false")
+    width = int(data.get("image_width", 360))
+    if width < 1:
+        raise ValueError(f"{path.name}: image_width must be a positive number of pixels")
+    return ReportConfig(
+        llm=llm, max_attempts=attempts, time_format="m:ss", key_frame_images=images, image_width=width
+    )
 
 
 def load_prompt(name: str, folder: Path = PROMPTS_DIR) -> PromptTemplate:
@@ -76,6 +84,7 @@ def load_sentences(name: str, folder: Path = SENTENCES_DIR) -> SystemSentences:
         bindings=part("bindings"),
         intervals=part("intervals"),
         limits=part("limits"),
+        figure=part("figure"),
     )
 
 

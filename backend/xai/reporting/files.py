@@ -1,9 +1,11 @@
-"""The files of a report: ``<ev_id>.json``, ``<ev_id>.md`` and ``<ev_id>.trace.json``, side by side.
+"""The files of a report: ``<ev_id>.json``, ``<ev_id>.md`` and ``<ev_id>.trace.json``, side by side,
+and ``<ev_id>.jpg`` when the report shows the key frame.
 
 The JSON file is written last: a report is there when its JSON file is. A report that cannot
 be written leaves only ``<ev_id>.failed.trace.json``, with the calls made to the LLM.
 """
 
+import hashlib
 import os
 from dataclasses import dataclass
 from pathlib import Path
@@ -11,7 +13,7 @@ from typing import Literal
 
 from pydantic import ValidationError
 
-from xai.contract.report import dump_report, dump_trace, load_report
+from xai.contract.report import Report, dump_report, dump_trace, load_report
 from xai.reporting.failure import ReportFailure
 from xai.reporting.llm_input import read_plan, read_source
 from xai.reporting.writer import ReportWriter, WrittenReport
@@ -25,6 +27,7 @@ class ReportFiles:
     markdown: Path
     trace: Path
     failed_trace: Path
+    image: Path
 
     @classmethod
     def of(cls, target: Path) -> "ReportFiles":
@@ -35,10 +38,11 @@ class ReportFiles:
             markdown=target.with_name(f"{stem}.md"),
             trace=target.with_name(f"{stem}.trace.json"),
             failed_trace=target.with_name(f"{stem}.failed.trace.json"),
+            image=target.with_name(f"{stem}.jpg"),
         )
 
-    def all(self) -> tuple[Path, Path, Path]:
-        return (self.trace, self.markdown, self.json)
+    def all(self) -> tuple[Path, Path, Path, Path]:
+        return (self.trace, self.image, self.markdown, self.json)
 
 
 def write_report(
@@ -70,6 +74,10 @@ def write_report(
 
 def _save(written: WrittenReport, files: ReportFiles) -> None:
     _replace(files.trace, dump_trace(written.trace))
+    if written.image is None:
+        files.image.unlink(missing_ok=True)
+    else:
+        _replace_bytes(files.image, written.image)
     _replace(files.markdown, written.markdown)
     _replace(files.json, dump_report(written.report))
 
@@ -78,19 +86,38 @@ def _is_current(files: ReportFiles, writer: ReportWriter, plan_hash: str) -> boo
     if not (files.json.is_file() and files.markdown.is_file()):
         return False
     try:
-        meta = load_report(files.json.read_text(encoding="utf-8")).report_meta
+        report = load_report(files.json.read_text(encoding="utf-8"))
     except (ValidationError, OSError):
         return False
+    meta = report.report_meta
     return (
         meta.plan_hash == plan_hash
         and meta.prompt_version == writer.prompt_version
         and meta.sentences_version == writer.sentences_version
         and meta.llm == writer.llm.settings
+        and meta.key_frame_images == writer.key_frame_images
+        and _image_is_current(report, files)
     )
 
 
+def _image_is_current(report: Report, files: ReportFiles) -> bool:
+    """The image a report shows is beside it, with the bytes the report names."""
+    shown = [s.figure for s in report.sections if s.figure is not None and s.figure.status == "shown"]
+    if not shown:
+        return True
+    try:
+        digest = hashlib.sha256(files.image.read_bytes()).hexdigest()
+    except OSError:
+        return False
+    return all(figure.sha256 == digest for figure in shown)
+
+
 def _replace(target: Path, text: str) -> None:
+    _replace_bytes(target, text.encode("utf-8"))
+
+
+def _replace_bytes(target: Path, data: bytes) -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
     temporary = target.with_name(target.name + ".tmp")
-    temporary.write_text(text, encoding="utf-8", newline="\n")
+    temporary.write_bytes(data)
     os.replace(temporary, target)

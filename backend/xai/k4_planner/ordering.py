@@ -6,8 +6,8 @@ type observation, condition, temporal, identity, then the one of the earlier rul
 ``step_id``. Branches are not interleaved: they come in the order of their first ``t_order``.
 
 Each limit goes right after the last of the steps it is hooked to, in the order K2 wrote the
-limits. The reinforcement comes after the last conclusion and its limits; the provenance steps
-close the plan.
+limits. The key frame comes after the last conclusion and its limits, then the
+reinforcement; the provenance steps close the plan.
 """
 
 from collections.abc import Sequence
@@ -37,6 +37,7 @@ class ReadingOrder:
         limits: Sequence[PlanStep],
         reinforcement: PlanStep | None,
         provenance: Sequence[PlanStep],
+        key_frame: PlanStep | None = None,
     ) -> tuple[PlanStep, ...]:
         rule_steps = self._rule_steps(branches)
         position = {step.step_id: i for i, step in enumerate(rule_steps)}
@@ -47,6 +48,8 @@ class ReadingOrder:
         for i, step in enumerate(rule_steps):
             ordered.append(step)
             ordered.extend(after.get(i, ()))
+        if key_frame is not None:
+            ordered.append(key_frame)
         if reinforcement is not None:
             ordered.append(reinforcement)
         ordered.extend(provenance)

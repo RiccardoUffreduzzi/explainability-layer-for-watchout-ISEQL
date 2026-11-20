@@ -1,7 +1,7 @@
 {
   "$comment": "Caso golden: argomenti della stessa classe (args_ordered = false) e righe simmetriche (1, 2) e (2, 1). Prodotta da K1 sul database di test (tests/support.py, build_fixture_db) con i parametri di default della regola. Intervalli, partecipanti e riga sono reali (DB di ablation, scena 5); la regola è quella del seed. Il DB di ablation non ha la riga Analyses: SamplingRate=24, AudioWindow/AudioHop e provider sono ipotizzati. I testi della bozza sono in inglese.",
   "contract_meta": {
-    "contract_version": "0.4.0-k1",
+    "contract_version": "0.6.0-k1",
     "analysis_id": "gemini_3_6_flash_qwen2_audio_s5",
     "source_snapshot": {
       "extracted_at": "2026-10-06T20:00:00Z"
@@ -153,6 +153,25 @@
         }
       }
     ],
+    "key_frame": {
+      "keyframe_id": "kf_60",
+      "frame_index": 60,
+      "t_s": 2.5,
+      "selection": "gui_preview_midpoint",
+      "frame_image_ref": {
+        "video_path": "/videos/gemini_3_6_flash_qwen2_audio_s5.mp4",
+        "source_ref": {
+          "stage": "config",
+          "record_id": "Analyses/gemini_3_6_flash_qwen2_audio_s5/VideoPath",
+          "mode": "read"
+        }
+      },
+      "source_ref": {
+        "stage": "keyframes",
+        "record_id": "results-table.svelte#previewFrame",
+        "mode": "read"
+      }
+    },
     "source_ref": {
       "stage": "iseql",
       "record_id": "detection/fight/A@gemini_3_6_flash_qwen2_audio_s5/{\"M1.et\":5.0,\"M1.st\":0.0,\"M1_person\":1,\"M1_person2\":2}",
@@ -374,7 +393,6 @@
       }
     }
   ],
-  "actions": null,
   "glossary": [
     {
       "term_id": "g_comparison_identity_ne",
@@ -427,12 +445,6 @@
       }
     }
   ],
-  "unavailable": {
-    "actions": {
-      "reason": "keyframes_not_persisted",
-      "detail": "this WatchOut version does not store key frames"
-    }
-  },
   "harvest_report": {
     "request": {
       "analysis_id": "gemini_3_6_flash_qwen2_audio_s5",
@@ -471,10 +483,6 @@
       {
         "path": "intervals[*].confidence",
         "reason": "visual_confidence_not_recorded"
-      },
-      {
-        "path": "actions",
-        "reason": "keyframes_not_persisted"
       }
     ],
     "notes": [

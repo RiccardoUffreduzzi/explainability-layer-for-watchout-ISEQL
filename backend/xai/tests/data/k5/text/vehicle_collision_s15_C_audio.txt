@@ -12,6 +12,8 @@ For the system, {g_audio_class_horn.term} means: {g_audio_class_horn.definition}
 From {iv_a22.start} to {iv_a22.end} (frames {iv_a22.start_frame}–{iv_a22.end_frame}), it heard glass breaking: the class of the interval is {iv_a22.predicate}, one of the two classes {c_s1_sel2.text} accepts. [s_s1_sel2]
 For the system, {g_audio_class_glass_breaking.term} means: {g_audio_class_glass_breaking.definition} [s_s1_sel2]
 
+WatchOut shows this detection with its key frame, frame {kf_90.frame}, at {kf_90.at}. [s_key_frame]
+
 ## Why it was flagged
 
 The glass breaking starts while the horn is ongoing: operator {c_s1_op1.text}, defined as {g_operator_SP.definition}. [s_s1_op1]

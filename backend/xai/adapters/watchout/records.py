@@ -80,6 +80,7 @@ class SqliteRecords:
             **_sampling(row["FrameRate"], row["SamplingRate"]),
             audio_window=None if row["AudioWindow"] is None else float(row["AudioWindow"]),
             audio_hop=None if row["AudioHop"] is None else float(row["AudioHop"]),
+            video_path=_text(row["VideoPath"]),
         )
 
     # EventSpec (registry)

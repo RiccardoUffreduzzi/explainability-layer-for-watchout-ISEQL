@@ -11,6 +11,8 @@ From {iv_v59.start} to {iv_v59.end} (frames {iv_v59.start_frame}–{iv_v59.end_f
 From {iv_v60.start} to {iv_v60.end} (frames {iv_v60.start_frame}–{iv_v60.end_frame}), it saw a [man in a grey jacket and dark trousers](ent_5) carrying the [cardboard box](ent_4), selected by {c_s1_sel2.text}. [s_s1_sel2]
 For the video model, carrying means: {g_predicate_carrying.definition} [s_s1_sel1][s_s1_sel2]
 
+WatchOut shows this detection with its key frame, frame {kf_108.frame}, at {kf_108.at}. [s_key_frame]
+
 ## Why it was flagged
 
 The first carrying ends before the second one starts: operator {c_s1_op1.text}, defined as {g_operator_Bef.definition}. [s_s1_op1]

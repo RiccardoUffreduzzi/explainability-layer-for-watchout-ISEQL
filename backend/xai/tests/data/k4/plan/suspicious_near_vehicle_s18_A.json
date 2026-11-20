@@ -16,14 +16,14 @@
     "branches": [
       "s1"
     ],
-    "contract_hash": "3a7ba6788633811d9473c91f2d2cef9b65a5598a171c0058cf4530c0441c220e",
-    "contract_version": "0.4.0-k1",
+    "contract_hash": "0f84ba238e678f41adcd312c1c0c68547373e5e68d7c9d846ba8f742dba2a779",
+    "contract_version": "0.6.0-k1",
     "event_id": "ev_69409d7b3e1a",
     "label": "suspicious_near_vehicle",
     "model_id": "suspicious_near_vehicle/A",
-    "plan_hash": "cfafb627eee39ad19ca7c6cc7bd0130e8eb765817ac4bd2e6b0e1679e7f5a7b8",
-    "plan_version": "0.1.0-k4",
-    "source_of_truth_version": "0.2.0-k2"
+    "plan_hash": "58fccbb19bcc022910ce291d5e8b455570db914603e5dc852ceab4b04b51e324",
+    "plan_version": "0.4.0-k4",
+    "source_of_truth_version": "0.4.0-k2"
   },
   "plan_report": {
     "excluded_constructs": [],
@@ -159,6 +159,20 @@
       "t_order": 2.0,
       "t_order_basis": "interval",
       "type": "limit"
+    },
+    {
+      "depends_on": [
+        "s_s1_proj"
+      ],
+      "in_report2": true,
+      "refs": [
+        "kf_108"
+      ],
+      "role": "context",
+      "step_id": "s_key_frame",
+      "t_order": null,
+      "t_order_basis": "none",
+      "type": "context"
     },
     {
       "depends_on": [],

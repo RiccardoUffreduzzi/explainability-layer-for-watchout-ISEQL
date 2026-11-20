@@ -144,6 +144,7 @@ def test_every_ref_is_a_fact_of_the_source_or_a_pointer_that_resolves(
         *(n.constraint_id for n in document.rule.constraints),
         *(g.term_id for g in document.glossary),
         document.event.event_id,
+        *([document.event.key_frame.keyframe_id] if document.event.key_frame else []),
     }
 
     for s in plan.steps:

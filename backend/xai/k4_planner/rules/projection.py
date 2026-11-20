@@ -18,7 +18,12 @@ class ProjectionRule:
             type=StepType.CONCLUSION,
             construct_=projection.constraint_id,
             refs=unique(
-                [projection.constraint_id, event.event_id, *(a.entity_id for a in event.arguments), term]
+                [
+                    projection.constraint_id,
+                    event.event_id,
+                    *(a.entity_id for a in event.arguments),
+                    term,
+                ]
             ),
             depends_on=depends_on,
             t_order=t_order,

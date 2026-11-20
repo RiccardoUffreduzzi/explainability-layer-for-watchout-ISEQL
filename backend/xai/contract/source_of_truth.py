@@ -22,7 +22,7 @@ from xai.contract.canonical import canonical_json
 from xai.contract.model import ConstraintId, ContractDraft, ContractMeta, EventRecord, TermId
 from xai.contract.primitives import ContractModel, NonEmptyStr, absent_if_none
 
-SourceOfTruthVersion = Literal["0.2.0-k2"]
+SourceOfTruthVersion = Literal["0.4.0-k2"]
 SOURCE_OF_TRUTH_VERSION: Final[str] = get_args(SourceOfTruthVersion)[0]
 """Version of the K2 additions; their JSON schema is bound to it."""
 
@@ -38,7 +38,6 @@ class LimitCode(str, Enum):
     REID_DEPENDENCE = "reid_dependence"
     REID_EVIDENCE_UNAVAILABLE = "reid_evidence_unavailable"
     AUDIO_WITHOUT_PARTICIPANTS = "audio_without_participants"
-    KEYFRAME_SELECTION_UNDOCUMENTED = "keyframe_selection_undocumented"
     GLOSSARY_ENTRY_MISSING = "glossary_entry_missing"
     DATA_NOT_AVAILABLE = "data_not_available"
 

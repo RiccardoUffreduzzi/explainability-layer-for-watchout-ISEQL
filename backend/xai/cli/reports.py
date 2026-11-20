@@ -5,7 +5,8 @@ Run from ``backend``, with the key of the provider in the environment (``GOOGLE_
     PYTHONPATH=src python -m xai.cli.reports write-all --analysis <id> [--out <folder>] [--report 1] [--force]
 
 ``write`` reads the plan and the source of truth beside it and writes
-``<id>/k5/<event type>/<ev_id>.json``, ``.md`` and ``.trace.json``. ``write-all`` does
+``<id>/k5/<event type>/<ev_id>.json``, ``.md`` and ``.trace.json``, and ``.jpg`` with the key
+frame when ``key_frame_images`` is true in ``report_config.yaml``. ``write-all`` does
 it for every plan of ``<out>/<id>/k4/`` in a fixed order.
 A report already written for the same plan, prompt and model is kept (``--force`` writes
 it again). ``--replay <folder>`` answers with the recorded answers of the traces in the folder,
@@ -33,6 +34,7 @@ from xai.adapters.report_resources import (
     load_sentences,
     load_value_labels,
 )
+from xai.adapters.watchout.frames import WatchOutFrameImages
 from xai.adapters.watchout.llm import WatchOutLanguageModel
 from xai.cli.common import EXIT_INFRASTRUCTURE, EXIT_INPUT, EXIT_OK, add_out_option, logging_to
 from xai.k1_harvester.output import AnalysisFolder
@@ -71,6 +73,7 @@ def report_writer(number: int, config: ReportConfig, llm: LanguageModel) -> Repo
         load_value_labels(),
         max_attempts=config.max_attempts,
         time_format=config.time_format,
+        frames=WatchOutFrameImages(config.image_width) if config.key_frame_images else None,
     )
 
 

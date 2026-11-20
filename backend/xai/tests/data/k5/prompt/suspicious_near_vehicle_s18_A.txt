@@ -14,7 +14,7 @@ At the end of this prompt there is a JSON object with:
 
 - conclusion: the detection the report explains, in two sentences. The first says what was detected with the phrase of its term from the glossary, never with the term or its code, with the event's own times ({ev_….start} to {ev_….end}, or {ev_….at}; not those of an interval), the projection {c_….text} and the arguments of the detection row. The second gives only the definition of the rule, after a colon: {g_event_model_….definition}.
 - observation: what a model saw or heard in an interval, selected by a selection of the rule.
-- context: something seen that sets the scene of an observation.
+- context: the key frame of the detection ("s_key_frame"), the frame WatchOut shows for this detection in its results. Say it in one sentence, after the observations, with its number and its time: WatchOut shows this detection with frame {kf_….frame}, at {kf_….at}. Add nothing else: you have not seen the frame, so never say what it shows, who is in it or what happens in it.
 - condition: a condition of the rule on one observation, such as a duration or two different arguments.
 - temporal: a temporal operator between two observations, with the readings of its thresholds.
 - identity: a condition on the same or on different entities across observations.
@@ -28,7 +28,7 @@ At the end of this prompt there is a JSON object with:
 Write these sections, in this order. After each title are the steps the section renders. Write each title on a line of its own as "## <title>", exactly as it is written between the quotes, without the steps. Write no other section.
 
 - "Event and rule": s_s1_proj
-- "What was observed": s_s1_sel1
+- "What was observed": s_s1_sel1, s_key_frame
 - "Why it was flagged": s_s1_cc1
 
 # Rules
@@ -41,7 +41,7 @@ Write these sections, in this order. After each title are the steps the section 
 6. Cite formal terms by name, never in your own words: a selection, an operator, a condition or the projection as {c_….text}, a parameter of an operator as {c_….δ}, a definition as {g_….definition}, a term as {g_….term}. Give the definition of the rule ({g_event_model_….definition}) at the end of a sentence of its own, after a colon. When a step has a "term", also say in plain words what it means, in the sentence of that step: use the term's phrase from the glossary, and the readings of the step if it has any, with each placeholder replaced by the words for its slot (rule 10 says how you may change their grammar). A slot that is a step stands for what that step observed: name it in a few words taken only from that step (what was seen or heard there, and by whom), not with its selection.
 7. A sentence of the system ("fixed_text") is cited by its name in braces, once: {s_….fixed_text}. Never write out its words or rewrite them: the system puts the sentence in its place. Do not say again in your words what it says.
 8. When a variable has more than one interval (status "ambiguous"), name every interval: each one is a witness of the same detection row.
-9. Outside braces, entity marks and markers, never write an ID (ent_, iv_, ev_, c_, g_, s_) or a word with an underscore: say in words what it means.
+9. Outside braces, entity marks and markers, never write an ID (ent_, iv_, ev_, kf_, c_, g_, s_) or a word with an underscore: say in words what it means.
 10. Write in correct English, in full sentences, for a technical reader. You choose the grammar and the order of the words of each sentence, as long as it says what its steps say, with the same focus, and nothing more. The phrases and the readings of the glossary give a meaning, not a grammar: change the form of a verb, an article or the order of the words, turn a clause into a noun, and join the phrases with words of your own, so that the sentence reads well. Use Markdown only for the section titles ("## Title"). Write each sentence on its own line, and separate paragraphs with a blank line.
 
 # Output
@@ -53,17 +53,17 @@ Only the text of the report: the section titles and their sentences, nothing bef
 {
   "plan": {
     "plan_meta": {
-      "plan_version": "0.1.0-k4",
-      "contract_hash": "3a7ba6788633811d9473c91f2d2cef9b65a5598a171c0058cf4530c0441c220e",
-      "source_of_truth_version": "0.2.0-k2",
-      "contract_version": "0.4.0-k1",
+      "plan_version": "0.4.0-k4",
+      "contract_hash": "0f84ba238e678f41adcd312c1c0c68547373e5e68d7c9d846ba8f742dba2a779",
+      "source_of_truth_version": "0.4.0-k2",
+      "contract_version": "0.6.0-k1",
       "event_id": "ev_69409d7b3e1a",
       "model_id": "suspicious_near_vehicle/A",
       "label": "suspicious_near_vehicle",
       "branches": [
         "s1"
       ],
-      "plan_hash": "cfafb627eee39ad19ca7c6cc7bd0130e8eb765817ac4bd2e6b0e1679e7f5a7b8"
+      "plan_hash": "58fccbb19bcc022910ce291d5e8b455570db914603e5dc852ceab4b04b51e324"
     },
     "steps": [
       {
@@ -128,6 +128,20 @@ Only the text of the report: the section titles and their sentences, nothing bef
         "t_order_basis": "interval",
         "in_report2": true,
         "term": "g_event_model_suspicious_near_vehicle"
+      },
+      {
+        "step_id": "s_key_frame",
+        "type": "context",
+        "refs": [
+          "kf_108"
+        ],
+        "role": "context",
+        "depends_on": [
+          "s_s1_proj"
+        ],
+        "t_order": null,
+        "t_order_basis": "none",
+        "in_report2": true
       }
     ],
     "bindings": [
@@ -180,7 +194,9 @@ Only the text of the report: the section titles and their sentences, nothing bef
     "ev_69409d7b3e1a.start_frame": "48",
     "ev_69409d7b3e1a.end_frame": "168",
     "g_event_model_suspicious_near_vehicle.term": "suspicious_near_vehicle",
-    "g_event_model_suspicious_near_vehicle.definition": "π_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{(M1.et − M1.st) >= 3} (\n    σ_{pred=\"suspicious_near_vehicle\" ∧ arg1=\"person\" ∧ arg2=\"vehicle\"}(M1)\n  ))"
+    "g_event_model_suspicious_near_vehicle.definition": "π_{M1.arg1, M1.arg2, M1.st, M1.et} (\n  σ_{(M1.et − M1.st) >= 3} (\n    σ_{pred=\"suspicious_near_vehicle\" ∧ arg1=\"person\" ∧ arg2=\"vehicle\"}(M1)\n  ))",
+    "kf_108.at": "0:04.5",
+    "kf_108.frame": "108"
   },
   "entities": {
     "ent_6": {

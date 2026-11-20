@@ -1,5 +1,5 @@
 # The sentences the system writes in Report 1, in the sections the LLM does not write
-# (SectionSpec.by_system): method and provenance, limits.
+# (SectionSpec.by_system): method and provenance, limits; and the caption of the key frame.
 # {name} cites a value of the table, as in the LLM's text; <slot> is filled by the system.
 
 # one sentence for each step of method and provenance
@@ -27,3 +27,10 @@ limits:
   whole_detection: "These limits concern the whole detection."
   constructs: "These limits concern the conditions <constructs> of the rule."
   missing_fields: "Not available here: {missing_fields}."
+
+# the caption of the key frame, under its image at the end of "What was observed"; the LLM does
+# not see it
+figure:
+  shown: "Key frame at <time> (frame <frame>)."
+  shown_without_time: "Key frame <frame>."
+  not_available: "The key frame of this detection (frame <frame>) is not shown: <reason>."

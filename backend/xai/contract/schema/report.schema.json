@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:watchout-xai:report:0.2.0-k5",
+  "$id": "urn:watchout-xai:report:0.3.0-k5",
   "$defs": {
     "CitedEntity": {
       "additionalProperties": false,
@@ -66,6 +66,56 @@
       "pattern": "^ev_[0-9a-f]{12}$",
       "type": "string"
     },
+    "Figure": {
+      "additionalProperties": false,
+      "description": "The key frame of the detection.\n\nThe system extracts the image from the video and writes the caption; the LLM does not\nsee the image and does not describe it.",
+      "properties": {
+        "keyframe_id": {
+          "$ref": "#/$defs/KeyframeId"
+        },
+        "frame_index": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "ref": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "shown",
+            "not_available"
+          ],
+          "type": "string"
+        },
+        "caption": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "file": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "keyframe_id",
+        "frame_index",
+        "ref",
+        "status",
+        "caption"
+      ],
+      "title": "Figure",
+      "type": "object"
+    },
+    "KeyframeId": {
+      "description": "ID of the key frame: kf_ + the frame of the video it shows.",
+      "pattern": "^kf_[0-9]+$",
+      "type": "string"
+    },
     "LlmSettings": {
       "additionalProperties": false,
       "description": "The model that wrote the text and how it was called.",
@@ -105,7 +155,7 @@
       "additionalProperties": false,
       "properties": {
         "report_version": {
-          "const": "0.2.0-k5",
+          "const": "0.3.0-k5",
           "type": "string"
         },
         "report": {
@@ -149,6 +199,9 @@
           "exclusiveMinimum": 0,
           "type": "integer"
         },
+        "key_frame_images": {
+          "type": "boolean"
+        },
         "verification": {
           "const": "not_run",
           "type": "string"
@@ -166,6 +219,7 @@
         "sentences_version",
         "llm",
         "attempts",
+        "key_frame_images",
         "verification"
       ],
       "title": "ReportMeta",
@@ -191,6 +245,9 @@
           },
           "minItems": 1,
           "type": "array"
+        },
+        "figure": {
+          "$ref": "#/$defs/Figure"
         }
       },
       "required": [

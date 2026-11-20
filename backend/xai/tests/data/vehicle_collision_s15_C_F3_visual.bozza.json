@@ -1,7 +1,7 @@
 {
   "$comment": "Caso golden: regola legacy con set_side (F3) dei database di ablation. WatchOut allinea i due lati per posizione e dà alle colonne i nomi del lato sinistro (audio), quindi nella riga visiva il veicolo 12 sta nella colonna st, l'inizio in et e la fine in __p1: K1 riconosce il lato dalla riga (colonne di riempimento nulle, inizio e fine presenti) e legge le colonne per posizione. Prodotta da K1 sul database di test con le regole del DB di ablation e i parametri salvati in DeltasJson (tests/support.py, use_ablation_rules): i default della GUI per queste regole danno 'inf' a ζ e ρ e WatchOut non può eseguirle. Intervalli, partecipanti e riga sono reali (DB di ablation, scena 15); SamplingRate=24, AudioWindow/AudioHop e provider sono ipotizzati. I testi della bozza sono in inglese.",
   "contract_meta": {
-    "contract_version": "0.4.0-k1",
+    "contract_version": "0.6.0-k1",
     "analysis_id": "gemini_3_6_flash_qwen2_audio_s15",
     "source_snapshot": {
       "extracted_at": "2026-10-06T20:00:00Z"
@@ -191,6 +191,25 @@
         }
       }
     ],
+    "key_frame": {
+      "keyframe_id": "kf_216",
+      "frame_index": 216,
+      "t_s": 9.0,
+      "selection": "gui_preview_midpoint",
+      "frame_image_ref": {
+        "video_path": "/videos/gemini_3_6_flash_qwen2_audio_s15.mp4",
+        "source_ref": {
+          "stage": "config",
+          "record_id": "Analyses/gemini_3_6_flash_qwen2_audio_s15/VideoPath",
+          "mode": "read"
+        }
+      },
+      "source_ref": {
+        "stage": "keyframes",
+        "record_id": "results-table.svelte#previewFrame",
+        "mode": "read"
+      }
+    },
     "source_ref": {
       "stage": "iseql",
       "record_id": "detection/vehicle_collision/C@gemini_3_6_flash_qwen2_audio_s15/{\"__p1\":10.0,\"et\":6.0,\"st\":12.0}",
@@ -522,7 +541,6 @@
       }
     }
   ],
-  "actions": null,
   "glossary": [
     {
       "term_id": "g_audio_class_glass_breaking",
@@ -661,12 +679,6 @@
       }
     }
   ],
-  "unavailable": {
-    "actions": {
-      "reason": "keyframes_not_persisted",
-      "detail": "this WatchOut version does not store key frames"
-    }
-  },
   "harvest_report": {
     "request": {
       "analysis_id": "gemini_3_6_flash_qwen2_audio_s15",
@@ -704,10 +716,6 @@
       {
         "path": "intervals[*].confidence",
         "reason": "visual_confidence_not_recorded"
-      },
-      {
-        "path": "actions",
-        "reason": "keyframes_not_persisted"
       }
     ],
     "notes": [
