@@ -26,9 +26,15 @@ jobs:
 
       # The ISEQL engine tests are dependency-light (no torch/VLM/audio): pytest,
       # pytest-cov, munch (post-analysis hook), pandas (interval/event queries) and
-      # pydantic (request models), same versions as Pipfile.lock.
+      # pydantic (request models). The thumbnail and detection tests also need numpy,
+      # opencv, pillow, pyyaml and fastapi (api/__init__.py imports every controller).
+      # Same versions as Pipfile.lock.
       - name: Install test dependencies
-        run: pip install pytest pytest-cov "munch==4.0.0" pandas==2.3.3 pydantic==2.12.5
+        run: >-
+          pip install pytest pytest-cov
+          "munch==4.0.0" "pandas==2.3.3" "pydantic==2.12.5"
+          "numpy==1.26.4" "opencv-python-headless==4.11.0.86" "pillow==12.2.0"
+          "pyyaml==6.0.3" "fastapi==0.128.0"
 
       - name: Run backend tests with coverage
         run: pytest --cov=iseql --cov=service.relation_vocab --cov-report=term-missing --cov-report=xml

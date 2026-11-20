@@ -1,20 +1,22 @@
 """Tests of ``utils.frames.extract_frame_jpeg`` and of the thumbnail endpoint that uses it.
 
 The video is generated here: 10 frames, each filled with a different grey level, so a
-decoded thumbnail tells which frame was read.
+decoded thumbnail tells which frame was read. The tests need OpenCV, NumPy and FastAPI, which
+the minimal CI environment does not install: without them the module is skipped.
 """
 from __future__ import annotations
 
 import asyncio
 from types import SimpleNamespace
 
-import cv2
-import numpy as np
 import pytest
-from fastapi import HTTPException
 
-from api.analysis_controller import AnalysisThumbnailController
-from utils.frames import (
+cv2 = pytest.importorskip("cv2")
+np = pytest.importorskip("numpy")
+HTTPException = pytest.importorskip("fastapi").HTTPException
+
+from api.analysis_controller import AnalysisThumbnailController  # noqa: E402
+from utils.frames import (  # noqa: E402
     THUMBNAIL_WIDTH,
     FrameOutOfRange,
     VideoNotFound,
